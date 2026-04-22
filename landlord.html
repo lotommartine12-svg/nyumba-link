@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NyumbaLink – Landlord Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--gold:#C9A84C;--gold2:#F0C96B;--gold-glow:rgba(201,168,76,0.12);--ink:#08090A;--ink2:#0F1115;--ink3:#161B22;--ink4:#1E242E;--border:rgba(255,255,255,0.07);--border-gold:rgba(201,168,76,0.2);--text:#F0F2F5;--muted:#6B7A90;--subtle:#3D4A5C;--green:#22C55E;--green-g:rgba(34,197,94,0.1);--blue:#3B82F6;--blue-g:rgba(59,130,246,0.1);--red:#EF4444;--red-g:rgba(239,68,68,0.1);--amber:#F59E0B;--amber-g:rgba(245,158,11,0.1);--purple:#A855F7;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Satoshi',sans-serif;background:var(--ink);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:260px;min-height:100vh;background:var(--ink2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:50;transition:transform 0.3s;}
+.sb-logo{padding:24px 22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sb-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),#8A5C10);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sb-logo-text{font-family:'Clash Display',sans-serif;font-size:18px;color:var(--gold);letter-spacing:-0.3px;}
+.sb-logo-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.sb-property{margin:16px 12px;background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.04));border:1px solid var(--border-gold);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.2s;}
+.sb-property:hover{border-color:var(--gold);}
+.sp-name{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:2px;}
+.sp-units{font-size:12px;color:var(--muted);}
+.sp-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--green);}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 5px rgba(34,197,94,0);}}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto;}
+.sb-section{padding:16px 16px 6px;font-size:10px;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:1.5px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;margin:2px 8px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all 0.2s;text-decoration:none;}
+.nav-item:hover{background:var(--ink3);color:var(--text);}
+.nav-item.active{background:var(--gold-glow);color:var(--gold);border:1px solid var(--border-gold);}
+.nav-item .ni-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-item .ni-badge{margin-left:auto;background:var(--red);color:white;border-radius:999px;font-size:10px;padding:2px 6px;font-weight:700;}
+.sb-bottom{padding:16px 12px;border-top:1px solid var(--border);}
+.landlord-card{background:var(--ink3);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.lc-avatar{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#8A5C10);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink);flex-shrink:0;}
+.lc-info{flex:1;min-width:0;}
+.lc-name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lc-role{font-size:11px;color:var(--muted);}
+.lc-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;}
+
+/* MAIN */
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{background:var(--ink2);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;gap:16px;}
+.tb-left{display:flex;align-items:center;gap:16px;}
+.tb-title{font-family:'Clash Display',sans-serif;font-size:18px;letter-spacing:-0.3px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-search{background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:8px 14px;color:var(--text);font-size:13px;outline:none;width:220px;font-family:'Satoshi',sans-serif;}
+.tb-search::placeholder{color:var(--muted);}
+.tb-btn{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:8px 16px;color:var(--muted);font-size:13px;cursor:pointer;font-family:'Satoshi',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.tb-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.15);}
+.tb-btn.primary{background:linear-gradient(135deg,var(--gold),#A07830);color:var(--ink);border:none;font-weight:700;}
+.tb-btn.primary:hover{box-shadow:0 4px 20px rgba(201,168,76,0.35);transform:translateY(-1px);}
+
+/* CONTENT */
+.content{padding:28px 32px;flex:1;}
+.tab-page{display:none;}
+.tab-page.active{display:block;animation:fadeUp 0.3s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* METRIC CARDS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.metric{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;cursor:default;transition:all 0.2s;}
+.metric:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px);}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.metric.g::before{background:linear-gradient(90deg,var(--green),transparent);}
+.metric.b::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.metric.a::before{background:linear-gradient(90deg,var(--amber),transparent);}
+.metric.r::before{background:linear-gradient(90deg,var(--red),transparent);}
+.metric.p::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.metric.gd::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.metric-icon{font-size:24px;margin-bottom:12px;display:block;}
+.metric-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.metric-val{font-family:'Clash Display',sans-serif;font-size:32px;letter-spacing:-1px;line-height:1;}
+.metric.g .metric-val{color:var(--green);}
+.metric.b .metric-val{color:var(--blue);}
+.metric.a .metric-val{color:var(--amber);}
+.metric.r .metric-val{color:var(--red);}
+.metric.p .metric-val{color:var(--purple);}
+.metric.gd .metric-val{color:var(--gold);}
+.metric-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+.metric-trend{position:absolute;top:16px;right:16px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;}
+.metric-trend.up{background:var(--green-g);color:var(--green);}
+.metric-trend.down{background:var(--red-g);color:var(--red);}
+
+/* CARDS */
+.card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+.bg{background:var(--green-g);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.bb{background:var(--blue-g);color:var(--blue);border:1px solid rgba(59,130,246,0.2);}
+.ba{background:var(--amber-g);color:var(--amber);border:1px solid rgba(245,158,11,0.2);}
+.br{background:var(--red-g);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.bm{background:rgba(107,122,144,0.12);color:var(--muted);border:1px solid var(--border);}
+.bgd{background:var(--gold-glow);color:var(--gold);border:1px solid var(--border-gold);}
+
+/* TABLE */
+.tbl-wrap{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{padding:12px 16px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;background:var(--ink3);border-bottom:1px solid var(--border);}
+td{padding:13px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.015);}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Satoshi',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#A07830);color:var(--ink);}
+.btn-gold:hover{box-shadow:0 4px 20px rgba(201,168,76,0.35);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.15);}
+.btn-green{background:var(--green);color:white;}
+.btn-red{background:var(--red-g);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px;}
+.btn-full{width:100%;}
+
+/* FORM */
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'Satoshi',sans-serif;outline:none;transition:border 0.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:80px;}
+.fg select option{background:var(--ink2);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* PROGRESS */
+.prog-bar{height:6px;background:var(--ink3);border-radius:999px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:100%;border-radius:999px;transition:width 1s ease;}
+
+/* UNIT GRID */
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.unit-card{background:var(--ink3);border:1.5px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s;}
+.unit-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3);}
+.unit-card.occupied{border-left:3px solid var(--green);}
+.unit-card.vacant{border-left:3px solid var(--muted);}
+.unit-card.overdue{border-left:3px solid var(--red);}
+.unit-card.partial{border-left:3px solid var(--amber);}
+.uc-num{font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:4px;}
+.uc-tenant{font-size:12px;color:var(--muted);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.uc-rent{font-size:13px;font-weight:700;}
+
+/* CHART BARS */
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:100px;}
+.cb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.cb-bar{width:100%;border-radius:6px 6px 0 0;transition:height 0.8s cubic-bezier(0.34,1.56,0.64,1);min-height:4px;}
+.cb-label{font-size:10px;color:var(--muted);}
+.cb-val{font-size:10px;color:var(--text);font-weight:700;}
+
+/* ACTIVITY */
+.activity-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.activity-item:last-child{border-bottom:none;}
+.ai-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.ai-text{flex:1;font-size:13px;line-height:1.5;}
+.ai-time{font-size:11px;color:var(--muted);flex-shrink:0;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--ink2);border:1px solid var(--border-gold);border-radius:20px;padding:32px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;}
+@keyframes popIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal h3{font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:4px;letter-spacing:-0.3px;}
+.modal .msub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;margin-top:-4px;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+
+/* ONBOARDING WIZARD */
+.wizard-steps{display:flex;gap:0;margin-bottom:28px;}
+.wz-step{flex:1;text-align:center;position:relative;}
+.wz-step::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;}
+.wz-step:last-child::after{display:none;}
+.wz-num{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);margin:0 auto 6px;position:relative;z-index:1;transition:all 0.3s;}
+.wz-step.done .wz-num{background:var(--green);border-color:var(--green);color:white;}
+.wz-step.active .wz-num{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+.wz-label{font-size:11px;color:var(--muted);}
+.wz-step.active .wz-label{color:var(--gold);}
+.wz-step.done .wz-label{color:var(--green);}
+.wz-panel{display:none;}
+.wz-panel.active{display:block;}
+
+/* TENANT SCREENING */
+.screening-card{background:var(--ink3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.sc-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.sc-avatar{width:40px;height:40px;border-radius:10px;background:var(--ink4);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
+.sc-info h4{font-size:14px;font-weight:700;}
+.sc-info p{font-size:12px;color:var(--muted);}
+.sc-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.sc-score{background:var(--ink4);border-radius:10px;padding:10px;text-align:center;}
+.sc-score-val{font-family:'Clash Display',sans-serif;font-size:22px;}
+.sc-score-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+
+/* NOTIFICATION */
+.notif-item{display:flex;gap:12px;padding:12px;background:var(--ink3);border-radius:10px;margin-bottom:8px;border-left:3px solid transparent;}
+.notif-item.info{border-left-color:var(--blue);}
+.notif-item.success{border-left-color:var(--green);}
+.notif-item.warning{border-left-color:var(--amber);}
+.notif-item.danger{border-left-color:var(--red);}
+.ni-icon{font-size:18px;flex-shrink:0;}
+.ni-body{flex:1;}
+.ni-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.ni-desc{font-size:12px;color:var(--muted);}
+.ni-time{font-size:10px;color:var(--subtle);margin-top:4px;}
+
+/* LEASE CARD */
+.lease-card{background:var(--ink3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;}
+.lease-icon{font-size:28px;flex-shrink:0;}
+.lease-info{flex:1;}
+.lease-info h4{font-size:14px;font-weight:700;margin-bottom:3px;}
+.lease-info p{font-size:12px;color:var(--muted);}
+.lease-days{font-family:'Clash Display',sans-serif;font-size:20px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;z-index:9999;padding:14px 22px;border-radius:12px;font-size:14px;font-weight:700;transform:translateY(100px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 8px 30px rgba(0,0,0,0.4);display:flex;align-items:center;gap:10px;max-width:380px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:var(--green);color:white;}
+.toast.info{background:var(--blue);color:white;}
+.toast.warn{background:var(--amber);color:var(--ink);}
+.toast.error{background:var(--red);color:white;}
+
+/* RECEIPT */
+.receipt{background:white;color:#1a1a1a;border-radius:12px;padding:24px;font-family:'Courier New',monospace;font-size:12px;line-height:1.8;}
+.r-header{text-align:center;margin-bottom:12px;}
+.r-logo{font-family:'Clash Display',sans-serif;font-size:20px;color:#C9A84C;}
+.r-divider{border:none;border-top:1px dashed #ccc;margin:10px 0;}
+.r-row{display:flex;justify-content:space-between;}
+.r-total{font-weight:700;font-size:14px;color:#C9A84C;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+
+/* COMMUNITY */
+.post-card{background:var(--ink3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.post-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.post-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.post-author strong{display:block;font-size:13px;}
+.post-author span{font-size:11px;color:var(--muted);}
+.post-body{font-size:14px;line-height:1.6;color:var(--text);margin-bottom:10px;}
+.post-actions{display:flex;gap:12px;}
+.pa-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Satoshi',sans-serif;display:flex;align-items:center;gap:4px;}
+.pa-btn:hover{color:var(--text);}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .metric-grid{grid-template-columns:1fr 1fr;}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .topbar{padding:0 16px;}
+  .content{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🏢</div>
+    <div>
+      <div class="sb-logo-text">NyumbaLink</div>
+      <div class="sb-logo-sub">Landlord Portal</div>
+    </div>
+  </div>
+
+  <div class="sb-property" onclick="showModal('modal-switch-property')">
+    <div class="sp-name" id="property-name">Greenview Apartments</div>
+    <div class="sp-units">15 units · Langata, Nairobi</div>
+    <div class="sp-status"><div class="sp-dot"></div> All systems active · Switch Property ↓</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <a class="nav-item active" onclick="nav('dashboard')" id="ni-dashboard"><span class="ni-icon">📊</span> Dashboard</a>
+    <a class="nav-item" onclick="nav('units')" id="ni-units"><span class="ni-icon">🏠</span> Units & Tenants</a>
+    <a class="nav-item" onclick="nav('payments')" id="ni-payments"><span class="ni-icon">💳</span> Payments <span class="ni-badge">3</span></a>
+    <a class="nav-item" onclick="nav('screening')" id="ni-screening"><span class="ni-icon">🔍</span> Tenant Screening</a>
+    <a class="nav-item" onclick="nav('leases')" id="ni-leases"><span class="ni-icon">📋</span> Leases</a>
+
+    <div class="sb-section">Operations</div>
+    <a class="nav-item" onclick="nav('repairs')" id="ni-repairs"><span class="ni-icon">🔧</span> Repairs <span class="ni-badge">4</span></a>
+    <a class="nav-item" onclick="nav('water')" id="ni-water"><span class="ni-icon">💧</span> Water & Utilities</a>
+    <a class="nav-item" onclick="nav('garbage')" id="ni-garbage"><span class="ni-icon">🗑️</span> Garbage</a>
+    <a class="nav-item" onclick="nav('community')" id="ni-community"><span class="ni-icon">🏘️</span> Community</a>
+
+    <div class="sb-section">Business</div>
+    <a class="nav-item" onclick="nav('analytics')" id="ni-analytics"><span class="ni-icon">📈</span> Analytics & AI</a>
+    <a class="nav-item" onclick="nav('documents')" id="ni-documents"><span class="ni-icon">📄</span> Documents</a>
+    <a class="nav-item" onclick="nav('broadcast')" id="ni-broadcast"><span class="ni-icon">📢</span> Broadcast SMS</a>
+    <a class="nav-item" onclick="nav('settings')" id="ni-settings"><span class="ni-icon">⚙️</span> Settings</a>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="landlord-card">
+      <div class="lc-avatar">JM</div>
+      <div class="lc-info">
+        <div class="lc-name">J. Mutua</div>
+        <div class="lc-role">Premium Plan · 3 Properties</div>
+      </div>
+      <button class="lc-btn" onclick="window.location.href='index.html'" title="Back to Home">⬅️</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="tb-right">
+      <input class="tb-search" placeholder="🔍 Search tenant, unit, payment…"/>
+      <button class="tb-btn" onclick="showModal('modal-notifications')">🔔 <span style="background:var(--red);color:white;border-radius:999px;font-size:10px;padding:1px 5px;">5</span></button>
+      <button class="tb-btn primary" onclick="showModal('modal-add-tenant')">+ Add Tenant</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="tab-page active" id="page-dashboard">
+      <div class="metric-grid">
+        <div class="metric gd"><span class="metric-icon">💰</span><div class="metric-label">Collected Apr</div><div class="metric-val">318K</div><div class="metric-sub">KES · 89% of expected</div><span class="metric-trend up">↑ 12%</span></div>
+        <div class="metric r"><span class="metric-icon">⚠️</span><div class="metric-label">Overdue Rent</div><div class="metric-val">3</div><div class="metric-sub">units · KES 46,000</div><span class="metric-trend down">KES 160 penalty</span></div>
+        <div class="metric g"><span class="metric-icon">🏠</span><div class="metric-label">Occupancy Rate</div><div class="metric-val">87%</div><div class="metric-sub">13 of 15 units filled</div><span class="metric-trend up">↑ 2 units</span></div>
+        <div class="metric b"><span class="metric-icon">🔧</span><div class="metric-label">Open Repairs</div><div class="metric-val">4</div><div class="metric-sub">2 urgent · 2 normal</div><span class="metric-trend down">↑ 1 new today</span></div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Monthly Collections (KES)</span><span class="badge bgd">Last 7 Months</span></div>
+          <div class="chart-bars" id="main-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Revenue Breakdown</span><button class="btn btn-ghost btn-sm" onclick="nav('analytics')">Full Report →</button></div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.6;">
+            <div style="display:flex;justify-content:space-between;"><span>Rent</span><span style="color:var(--green);font-weight:700;">KES 318,000</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:78%;background:var(--green);"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span>Water Bills</span><span style="color:var(--blue);font-weight:700;">KES 12,750</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:25%;background:var(--blue);"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span>Garbage Fees</span><span style="color:var(--amber);font-weight:700;">KES 6,500</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:15%;background:var(--amber);"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span>Penalties</span><span style="color:var(--red);font-weight:700;">KES 160</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:3%;background:var(--red);"></div></div>
+            <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);margin-top:6px;"><strong style="color:var(--text);">Total</strong><span style="color:var(--gold);font-family:'Clash Display',sans-serif;font-size:18px;">KES 337,410</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Live Activity</span><span class="badge bg" style="display:flex;align-items:center;gap:4px;"><div style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>Live</span></div>
+          <div class="activity-item"><div class="ai-dot" style="background:var(--green)"></div><div class="ai-text"><strong>Grace Njeri – A3</strong> paid KES 12,000 rent via M-Pesa · Ref: QHJ9823</div><div class="ai-time">9:41 AM</div></div>
+          <div class="activity-item"><div class="ai-dot" style="background:var(--red)"></div><div class="ai-text"><strong>David Mwangi – B1</strong> is 5 days overdue · KES 18,000 · Penalty: KES 100</div><div class="ai-time">8:00 AM</div></div>
+          <div class="activity-item"><div class="ai-dot" style="background:var(--amber)"></div><div class="ai-text"><strong>New complaint</strong> Unit A3 – Sparking socket. Urgent. Needs electrician.</div><div class="ai-time">Yesterday</div></div>
+          <div class="activity-item"><div class="ai-dot" style="background:var(--blue)"></div><div class="ai-text"><strong>Water bills</strong> auto-generated for 13 units · Total: KES 12,750</div><div class="ai-time">Apr 1</div></div>
+          <div class="activity-item"><div class="ai-dot" style="background:var(--purple)"></div><div class="ai-text"><strong>Lease expiring</strong> Unit C2 – Amina Hassan · 28 days remaining</div><div class="ai-time">Apr 1</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">🤖 AI Insights</span><span class="badge bb">Beta</span></div>
+          <div class="notif-item warning" style="margin-bottom:8px;"><div class="ni-icon">⚠️</div><div class="ni-body"><div class="ni-title">Default Risk Detected</div><div class="ni-desc">John Otieno (B2) has been late 3 of the last 4 months. High risk of default. Consider a conversation.</div><div class="ni-time">AI · Apr 22</div></div></div>
+          <div class="notif-item info"><div class="ni-icon">💡</div><div class="ni-body"><div class="ni-title">Rent Pricing Suggestion</div><div class="ni-desc">Units A1–A3 are 8% below Langata market average. Consider adjusting on next renewal.</div><div class="ni-time">AI · Apr 20</div></div></div>
+          <div class="notif-item success"><div class="ni-icon">📈</div><div class="ni-body"><div class="ni-title">Vacancy Prediction</div><div class="ni-desc">Unit D2 lease ends in 45 days. Based on trends, list it now to avoid vacancy gap.</div><div class="ni-time">AI · Apr 18</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ UNITS ═══ -->
+    <div class="tab-page" id="page-units">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:4px;">Units & Tenants</div>
+          <div style="font-size:13px;color:var(--muted);">Greenview Apartments · 15 units total</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="showModal('modal-add-unit')">+ Add Unit</button>
+          <button class="btn btn-gold" onclick="showModal('modal-add-tenant')">+ Enroll Tenant</button>
+        </div>
+      </div>
+      <div class="metric-grid" style="grid-template-columns:repeat(5,1fr);">
+        <div class="metric g"><div class="metric-label">Occupied</div><div class="metric-val">13</div></div>
+        <div class="metric r"><div class="metric-label">Overdue</div><div class="metric-val">3</div></div>
+        <div class="metric a"><div class="metric-label">Partial</div><div class="metric-val">1</div></div>
+        <div class="metric b"><div class="metric-label">Vacant</div><div class="metric-val">2</div></div>
+        <div class="metric gd"><div class="metric-label">Occupancy</div><div class="metric-val">87%</div></div>
+      </div>
+      <div class="unit-grid" id="unit-grid-main"></div>
+    </div>
+
+    <!-- ═══ PAYMENTS ═══ -->
+    <div class="tab-page" id="page-payments">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Clash Display',sans-serif;font-size:22px;">Payment Management</div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="showToast('Generating PDF statement…','info')">📄 Export PDF</button>
+          <button class="btn btn-gold" onclick="showModal('modal-record-payment')">+ Record Payment</button>
+          <button class="btn btn-ghost" onclick="showToast('Sending bulk SMS reminders…','success')">📱 Send Reminders</button>
+        </div>
+      </div>
+      <div class="metric-grid">
+        <div class="metric gd"><div class="metric-label">Total Apr</div><div class="metric-val">318K</div><div class="metric-sub">KES collected</div></div>
+        <div class="metric r"><div class="metric-label">Outstanding</div><div class="metric-val">46K</div><div class="metric-sub">KES · 3 units</div></div>
+        <div class="metric a"><div class="metric-label">Penalties</div><div class="metric-val">KES 160</div><div class="metric-sub">Accumulated</div></div>
+        <div class="metric b"><div class="metric-label">Auto-SMS</div><div class="metric-val">3</div><div class="metric-sub">Reminders sent</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-hdr"><span class="card-title">All Tenant Payment Status – April 2026</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Unit</th><th>Tenant</th><th>Rent</th><th>Water</th><th>Garbage</th><th>Penalty</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="payment-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Payment Rules Engine</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;font-size:13px;color:var(--muted);line-height:2;">
+          <div><div style="font-weight:700;color:var(--text);margin-bottom:8px;">Due Dates</div><div>📅 Rent: 10th of month</div><div>💧 Water: 20th of month</div><div>🗑️ Garbage: 30th of month</div></div>
+          <div><div style="font-weight:700;color:var(--text);margin-bottom:8px;">Auto-SMS Schedule</div><div>📱 31st – Early reminder</div><div>📱 5th – Mid reminder</div><div>📱 9th – Final warning</div><div>📱 11th+ – Daily penalty notice</div></div>
+          <div><div style="font-weight:700;color:var(--text);margin-bottom:8px;">Penalties</div><div>⚠️ KES 20/day from 11th</div><div>🔴 Auto-calculated daily</div><div>📊 Added to next invoice</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TENANT SCREENING ═══ -->
+    <div class="tab-page" id="page-screening">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div><div style="font-family:'Clash Display',sans-serif;font-size:22px;">Tenant Screening</div><div style="font-size:13px;color:var(--muted);">CRB checks, ID verification, digital applications & lease signing</div></div>
+        <button class="btn btn-gold" onclick="showModal('modal-invite-applicant')">+ Invite Applicant</button>
+      </div>
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Screening Pipeline</span></div>
+          <div class="screening-card">
+            <div class="sc-head">
+              <div class="sc-avatar" style="background:linear-gradient(135deg,#1a4a8a,#0a2050);">PK</div>
+              <div class="sc-info"><h4>Patrick Kimani</h4><p>Applied for Unit C2 · Apr 20, 2026</p></div>
+              <span class="badge bb">In Review</span>
+            </div>
+            <div class="sc-scores">
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--green);">742</div><div class="sc-score-label">CRB Score</div></div>
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--green);">✓</div><div class="sc-score-label">ID Verified</div></div>
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--amber);">⚡</div><div class="sc-score-label">Lease Pending</div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button class="btn btn-green btn-sm" onclick="showToast('✅ Applicant approved! Lease sent for signing.','success')">Approve & Send Lease</button>
+              <button class="btn btn-ghost btn-sm" onclick="showModal('modal-view-application')">View Application</button>
+              <button class="btn btn-red btn-sm" onclick="showToast('Applicant rejected. Notified via SMS.','warn')">Reject</button>
+            </div>
+          </div>
+          <div class="screening-card" style="opacity:0.6;">
+            <div class="sc-head">
+              <div class="sc-avatar" style="background:linear-gradient(135deg,#2a1a1a,#500a0a);">RA</div>
+              <div class="sc-info"><h4>Rose Achieng</h4><p>Applied for Unit C2 · Apr 18, 2026</p></div>
+              <span class="badge br">Rejected</span>
+            </div>
+            <div class="sc-scores">
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--red);">380</div><div class="sc-score-label">CRB Score</div></div>
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--green);">✓</div><div class="sc-score-label">ID Verified</div></div>
+              <div class="sc-score"><div class="sc-score-val" style="color:var(--red);">✗</div><div class="sc-score-label">Failed Check</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">How Screening Works</span></div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8;">
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="width:28px;height:28px;border-radius:8px;background:var(--blue-g);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">1</div>
+              <div><strong style="color:var(--text);">Share Application Link</strong><br/>Send a unique link to applicants. They fill in personal details, employment, income and upload their ID + photo.</div>
+            </div>
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="width:28px;height:28px;border-radius:8px;background:var(--amber-g);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">2</div>
+              <div><strong style="color:var(--text);">Automated Checks</strong><br/>System runs CRB credit check via Metropol. Verifies ID against IPRS national database. Results in minutes.</div>
+            </div>
+            <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="width:28px;height:28px;border-radius:8px;background:var(--green-g);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">3</div>
+              <div><strong style="color:var(--text);">Review & Decide</strong><br/>You see a simple report: credit score, ID status, income verification. Approve or reject with one click.</div>
+            </div>
+            <div style="display:flex;gap:12px;padding:10px 0;">
+              <div style="width:28px;height:28px;border-radius:8px;background:var(--gold-glow);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">4</div>
+              <div><strong style="color:var(--text);">Digital Lease Signing</strong><br/>System generates pre-filled lease. Both parties sign digitally. PDF saved. Tenant portal activated automatically.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LEASES ═══ -->
+    <div class="tab-page" id="page-leases">
+      <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:20px;">Lease Management</div>
+      <div class="metric-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="metric g"><div class="metric-label">Active Leases</div><div class="metric-val">13</div></div>
+        <div class="metric a"><div class="metric-label">Expiring 30d</div><div class="metric-val">2</div></div>
+        <div class="metric r"><div class="metric-label">Expired</div><div class="metric-val">0</div></div>
+        <div class="metric b"><div class="metric-label">Pending Sign</div><div class="metric-val">1</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">All Leases</span><button class="btn btn-ghost btn-sm" onclick="showToast('Generating lease report…','info')">Export All</button></div>
+        <div class="lease-card"><span class="lease-icon">📋</span><div class="lease-info"><h4>Mary Wambua – Unit A1</h4><p>Jan 15, 2024 – Jan 14, 2025 → Renewed to Jan 14, 2027 · KES 15,000/mo</p></div><span class="badge bg">Active</span><button class="btn btn-ghost btn-sm" onclick="showModal('modal-view-lease')">View</button></div>
+        <div class="lease-card"><span class="lease-icon">⚠️</span><div class="lease-info"><h4>Amina Hassan – Unit C1</h4><p>May 1, 2023 – Apr 30, 2026 · KES 14,000/mo</p></div><div><span class="badge ba">Expires in 8 days</span></div><button class="btn btn-gold btn-sm" onclick="showToast('Renewal sent to Amina Hassan!','success')">Send Renewal</button></div>
+        <div class="lease-card"><span class="lease-icon">⏳</span><div class="lease-info"><h4>Patrick Kimani – Unit C2</h4><p>Lease generated · Pending digital signature</p></div><span class="badge bb">Pending Signature</span><button class="btn btn-ghost btn-sm" onclick="showToast('Reminder sent to Patrick!','success')">Resend</button></div>
+        <div class="lease-card"><span class="lease-icon">📋</span><div class="lease-info"><h4>Grace Njeri – Unit A3</h4><p>Jun 1, 2023 – May 31, 2026 · KES 12,000/mo</p></div><div><span class="badge ba">Expires in 39 days</span></div><button class="btn btn-gold btn-sm" onclick="showToast('Renewal sent to Grace Njeri!','success')">Send Renewal</button></div>
+      </div>
+    </div>
+
+    <!-- ═══ REPAIRS ═══ -->
+    <div class="tab-page" id="page-repairs">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Clash Display',sans-serif;font-size:22px;">Repairs & Maintenance</div>
+        <button class="btn btn-gold" onclick="showModal('modal-add-repair')">+ Log Repair</button>
+      </div>
+      <div class="metric-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="metric r"><div class="metric-label">Open</div><div class="metric-val">4</div></div>
+        <div class="metric a"><div class="metric-label">In Progress</div><div class="metric-val">2</div></div>
+        <div class="metric g"><div class="metric-label">Resolved Apr</div><div class="metric-val">11</div></div>
+        <div class="metric b"><div class="metric-label">Avg Resolution</div><div class="metric-val">2.4d</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">All Repair Requests</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Unit</th><th>Tenant</th><th>Category</th><th>Issue</th><th>Priority</th><th>Technician</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><strong>A3</strong></td><td>Grace Njeri</td><td>⚡ Electrical</td><td>Sparking socket</td><td><span class="badge br">Urgent</span></td><td>—</td><td><span class="badge br">Unassigned</span></td><td><button class="btn btn-gold btn-sm" onclick="showModal('modal-assign-tech')">Assign Tech</button></td></tr>
+              <tr><td><strong>A3</strong></td><td>Grace Njeri</td><td>🚿 Plumbing</td><td>Low water pressure</td><td><span class="badge ba">High</span></td><td>Brian Mwenda</td><td><span class="badge ba">In Progress</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast('Calling Brian…','info')">📞 Call</button></td></tr>
+              <tr><td><strong>B2</strong></td><td>John Otieno</td><td>🔐 Security</td><td>Broken door lock</td><td><span class="badge ba">High</span></td><td>—</td><td><span class="badge br">Open</span></td><td><button class="btn btn-gold btn-sm" onclick="showModal('modal-assign-tech')">Assign Tech</button></td></tr>
+              <tr><td><strong>B1</strong></td><td>David Mwangi</td><td>💡 Electrical</td><td>Corridor light out</td><td><span class="badge bm">Normal</span></td><td>Ali Hassan</td><td><span class="badge ba">In Progress</span></td><td><button class="btn btn-ghost btn-sm" onclick="showToast('Marked as resolved!','success')">✅ Resolve</button></td></tr>
+              <tr><td><strong>C1</strong></td><td>Amina Hassan</td><td>🚿 Plumbing</td><td>Leaking kitchen tap</td><td><span class="badge bm">Normal</span></td><td>—</td><td><span class="badge br">Open</span></td><td><button class="btn btn-gold btn-sm" onclick="showModal('modal-assign-tech')">Assign Tech</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ WATER ═══ -->
+    <div class="tab-page" id="page-water">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div><div style="font-family:'Clash Display',sans-serif;font-size:22px;">Water & Utility Billing</div><div style="font-size:13px;color:var(--muted);">Enter meter readings → bills auto-calculated and invoiced to tenants</div></div>
+        <button class="btn btn-gold" onclick="showModal('modal-meter-reading')">📊 Enter Readings</button>
+      </div>
+      <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="metric b"><div class="metric-label">Main Meter Apr</div><div class="metric-val">149 m³</div><div class="metric-sub">Total building usage</div></div>
+        <div class="metric g"><div class="metric-label">Bills Generated</div><div class="metric-val">13</div><div class="metric-sub">KES 12,750 total</div></div>
+        <div class="metric a"><div class="metric-label">Rate per m³</div><div class="metric-val">KES 85</div><div class="metric-sub">Current billing rate</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Unit Water Bills – April 2026</span><button class="btn btn-ghost btn-sm" onclick="showToast('Bills sent to all 13 tenants via SMS!','success')">📱 Send All Bills</button></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Unit</th><th>Tenant</th><th>Prev Reading</th><th>Curr Reading</th><th>Usage m³</th><th>Amount KES</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>A1</td><td>Mary Wambua</td><td>124</td><td>136</td><td>12</td><td>1,020</td><td><span class="badge bg">Paid</span></td></tr>
+              <tr><td>A2</td><td>Peter Kamau</td><td>98</td><td>109</td><td>11</td><td>935</td><td><span class="badge bg">Paid</span></td></tr>
+              <tr><td>A3</td><td>Grace Njeri</td><td>77</td><td>90</td><td>13</td><td>1,105</td><td><span class="badge ba">Pending</span></td></tr>
+              <tr><td>B1</td><td>David Mwangi</td><td>143</td><td>162</td><td>19</td><td>1,615</td><td><span class="badge br">Overdue</span></td></tr>
+              <tr><td>B2</td><td>John Otieno</td><td>55</td><td>66</td><td>11</td><td>935</td><td><span class="badge br">Overdue</span></td></tr>
+              <tr><td>C1</td><td>Amina Hassan</td><td>89</td><td>104</td><td>15</td><td>1,275</td><td><span class="badge ba">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ GARBAGE ═══ -->
+    <div class="tab-page" id="page-garbage">
+      <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:20px;">Garbage Collection Management</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Collection Schedule</span><button class="btn btn-ghost btn-sm" onclick="showToast('Schedule updated!','success')">Edit</button></div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.6;">
+            <div style="display:flex;justify-content:space-between;"><span>Collection Day</span><strong style="color:var(--text);">Every Wednesday</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Truck Time</span><strong style="color:var(--text);">6:00 AM</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Bins Out By</span><strong style="color:var(--amber);">Tuesday 10:00 PM</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Monthly Fee</span><strong style="color:var(--text);">KES 500</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Fee Due</span><strong style="color:var(--text);">30th of month</strong></div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Auto-SMS Alerts Sent</div>
+            <div class="notif-item success" style="margin-bottom:6px;"><div class="ni-icon">📱</div><div class="ni-body"><div class="ni-title">Tuesday 6:00 PM</div><div class="ni-desc">Evening reminder: "Garbage tomorrow at 6am, put bins out tonight"</div></div></div>
+            <div class="notif-item warning"><div class="ni-icon">🚨</div><div class="ni-body"><div class="ni-title">Wednesday 5:45 AM</div><div class="ni-desc">Urgent: "Truck in 15 minutes! Take bins outside NOW"</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Garbage Fee Collection</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Unit</th><th>Tenant</th><th>Apr Fee</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>A1</td><td>Mary Wambua</td><td>KES 500</td><td><span class="badge bg">Paid</span></td></tr>
+                <tr><td>A2</td><td>Peter Kamau</td><td>KES 500</td><td><span class="badge bg">Paid</span></td></tr>
+                <tr><td>A3</td><td>Grace Njeri</td><td>KES 500</td><td><span class="badge ba">Pending</span></td></tr>
+                <tr><td>B1</td><td>David Mwangi</td><td>KES 500</td><td><span class="badge br">Overdue</span></td></tr>
+                <tr><td>B2</td><td>John Otieno</td><td>KES 500</td><td><span class="badge br">Overdue</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn btn-gold btn-full" style="margin-top:12px;" onclick="showToast('Reminder sent to overdue tenants!','success')">📱 Send Overdue Reminders</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COMMUNITY ═══ -->
+    <div class="tab-page" id="page-community">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div><div style="font-family:'Clash Display',sans-serif;font-size:22px;">Community Board</div><div style="font-size:13px;color:var(--muted);">Greenview Apartments private community network</div></div>
+        <button class="btn btn-gold" onclick="showModal('modal-new-post')">📢 Post Announcement</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-hdr"><span class="card-title">📅 Events Calendar – April 2026</span><button class="btn btn-ghost btn-sm" onclick="showModal('modal-add-event')">+ Add Event</button></div>
+            <div style="font-size:13px;color:var(--muted);line-height:2.4;">
+              <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="background:var(--blue-g);padding:3px 10px;border-radius:6px;color:var(--blue);font-size:12px;font-weight:700;flex-shrink:0;">Apr 24</span><span>Water maintenance – off 8am–12pm</span></div>
+              <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="background:var(--green-g);padding:3px 10px;border-radius:6px;color:var(--green);font-size:12px;font-weight:700;flex-shrink:0;">Apr 27</span><span>Estate residents meeting · 3pm, ground floor</span></div>
+              <div style="display:flex;gap:12px;align-items:center;padding:8px 0;"><span style="background:var(--amber-g);padding:3px 10px;border-radius:6px;color:var(--amber);font-size:12px;font-weight:700;flex-shrink:0;">May 1</span><span>Rent due date reminder – Labour Day, banks closed</span></div>
+            </div>
+          </div>
+          <div class="post-card">
+            <div class="post-head">
+              <div class="post-av" style="background:linear-gradient(135deg,var(--gold),#A07830);color:var(--ink);">JM</div>
+              <div class="post-author"><strong>J. Mutua (Landlord)</strong><span>Pinned · Apr 20</span></div>
+              <span class="badge bgd" style="margin-left:auto;">📌 Pinned</span>
+            </div>
+            <div class="post-body">Important: Water will be off this Thursday April 24 from 8am to 12pm for scheduled pipe maintenance. Please store water in advance. We apologise for any inconvenience. – Management</div>
+            <div class="post-actions"><button class="pa-btn">👍 12 Reactions</button><button class="pa-btn">💬 3 Comments</button></div>
+          </div>
+          <div class="post-card">
+            <div class="post-head">
+              <div class="post-av" style="background:linear-gradient(135deg,#1a4a8a,#0a2050);">GN</div>
+              <div class="post-author"><strong>Grace Njeri</strong><span>Unit A3 · Apr 18</span></div>
+            </div>
+            <div class="post-body">Does anyone have a spare iron box they can lend for a couple of days? Mine broke down. Happy to return by Thursday. Thank you neighbours! 🙏</div>
+            <div class="post-actions"><button class="pa-btn">❤️ 4 Reactions</button><button class="pa-btn">💬 2 Comments</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Community Stats</span></div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.6;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;"><span>Active Residents</span><strong style="color:var(--text);">13 of 13</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Posts This Month</span><strong style="color:var(--text);">7</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Announcements</span><strong style="color:var(--text);">3</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Events This Month</span><strong style="color:var(--text);">2</strong></div>
+          </div>
+          <div class="card-hdr"><span class="card-title">Quick Broadcast</span></div>
+          <div class="fg"><label>Message</label><textarea placeholder="Send a message to all residents…" style="min-height:80px;"></textarea></div>
+          <button class="btn btn-gold btn-full" onclick="showToast('Message sent to all 13 residents!','success')">📢 Send to All Residents</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ANALYTICS ═══ -->
+    <div class="tab-page" id="page-analytics">
+      <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:20px;">Analytics & AI Intelligence</div>
+      <div class="metric-grid">
+        <div class="metric gd"><div class="metric-label">Annual Revenue</div><div class="metric-val">3.8M</div><div class="metric-sub">KES projected 2026</div><span class="metric-trend up">↑ 14%</span></div>
+        <div class="metric g"><div class="metric-label">Collection Rate</div><div class="metric-val">91%</div><div class="metric-sub">12-month average</div><span class="metric-trend up">↑ 6%</span></div>
+        <div class="metric b"><div class="metric-label">Avg Tenancy</div><div class="metric-val">22mo</div><div class="metric-sub">Per tenant</div></div>
+        <div class="metric p"><div class="metric-label">Rent Score Avg</div><div class="metric-val">710</div><div class="metric-sub">Across 13 tenants</div></div>
+      </div>
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">🤖 AI Rent Prediction</span><span class="badge bb">Powered by ML</span></div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:14px;">Based on payment history, market data, and seasonal patterns — our AI predicts your income for the next 3 months.</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="background:var(--ink3);border-radius:10px;padding:14px;text-align:center;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--green);">KES 325K</div><div style="font-size:11px;color:var(--muted);">May 2026</div><div style="font-size:10px;color:var(--green);">91% confidence</div></div>
+            <div style="background:var(--ink3);border-radius:10px;padding:14px;text-align:center;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--amber);">KES 310K</div><div style="font-size:11px;color:var(--muted);">June 2026</div><div style="font-size:10px;color:var(--amber);">82% confidence</div></div>
+            <div style="background:var(--ink3);border-radius:10px;padding:14px;text-align:center;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--blue);">KES 335K</div><div style="font-size:11px;color:var(--muted);">July 2026</div><div style="font-size:10px;color:var(--blue);">78% confidence</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Tenant Rent Scores™</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Scores based on payment consistency, timeliness, and tenure. Range: 300–850.</div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.8;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span>Mary Wambua – A1</span><div style="display:flex;align-items:center;gap:8px;"><div class="prog-bar" style="width:100px;"><div class="prog-fill" style="width:92%;background:var(--green);"></div></div><span style="color:var(--green);font-weight:700;">810</span></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span>Grace Njeri – A3</span><div style="display:flex;align-items:center;gap:8px;"><div class="prog-bar" style="width:100px;"><div class="prog-fill" style="width:86%;background:var(--green);"></div></div><span style="color:var(--green);font-weight:700;">745</span></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span>Amina Hassan – C1</span><div style="display:flex;align-items:center;gap:8px;"><div class="prog-bar" style="width:100px;"><div class="prog-fill" style="width:72%;background:var(--amber);"></div></div><span style="color:var(--amber);font-weight:700;">620</span></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span>John Otieno – B2</span><div style="display:flex;align-items:center;gap:8px;"><div class="prog-bar" style="width:100px;"><div class="prog-fill" style="width:45%;background:var(--red);"></div></div><span style="color:var(--red);font-weight:700;">390</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">KRA Tax Report – FY 2025/2026</span><button class="btn btn-gold btn-sm" onclick="showToast('KRA-ready PDF generated!','success')">📄 Download KRA PDF</button></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-size:13px;color:var(--muted);">
+          <div style="background:var(--ink3);border-radius:10px;padding:14px;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--gold);">KES 3.4M</div><div>Gross Rental Income</div></div>
+          <div style="background:var(--ink3);border-radius:10px;padding:14px;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--red);">KES 420K</div><div>Allowable Expenses</div></div>
+          <div style="background:var(--ink3);border-radius:10px;padding:14px;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--green);">KES 2.98M</div><div>Net Taxable Income</div></div>
+          <div style="background:var(--ink3);border-radius:10px;padding:14px;"><div style="font-family:'Clash Display',sans-serif;font-size:20px;color:var(--blue);">KES 358K</div><div>Tax Payable @ 12%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BROADCAST ═══ -->
+    <div class="tab-page" id="page-broadcast">
+      <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:20px;">Broadcast & SMS Management</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Send Broadcast Message</span></div>
+          <div class="fg"><label>Recipients</label><select><option>All Tenants (13)</option><option>Overdue Tenants Only (3)</option><option>Specific Unit</option><option>Block A Tenants</option><option>Block B Tenants</option></select></div>
+          <div class="fg"><label>Message Type</label><select><option>Custom Message</option><option>Rent Reminder</option><option>Garbage Alert</option><option>Water Outage Notice</option><option>Community Announcement</option><option>Penalty Notice</option></select></div>
+          <div class="fg"><label>Message (max 160 chars = 1 SMS credit)</label><textarea id="broadcast-msg" placeholder="Type your message…" style="min-height:100px;"></textarea><div style="font-size:11px;color:var(--muted);margin-top:4px;" id="char-count">0 / 160 characters</div></div>
+          <div class="fg"><label>Schedule (optional)</label><input type="datetime-local"/></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-gold" onclick="showToast('SMS sent to 13 tenants!','success')">📤 Send Now</button>
+            <button class="btn btn-ghost" onclick="showToast('Scheduled successfully!','info')">⏱ Schedule</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Auto-SMS Schedule</span></div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.4;">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Every 31st</span><span style="color:var(--text);">Rent reminder (early)</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Every 5th</span><span style="color:var(--text);">Rent reminder (mid)</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Every 9th</span><span style="color:var(--text);">Final warning</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Every 11th+</span><span style="color:var(--red);">Daily penalty notice</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Tuesday 6:00 PM</span><span style="color:var(--text);">Garbage evening reminder</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span>Wednesday 5:45 AM</span><span style="color:var(--amber);">Garbage urgent alert</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;"><span>Custom schedule</span><span style="color:var(--text);">Set per property</span></div>
+          </div>
+          <div style="margin-top:16px;padding:14px;background:var(--gold-glow);border:1px solid var(--border-gold);border-radius:10px;font-size:12px;color:var(--muted);">
+            <strong style="color:var(--gold);">SMS Credits:</strong> Each message costs KES 1 via Africa's Talking. 13 tenants × 6 messages/month = KES 78/month in SMS costs.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="tab-page" id="page-settings">
+      <div style="font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:20px;">Property Settings</div>
+      <div class="two-col">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-hdr"><span class="card-title">Property Information</span></div>
+          <div class="fg"><label>Apartment Name</label><input value="Greenview Apartments" id="apt-name"/></div>
+          <div class="fg"><label>Location</label><input value="Langata, Nairobi"/></div>
+          <div class="fg"><label>Number of Units</label><input type="number" value="15"/></div>
+          <div class="form-row">
+            <div class="fg"><label>M-Pesa Paybill</label><input value="522522"/></div>
+            <div class="fg"><label>Account Format</label><input value="Unit Number (e.g. A3)"/></div>
+          </div>
+          <button class="btn btn-gold" onclick="showToast('Property settings saved!','success')">Save Changes</button>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-hdr"><span class="card-title">Billing Rates</span></div>
+            <div class="form-row">
+              <div class="fg"><label>Water Rate (KES/m³)</label><input type="number" value="85"/></div>
+              <div class="fg"><label>Garbage Fee (KES/mo)</label><input type="number" value="500"/></div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Rent Due Day</label><input type="number" value="10"/></div>
+              <div class="fg"><label>Late Penalty (KES/day)</label><input type="number" value="20"/></div>
+            </div>
+            <button class="btn btn-gold" onclick="showToast('Billing rates updated!','success')">Update Rates</button>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">Add New Property</span></div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">You can manage multiple properties under one account.</div>
+            <button class="btn btn-gold btn-full" onclick="showModal('modal-add-property')">+ Add Another Property</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- ADD TENANT / ONBOARDING WIZARD -->
+<div class="modal-overlay" id="modal-add-tenant">
+  <div class="modal" style="width:560px;">
+    <button class="modal-close" onclick="closeModal('modal-add-tenant')">✕</button>
+    <h3>Enroll New Tenant</h3>
+    <p class="msub">Complete the 3-step tenant onboarding workflow</p>
+    <div class="wizard-steps">
+      <div class="wz-step done" id="ws1"><div class="wz-num">✓</div><div class="wz-label">Property</div></div>
+      <div class="wz-step active" id="ws2"><div class="wz-num">2</div><div class="wz-label">Tenant Info</div></div>
+      <div class="wz-step" id="ws3"><div class="wz-num">3</div><div class="wz-label">Activate</div></div>
+    </div>
+    <div class="fg"><label>Unit to Assign</label><select><option>C2 – 2BR Vacant (KES 14,000/mo)</option><option>D3 – 1BR Vacant (KES 10,000/mo)</option></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Full Name</label><input placeholder="e.g. Patrick Kimani"/></div>
+      <div class="fg"><label>Phone Number</label><input placeholder="07XX XXX XXX"/></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>National ID</label><input placeholder="ID Number"/></div>
+      <div class="fg"><label>Monthly Rent (KES)</label><input type="number" placeholder="14000"/></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Move-in Date</label><input type="date" value="2026-05-01"/></div>
+      <div class="fg"><label>Deposit (KES)</label><input type="number" placeholder="28000"/></div>
+    </div>
+    <div class="fg"><label>Emergency Contact</label><input placeholder="Name & phone number"/></div>
+    <div style="background:var(--gold-glow);border:1px solid var(--border-gold);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);margin-bottom:14px;">
+      ✅ After clicking Enroll: Tenant receives a welcome SMS with their login credentials. Portal activated automatically.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="enrollTenant()" style="flex:1;">✅ Enroll Tenant & Send Login</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-tenant')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD PAYMENT -->
+<div class="modal-overlay" id="modal-record-payment">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-record-payment')">✕</button>
+    <h3>Record Payment</h3>
+    <p class="msub">Log a payment and auto-generate receipt</p>
+    <div class="fg"><label>Tenant</label><select><option>Grace Njeri – A3</option><option>David Mwangi – B1</option><option>John Otieno – B2</option><option>Amina Hassan – C1</option></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Amount (KES)</label><input type="number" placeholder="12000"/></div>
+      <div class="fg"><label>Payment For</label><select><option>Rent</option><option>Water Bill</option><option>Garbage Fee</option><option>Penalty</option><option>Deposit</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Method</label><select><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option></select></div>
+      <div class="fg"><label>Reference</label><input placeholder="M-Pesa code or bank ref"/></div>
+    </div>
+    <div class="fg"><label>Date</label><input type="date" value="2026-04-22"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="recordPayment()" style="flex:1;">✅ Record & Generate Receipt</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-record-payment')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="modal-overlay" id="modal-receipt">
+  <div class="modal" style="width:420px;">
+    <button class="modal-close" onclick="closeModal('modal-receipt')">✕</button>
+    <h3>Payment Receipt</h3>
+    <p class="msub">Official NyumbaLink receipt</p>
+    <div class="receipt">
+      <div class="r-header">
+        <div class="r-logo">🏢 NyumbaLink</div>
+        <div style="font-size:10px;color:#666;">Greenview Apartments · Langata, Nairobi<br/>Tel: +254 700 000 001</div>
+      </div>
+      <hr class="r-divider"/>
+      <div class="r-row"><span>Receipt No:</span><span>#RC-2026-0087</span></div>
+      <div class="r-row"><span>Date:</span><span>22 April 2026</span></div>
+      <div class="r-row"><span>Tenant:</span><span id="r-tenant-name">Grace Njeri</span></div>
+      <div class="r-row"><span>Unit:</span><span>A3</span></div>
+      <div class="r-row"><span>Period:</span><span>April 2026</span></div>
+      <hr class="r-divider"/>
+      <div class="r-row"><span>Rent:</span><span>KES 12,000</span></div>
+      <div class="r-row"><span>Water Bill:</span><span>KES 1,105</span></div>
+      <div class="r-row"><span>Garbage Fee:</span><span>KES 500</span></div>
+      <div class="r-row"><span>Penalties:</span><span>KES 0</span></div>
+      <hr class="r-divider"/>
+      <div class="r-row r-total"><span>TOTAL PAID:</span><span>KES 13,605</span></div>
+      <div class="r-row"><span>Balance:</span><span>KES 0</span></div>
+      <hr class="r-divider"/>
+      <div style="text-align:center;font-size:10px;color:#999;">Thank you for your payment!<br/>Powered by NyumbaLink™ · nyumbalink.co.ke</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" style="flex:1;" onclick="showToast('Receipt downloaded as PDF!','success')">📥 Download PDF</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="showToast('Receipt sent via WhatsApp!','success')">📱 WhatsApp</button>
+      <button class="btn btn-ghost" onclick="showToast('Receipt sent via SMS!','success')">📤 SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN TECHNICIAN -->
+<div class="modal-overlay" id="modal-assign-tech">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-assign-tech')">✕</button>
+    <h3>Assign Technician</h3>
+    <p class="msub">Select a vetted technician from your area</p>
+    <div class="fg"><label>Job</label><select><option>⚡ Sparking socket – Unit A3 (Urgent)</option><option>🔐 Broken door lock – Unit B2</option><option>🚿 Kitchen tap leak – Unit C1</option></select></div>
+    <div class="fg"><label>Select Technician</label>
+      <select id="tech-select">
+        <option>Ali Hassan – Electrician ⭐4.8 · 0722 111 222 · Langata</option>
+        <option>James Ochieng – Electrician ⭐4.5 · 0711 333 444 · South B</option>
+        <option>Brian Mwenda – Plumber ⭐4.9 · 0733 555 666 · Langata</option>
+        <option>Samuel Njau – Locksmith ⭐4.6 · 0744 777 888 · Rongai</option>
+        <option>Peter Weru – Electrician ⭐4.2 · 0755 999 000 · Westlands</option>
+      </select>
+    </div>
+    <div class="fg"><label>Scheduled Visit (optional)</label><input type="datetime-local"/></div>
+    <div class="fg"><label>Notes to Technician</label><textarea placeholder="Any special instructions or access details…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="assignTech()" style="flex:1;">✅ Assign & Notify via SMS</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-assign-tech')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="modal-overlay" id="modal-notifications">
+  <div class="modal" style="width:480px;">
+    <button class="modal-close" onclick="closeModal('modal-notifications')">✕</button>
+    <h3>Notifications</h3>
+    <p class="msub">5 unread notifications</p>
+    <div class="notif-item danger"><div class="ni-icon">⚡</div><div class="ni-body"><div class="ni-title">Urgent Repair – Unit A3</div><div class="ni-desc">Grace Njeri reported sparking socket. Needs electrician NOW.</div><div class="ni-time">Today 8:47 PM</div></div></div>
+    <div class="notif-item warning"><div class="ni-icon">💳</div><div class="ni-body"><div class="ni-title">Overdue – Unit B1 · 5 days</div><div class="ni-desc">David Mwangi · KES 18,000 · Penalty: KES 100 accumulated</div><div class="ni-time">Today 8:00 AM</div></div></div>
+    <div class="notif-item warning"><div class="ni-icon">📋</div><div class="ni-body"><div class="ni-title">Lease Expiring – Unit C1</div><div class="ni-desc">Amina Hassan's lease expires in 8 days. Send renewal now.</div><div class="ni-time">Yesterday</div></div></div>
+    <div class="notif-item info"><div class="ni-icon">🔧</div><div class="ni-body"><div class="ni-title">Brian Mwenda – Job Accepted</div><div class="ni-desc">Plumbing job at Unit A3 accepted. Visit: Apr 21, 10am.</div><div class="ni-time">Apr 16</div></div></div>
+    <div class="notif-item success"><div class="ni-icon">💰</div><div class="ni-body"><div class="ni-title">Payment Received – Unit A3</div><div class="ni-desc">Grace Njeri paid KES 12,000 rent. M-Pesa Ref: QHJ9823</div><div class="ni-time">Apr 1</div></div></div>
+    <button class="btn btn-ghost btn-full" style="margin-top:14px;" onclick="closeModal('modal-notifications')">Mark All Read</button>
+  </div>
+</div>
+
+<!-- ADD PROPERTY -->
+<div class="modal-overlay" id="modal-add-property">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-add-property')">✕</button>
+    <h3>Add New Property</h3>
+    <p class="msub">Register another apartment block or estate</p>
+    <div class="fg"><label>Property Name</label><input placeholder="e.g. Sunrise Court Apartments"/></div>
+    <div class="fg"><label>Location</label><input placeholder="e.g. Rongai, Kajiado County"/></div>
+    <div class="form-row">
+      <div class="fg"><label>Number of Units</label><input type="number" placeholder="20"/></div>
+      <div class="fg"><label>M-Pesa Paybill</label><input placeholder="522522"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="addProperty()" style="flex:1;">+ Add Property</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-property')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVITE APPLICANT -->
+<div class="modal-overlay" id="modal-invite-applicant">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-invite-applicant')">✕</button>
+    <h3>Invite Applicant</h3>
+    <p class="msub">Send a digital application link to a prospective tenant</p>
+    <div class="fg"><label>Applicant Phone / Email</label><input placeholder="07XX XXX XXX or email@domain.com"/></div>
+    <div class="fg"><label>Unit to Apply For</label><select><option>C2 – 2BR Vacant (KES 14,000/mo)</option><option>D3 – 1BR Vacant (KES 10,000/mo)</option></select></div>
+    <div style="background:var(--ink3);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;color:var(--muted);">
+      📱 Applicant receives SMS with a unique link to: fill personal details → upload ID → consent to CRB check → sign digitally if approved
+    </div>
+    <button class="btn btn-gold btn-full" onclick="closeModal('modal-invite-applicant');showToast('Application link sent via SMS!','success')">📱 Send Application Link</button>
+  </div>
+</div>
+
+<!-- METER READING -->
+<div class="modal-overlay" id="modal-meter-reading">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-meter-reading')">✕</button>
+    <h3>Enter Meter Reading</h3>
+    <p class="msub">Bills auto-calculated at KES 85/m³</p>
+    <div class="fg"><label>Unit</label><select><option>A1 – Mary Wambua</option><option>A2 – Peter Kamau</option><option>A3 – Grace Njeri</option><option>B1 – David Mwangi</option><option>B2 – John Otieno</option></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Previous Reading (m³)</label><input type="number" placeholder="Previous month"/></div>
+      <div class="fg"><label>Current Reading (m³)</label><input type="number" placeholder="This month"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="closeModal('modal-meter-reading');showToast('💧 Water bill calculated and sent to tenant!','success')" style="flex:1;">Calculate & Send Bill</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-meter-reading')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+/* ── DATA ── */
+const UNITS=[
+  {id:'A1',tenant:'Mary Wambua',rent:'15,000',status:'occupied',payStatus:'paid'},
+  {id:'A2',tenant:'Peter Kamau',rent:'12,000',status:'occupied',payStatus:'paid'},
+  {id:'A3',tenant:'Grace Njeri',rent:'12,000',status:'occupied',payStatus:'paid'},
+  {id:'B1',tenant:'David Mwangi',rent:'18,000',status:'overdue',payStatus:'overdue'},
+  {id:'B2',tenant:'John Otieno',rent:'10,000',status:'overdue',payStatus:'overdue'},
+  {id:'C1',tenant:'Amina Hassan',rent:'14,000',status:'partial',payStatus:'partial'},
+  {id:'C2',tenant:'Vacant',rent:'14,000',status:'vacant',payStatus:'vacant'},
+  {id:'D1',tenant:'Samuel Gitau',rent:'22,000',status:'occupied',payStatus:'paid'},
+  {id:'D2',tenant:'Susan Kamau',rent:'18,000',status:'occupied',payStatus:'paid'},
+  {id:'D3',tenant:'Vacant',rent:'10,000',status:'vacant',payStatus:'vacant'},
+  {id:'E1',tenant:'Tom Njiru',rent:'12,000',status:'occupied',payStatus:'paid'},
+  {id:'E2',tenant:'Liz Wanjiku',rent:'12,000',status:'overdue',payStatus:'overdue'},
+  {id:'F1',tenant:'Ali Mohamed',rent:'15,000',status:'occupied',payStatus:'paid'},
+  {id:'F2',tenant:'Rose Atieno',rent:'15,000',status:'occupied',payStatus:'paid'},
+  {id:'G1',tenant:'Mike Oduya',rent:'20,000',status:'occupied',payStatus:'paid'},
+];
+const PAYMENTS=[
+  {unit:'A1',tenant:'Mary Wambua',rent:'15,000',water:'1,020',garbage:'500',penalty:'0',status:'paid'},
+  {unit:'A2',tenant:'Peter Kamau',rent:'12,000',water:'935',garbage:'500',penalty:'0',status:'paid'},
+  {unit:'A3',tenant:'Grace Njeri',rent:'12,000',water:'1,105',garbage:'500',penalty:'0',status:'paid'},
+  {unit:'B1',tenant:'David Mwangi',rent:'—',water:'1,615',garbage:'500',penalty:'100',status:'overdue'},
+  {unit:'B2',tenant:'John Otieno',rent:'—',water:'935',garbage:'500',penalty:'60',status:'overdue'},
+  {unit:'C1',tenant:'Amina Hassan',rent:'7,000*',water:'1,275',garbage:'—',penalty:'0',status:'partial'},
+];
+
+/* ── NAVIGATION ── */
+let currentPage='dashboard';
+function nav(page){
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+page);
+  const ni=document.getElementById('ni-'+page);
+  if(pg)pg.classList.add('active');
+  if(ni)ni.classList.add('active');
+  const titles={dashboard:'Dashboard',units:'Units & Tenants',payments:'Payment Management',screening:'Tenant Screening',leases:'Lease Management',repairs:'Repairs & Maintenance',water:'Water & Utility Billing',garbage:'Garbage Management',community:'Community Board',analytics:'Analytics & AI',documents:'Documents',broadcast:'Broadcast SMS',settings:'Settings'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+  currentPage=page;
+  if(page==='units')renderUnits();
+  if(page==='payments')renderPayments();
+}
+
+/* ── RENDER UNITS ── */
+function renderUnits(){
+  const g=document.getElementById('unit-grid-main');
+  if(!g)return;
+  const statusBadge={occupied:'<span class="badge bg">Paid</span>',overdue:'<span class="badge br">Overdue</span>',partial:'<span class="badge ba">Partial</span>',vacant:'<span class="badge bm">Vacant</span>'};
+  const statusColor={occupied:'var(--green)',overdue:'var(--red)',partial:'var(--amber)',vacant:'var(--muted)'};
+  g.innerHTML=UNITS.map(u=>`
+    <div class="unit-card ${u.status}" onclick="showToast('Opening Unit ${u.id}…','info')">
+      <div class="uc-num">${u.id}</div>
+      <div class="uc-tenant">${u.tenant}</div>
+      <div class="uc-rent" style="color:${statusColor[u.status]}">KES ${u.rent}/mo</div>
+      <div style="margin-top:8px;">${statusBadge[u.status]}</div>
+    </div>`).join('');
+}
+
+/* ── RENDER PAYMENTS ── */
+function renderPayments(){
+  const tb=document.getElementById('payment-tbody');
+  if(!tb)return;
+  const statusBadge={paid:'<span class="badge bg">✅ Paid</span>',overdue:'<span class="badge br">⚠️ Overdue</span>',partial:'<span class="badge ba">⏳ Partial</span>'};
+  tb.innerHTML=PAYMENTS.map(p=>`
+    <tr>
+      <td><strong>${p.unit}</strong></td>
+      <td>${p.tenant}</td>
+      <td>${p.rent}</td>
+      <td>${p.water}</td>
+      <td>${p.garbage}</td>
+      <td style="color:${p.penalty!=='0'?'var(--red)':'var(--muted)'};">${p.penalty!=='0'?'<span class="badge br">+'+p.penalty+'</span>':'—'}</td>
+      <td>${statusBadge[p.status]||''}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="showModal('modal-receipt')">🧾 Receipt</button>
+        ${p.status!=='paid'?'<button class="btn btn-gold btn-sm" onclick="showToast(\'SMS reminder sent!\',\'success\')">📱 Remind</button>':''}
+      </td>
+    </tr>`).join('');
+}
+
+/* ── CHART ── */
+function buildChart(){
+  const data=[{m:'Oct',v:280,p:false},{m:'Nov',v:305,p:false},{m:'Dec',v:275,p:false},{m:'Jan',v:320,p:false},{m:'Feb',v:295,p:false},{m:'Mar',v:310,p:false},{m:'Apr',v:318,p:true}];
+  const mx=Math.max(...data.map(d=>d.v));
+  const c=document.getElementById('main-chart');
+  if(!c)return;
+  c.innerHTML=data.map(d=>`
+    <div class="cb-wrap">
+      <div class="cb-val">${d.v}K</div>
+      <div class="cb-bar" style="height:${Math.round(d.v/mx*100)}%;background:${d.p?'linear-gradient(to top,var(--gold),var(--gold2))':'linear-gradient(to top,#1a3a6a,var(--blue))'}; ${d.p?'box-shadow:0 0 16px rgba(201,168,76,0.3);':''}"></div>
+      <div class="cb-label">${d.m}</div>
+    </div>`).join('');
+}
+
+/* ── MODAL / TOAST ── */
+function showModal(id){document.getElementById(id)?.classList.add('open');}
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+let tt;
+function showToast(msg,type='success'){
+  clearTimeout(tt);
+  const el=document.getElementById('toast-el');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  tt=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+/* ── ACTIONS ── */
+function enrollTenant(){closeModal('modal-add-tenant');showToast('✅ Tenant enrolled! Login credentials sent via SMS.','success');}
+function recordPayment(){closeModal('modal-record-payment');showModal('modal-receipt');}
+function assignTech(){closeModal('modal-assign-tech');showToast('✅ Technician assigned and notified via SMS!','success');}
+function addProperty(){closeModal('modal-add-property');showToast('🏢 New property added successfully!','success');}
+
+/* ── CHAR COUNT ── */
+const bmsg=document.getElementById('broadcast-msg');
+if(bmsg)bmsg.addEventListener('input',function(){
+  const cc=document.getElementById('char-count');
+  if(cc)cc.textContent=this.value.length+' / 160 characters';
+});
+
+/* ── CLOSE OVERLAYS ── */
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+/* ── INIT ── */
+buildChart();
+renderUnits();
+</script>
+</body>
+</html>
