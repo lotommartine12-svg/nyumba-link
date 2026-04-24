@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NyumbaLink – Super Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050508;--s1:#0B0D12;--s2:#111520;--s3:#181D2A;--border:rgba(99,102,241,0.12);--gold:#F59E0B;--gold-g:rgba(245,158,11,0.1);--purple:#6366F1;--purple-g:rgba(99,102,241,0.1);--green:#10B981;--green-g:rgba(16,185,129,0.1);--red:#EF4444;--red-g:rgba(239,68,68,0.1);--blue:#3B82F6;--teal:#0EA5E9;--text:#E2E8F0;--muted:#64748B;--subtle:#334155;--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+/* PARTICLES BG */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(99,102,241,0.08),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(245,158,11,0.05),transparent);}
+/* SIDEBAR */
+.sb{width:240px;min-height:100vh;background:var(--s1);border-right:1px solid var(--border);position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;}
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sb-logo-badge{width:38px;height:38px;background:linear-gradient(135deg,var(--purple),#4338CA);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sb-logo-text{font-family:'Syne',sans-serif;font-size:16px;color:white;line-height:1.2;}
+.sb-logo-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.sb-nav{flex:1;padding:12px 0;}
+.sn-group{padding:14px 16px 6px;font-size:10px;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:1.5px;}
+.sni{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 8px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all 0.2s;text-decoration:none;}
+.sni:hover{background:rgba(99,102,241,0.06);color:var(--text);}
+.sni.active{background:var(--purple-g);color:var(--purple);border:1px solid rgba(99,102,241,0.2);}
+.sni .ico{font-size:16px;width:20px;text-align:center;}
+.sni .badge{margin-left:auto;background:var(--red);color:white;border-radius:999px;font-size:10px;padding:2px 6px;font-weight:700;}
+.sb-bottom{padding:16px;border-top:1px solid var(--border);}
+.admin-chip{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.admin-av{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--purple),#4338CA);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+.admin-info strong{display:block;font-size:13px;color:white;}
+.admin-info span{font-size:11px;color:var(--muted);}
+/* MAIN */
+.main{margin-left:240px;min-height:100vh;position:relative;z-index:1;}
+/* TOPBAR */
+.topbar{background:rgba(11,13,18,0.9);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+.tb-title{font-family:'Syne',sans-serif;font-size:18px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-date{font-size:12px;color:var(--muted);padding:6px 14px;background:var(--s2);border:1px solid var(--border);border-radius:8px;}
+.btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-purple{background:var(--purple);color:white;}
+.btn-purple:hover{background:#4F46E5;transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+.btn-gold{background:var(--gold);color:#1a1000;}
+.btn-red{background:var(--red-g);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px;}
+.btn-full{width:100%;}
+/* CONTENT */
+.content{padding:28px 32px;}
+.pg{display:none;}
+.pg.active{display:block;animation:fu 0.3s ease both;}
+@keyframes fu{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+/* METRIC GRID */
+.mg{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+.mc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;cursor:default;transition:border 0.2s;}
+.mc:hover{border-color:rgba(99,102,241,0.3);}
+.mc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc.p::after{background:var(--purple);}
+.mc.g::after{background:var(--green);}
+.mc.go::after{background:var(--gold);}
+.mc.r::after{background:var(--red);}
+.mc.b::after{background:var(--blue);}
+.mc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+.mc-val{font-family:'Syne',sans-serif;font-size:28px;color:white;line-height:1;}
+.mc.p .mc-val{color:var(--purple);}
+.mc.g .mc-val{color:var(--green);}
+.mc.go .mc-val{color:var(--gold);}
+.mc.r .mc-val{color:var(--red);}
+.mc.b .mc-val{color:var(--blue);}
+.mc-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.mc-trend{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;}
+.mc-trend.up{background:var(--green-g);color:var(--green);}
+.mc-trend.down{background:var(--red-g);color:var(--red);}
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+/* TABLE */
+.tbl-wrap{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{padding:11px 16px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;background:var(--s2);border-bottom:1px solid var(--border);}
+td{padding:13px 16px;font-size:13px;border-bottom:1px solid rgba(99,102,241,0.05);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(99,102,241,0.03);}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;}
+.bg{background:var(--green-g);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.bb{background:rgba(59,130,246,0.1);color:var(--blue);border:1px solid rgba(59,130,246,0.2);}
+.ba{background:var(--gold-g);color:var(--gold);border:1px solid rgba(245,158,11,0.2);}
+.br{background:var(--red-g);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.bp{background:var(--purple-g);color:var(--purple);border:1px solid rgba(99,102,241,0.2);}
+.bm{background:rgba(100,116,139,0.1);color:var(--muted);border:1px solid var(--border);}
+/* LANDLORD CARD */
+.lcard{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all 0.2s;}
+.lcard:hover{border-color:rgba(99,102,241,0.3);transform:translateY(-2px);}
+.lc-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.lc-av{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.lc-info strong{display:block;font-size:14px;font-weight:700;}
+.lc-info span{font-size:11px;color:var(--muted);}
+.lc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ls-item{background:var(--s3);border-radius:8px;padding:8px;text-align:center;}
+.ls-val{font-family:'Syne',sans-serif;font-size:16px;color:white;}
+.ls-label{font-size:10px;color:var(--muted);}
+/* ACTIVITY */
+.act-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid rgba(99,102,241,0.06);}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.act-body{flex:1;font-size:13px;line-height:1.5;}
+.act-time{font-size:11px;color:var(--muted);flex-shrink:0;}
+/* CHART BARS */
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:100px;}
+.cb-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.cb-b{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(to top,#4338CA,var(--purple));}
+.cb-b.gold{background:linear-gradient(to top,#92400E,var(--gold));}
+.cb-l{font-size:10px;color:var(--muted);}
+.cb-v{font-size:10px;font-weight:700;color:var(--text);}
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+.mo.open{display:flex;}
+.modal{background:var(--s1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;padding:30px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;}
+@keyframes popIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal h3{font-family:'Syne',sans-serif;font-size:20px;margin-bottom:4px;}
+.modal .msub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.modal-close{float:right;background:var(--s2);border:none;border-radius:7px;width:30px;height:30px;color:var(--muted);cursor:pointer;font-size:16px;}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border 0.2s;}
+.fg input:focus,.fg select:focus{border-color:var(--purple);}
+.fg select option{background:var(--s1);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+/* REVENUE RING */
+.rev-ring{text-align:center;padding:12px;}
+.ring-val{font-family:'Syne',sans-serif;font-size:28px;color:var(--gold);}
+.ring-label{font-size:12px;color:var(--muted);}
+/* SMS LOG */
+.sms-item{display:flex;gap:12px;padding:10px;background:var(--s2);border-radius:9px;margin-bottom:8px;font-size:12px;}
+.sms-status{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;align-self:flex-start;flex-shrink:0;}
+.sms-sent{background:var(--green-g);color:var(--green);}
+.sms-fail{background:var(--red-g);color:var(--red);}
+/* PROGRESS */
+.prog{height:6px;background:var(--s3);border-radius:999px;overflow:hidden;margin-top:5px;}
+.prog-f{height:100%;border-radius:999px;transition:width 1s ease;}
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;z-index:9999;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:700;transform:translateY(80px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 8px 30px rgba(0,0,0,0.4);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.s{background:var(--green);color:white;}
+.toast.i{background:var(--purple);color:white;}
+.toast.w{background:var(--gold);color:#1a1000;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="particles"></div>
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-badge">⚡</div>
+    <div><div class="sb-logo-text">NyumbaLink</div><div class="sb-logo-sub">Super Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sn-group">Platform</div>
+    <div class="sni active" onclick="nav('overview')"><span class="ico">📊</span>Overview</div>
+    <div class="sni" onclick="nav('landlords')"><span class="ico">👔</span>Landlords <span class="badge">127</span></div>
+    <div class="sni" onclick="nav('revenue')"><span class="ico">💰</span>Revenue</div>
+    <div class="sn-group">Operations</div>
+    <div class="sni" onclick="nav('sms')"><span class="ico">📱</span>SMS Logs</div>
+    <div class="sni" onclick="nav('mpesa')"><span class="ico">💳</span>M-Pesa Logs</div>
+    <div class="sni" onclick="nav('support')"><span class="ico">🎧</span>Support <span class="badge">4</span></div>
+    <div class="sn-group">Settings</div>
+    <div class="sni" onclick="nav('plans')"><span class="ico">📋</span>Plans & Pricing</div>
+    <div class="sni" onclick="nav('settings')"><span class="ico">⚙️</span>Platform Settings</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="admin-chip">
+      <div class="admin-av">SA</div>
+      <div class="admin-info"><strong>Super Admin</strong><span>Platform Owner</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="page-title">Platform Overview</div>
+    <div class="tb-right">
+      <div class="tb-date" id="live-date">Loading...</div>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Generating full report PDF…','i')">📄 Export Report</button>
+      <button class="btn btn-purple btn-sm" onclick="showModal('mo-add-landlord')">+ Add Landlord</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ OVERVIEW ══ -->
+    <div class="pg active" id="pg-overview">
+      <div class="mg">
+        <div class="mc p"><div class="mc-label">Total Landlords</div><div class="mc-val">127</div><div class="mc-sub">Active accounts</div><span class="mc-trend up">↑ 12 this month</span></div>
+        <div class="mc g"><div class="mc-label">Total Tenants</div><div class="mc-val">3,841</div><div class="mc-sub">Across all properties</div><span class="mc-trend up">↑ 8.4%</span></div>
+        <div class="mc go"><div class="mc-label">MRR (Monthly)</div><div class="mc-val">254K</div><div class="mc-sub">KES subscriptions</div><span class="mc-trend up">↑ 18%</span></div>
+        <div class="mc b"><div class="mc-label">SMS Sent</div><div class="mc-val">48,220</div><div class="mc-sub">This month</div></div>
+        <div class="mc r"><div class="mc-label">Suspended</div><div class="mc-val">7</div><div class="mc-sub">Non-paying accounts</div></div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Monthly Revenue (KES)</span><span class="badge bp">Your Income</span></div>
+          <div class="chart-bars" id="rev-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Revenue Breakdown</span></div>
+          <div style="font-size:13px;color:var(--muted);line-height:2.4;">
+            <div style="display:flex;justify-content:space-between;"><span>Standard Plans (89)</span><span style="color:var(--purple);font-weight:700;">KES 178,000</span></div>
+            <div class="prog"><div class="prog-f" style="width:70%;background:var(--purple);"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span>Premium Plans (21)</span><span style="color:var(--gold);font-weight:700;">KES 157,500</span></div>
+            <div class="prog"><div class="prog-f" style="width:62%;background:var(--gold);"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;"><span>Basic Plans (17)</span><span style="color:var(--green);font-weight:700;">KES 25,500</span></div>
+            <div class="prog"><div class="prog-f" style="width:10%;background:var(--green);"></div></div>
+            <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);margin-top:8px;font-weight:700;"><span style="color:var(--text);">Total MRR</span><span style="font-family:'Syne',sans-serif;font-size:20px;color:var(--gold);">KES 361,000</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">⚡ Live Platform Activity</span><span class="badge bg" style="display:flex;align-items:center;gap:4px;"><div style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite;"></div>Live</span></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--green);"></div><div class="act-body"><strong>New landlord registered</strong> – James Kariuki · Kisumu · Basic Plan</div><div class="act-time">2 min ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--gold);"></div><div class="act-body"><strong>Subscription renewed</strong> – Greenview Apts · Standard · KES 2,000</div><div class="act-time">8 min ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--purple);"></div><div class="act-body"><strong>Garbage SMS batch sent</strong> – 3,841 tenants · Tuesday reminder</div><div class="act-time">18 min ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--red);"></div><div class="act-body"><strong>Account suspended</strong> – Sunrise Court · Payment overdue 14 days</div><div class="act-time">1h ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--green);"></div><div class="act-body"><strong>M-Pesa payment received</strong> – KES 7,500 · Premium plan renewal</div><div class="act-time">2h ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--blue);"></div><div class="act-body"><strong>New property added</strong> – Sunrise Court Phase 2 · 30 units · Rongai</div><div class="act-time">3h ago</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Subscriptions Due This Month</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Landlord</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>J. Mutua</td><td>Premium</td><td>KES 7,500</td><td><span class="badge bg">Paid</span></td></tr>
+                <tr><td>Kariuki Homes</td><td>Standard</td><td>KES 2,000</td><td><span class="badge bg">Paid</span></td></tr>
+                <tr><td>Sunrise Court</td><td>Standard</td><td>KES 2,000</td><td><span class="badge br">Overdue</span></td></tr>
+                <tr><td>Mary Njoroge</td><td>Premium</td><td>KES 7,500</td><td><span class="badge ba">Due Today</span></td></tr>
+                <tr><td>Westgate Props</td><td>Standard</td><td>KES 2,000</td><td><span class="badge bg">Paid</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LANDLORDS ══ -->
+    <div class="pg" id="pg-landlords">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div><div style="font-family:'Syne',sans-serif;font-size:22px;">All Landlords</div><div style="font-size:13px;color:var(--muted);">127 registered accounts across Kenya</div></div>
+        <div style="display:flex;gap:10px;">
+          <input placeholder="🔍 Search landlord…" style="background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:220px;font-family:'DM Sans',sans-serif;"/>
+          <select style="background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;"><option>All Plans</option><option>Basic</option><option>Standard</option><option>Premium</option></select>
+          <button class="btn btn-purple" onclick="showModal('mo-add-landlord')">+ Add Landlord</button>
+        </div>
+      </div>
+      <div class="three-col" id="landlord-cards"></div>
+    </div>
+
+    <!-- ══ REVENUE ══ -->
+    <div class="pg" id="pg-revenue">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">Revenue & Financials</div>
+      <div class="mg">
+        <div class="mc go"><div class="mc-label">MRR Apr</div><div class="mc-val">361K</div><div class="mc-sub">KES</div><span class="mc-trend up">↑ 18%</span></div>
+        <div class="mc g"><div class="mc-label">ARR Projected</div><div class="mc-val">4.3M</div><div class="mc-sub">KES annualised</div></div>
+        <div class="mc p"><div class="mc-label">Paying Accounts</div><div class="mc-val">120</div><div class="mc-sub">of 127 total</div></div>
+        <div class="mc r"><div class="mc-label">Churn This Month</div><div class="mc-val">2</div><div class="mc-sub">Cancellations</div></div>
+        <div class="mc b"><div class="mc-label">Avg Revenue/Landlord</div><div class="mc-val">3,008</div><div class="mc-sub">KES/month</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Monthly Revenue History (KES)</span><button class="btn btn-ghost btn-sm" onclick="showToast('Downloading financial report…','i')">📥 Export CSV</button></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Month</th><th>Basic</th><th>Standard</th><th>Premium</th><th>Total MRR</th><th>Landlords</th><th>Growth</th></tr></thead>
+            <tbody>
+              <tr><td>Oct 2025</td><td>KES 12,000</td><td>KES 90,000</td><td>KES 60,000</td><td style="color:var(--gold);font-weight:700;">KES 162,000</td><td>81</td><td><span class="badge bg">+11%</span></td></tr>
+              <tr><td>Nov 2025</td><td>KES 16,000</td><td>KES 112,000</td><td>KES 75,000</td><td style="color:var(--gold);font-weight:700;">KES 203,000</td><td>97</td><td><span class="badge bg">+25%</span></td></tr>
+              <tr><td>Dec 2025</td><td>KES 18,000</td><td>KES 120,000</td><td>KES 90,000</td><td style="color:var(--gold);font-weight:700;">KES 228,000</td><td>107</td><td><span class="badge bg">+12%</span></td></tr>
+              <tr><td>Jan 2026</td><td>KES 20,000</td><td>KES 138,000</td><td>KES 112,500</td><td style="color:var(--gold);font-weight:700;">KES 270,500</td><td>114</td><td><span class="badge bg">+19%</span></td></tr>
+              <tr><td>Feb 2026</td><td>KES 22,000</td><td>KES 152,000</td><td>KES 135,000</td><td style="color:var(--gold);font-weight:700;">KES 309,000</td><td>119</td><td><span class="badge bg">+14%</span></td></tr>
+              <tr><td>Mar 2026</td><td>KES 24,000</td><td>KES 164,000</td><td>KES 150,000</td><td style="color:var(--gold);font-weight:700;">KES 338,000</td><td>123</td><td><span class="badge bg">+9%</span></td></tr>
+              <tr style="background:rgba(245,158,11,0.04);"><td><strong>Apr 2026</strong></td><td>KES 25,500</td><td>KES 178,000</td><td>KES 157,500</td><td style="color:var(--gold);font-family:'Syne',sans-serif;font-size:16px;font-weight:700;">KES 361,000</td><td>127</td><td><span class="badge bg">↑ 7%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SMS LOGS ══ -->
+    <div class="pg" id="pg-sms">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">SMS Delivery Logs</div>
+      <div class="mg" style="grid-template-columns:repeat(4,1fr);">
+        <div class="mc g"><div class="mc-label">Sent Apr</div><div class="mc-val">48,220</div><div class="mc-sub">Total messages</div></div>
+        <div class="mc go"><div class="mc-label">SMS Cost</div><div class="mc-val">KES 48K</div><div class="mc-sub">@ KES 1 each</div></div>
+        <div class="mc r"><div class="mc-label">Failed</div><div class="mc-val">312</div><div class="mc-sub">0.6% failure rate</div></div>
+        <div class="mc p"><div class="mc-label">Sender ID</div><div class="mc-val" style="font-size:16px;">NYUMBA<br/>LINK</div><div class="mc-sub">Registered</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Recent SMS Logs</span><button class="btn btn-ghost btn-sm" onclick="showToast('Sending manual batch now…','s')">📤 Send Manual Batch</button></div>
+        <div id="sms-logs-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ MPESA LOGS ══ -->
+    <div class="pg" id="pg-mpesa">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">M-Pesa Callback Logs</div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Recent M-Pesa Transactions (All Properties)</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Phone</th><th>Account/Unit</th><th>Amount</th><th>M-Pesa Ref</th><th>Matched</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Apr 22, 9:41am</td><td>0734 567 890</td><td>A3</td><td>KES 12,000</td><td>QHJ9823ABZ</td><td><span class="badge bg">Grace Njeri</span></td><td><span class="badge bg">✅ Processed</span></td></tr>
+              <tr><td>Apr 22, 9:12am</td><td>0712 345 678</td><td>A1</td><td>KES 15,000</td><td>QKL7743MNZ</td><td><span class="badge bg">Mary Wambua</span></td><td><span class="badge bg">✅ Processed</span></td></tr>
+              <tr><td>Apr 21, 4:33pm</td><td>0756 789 012</td><td>D1</td><td>KES 22,000</td><td>QXZ4412PQR</td><td><span class="badge bg">Samuel Gitau</span></td><td><span class="badge bg">✅ Processed</span></td></tr>
+              <tr><td>Apr 20, 11:20am</td><td>0799 123 456</td><td>ZZZ</td><td>KES 5,000</td><td>QBB9921WXY</td><td><span class="badge br">No Match</span></td><td><span class="badge ba">⚠️ Unmatched</span></td></tr>
+              <tr><td>Apr 19, 8:05am</td><td>0723 456 789</td><td>A2</td><td>KES 12,000</td><td>QPP3312STU</td><td><span class="badge bg">Peter Kamau</span></td><td><span class="badge bg">✅ Processed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUPPORT ══ -->
+    <div class="pg" id="pg-support">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">Support Tickets</div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Open Tickets</span></div>
+        <div id="support-tickets"></div>
+      </div>
+    </div>
+
+    <!-- ══ PLANS ══ -->
+    <div class="pg" id="pg-plans">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">Plans & Pricing</div>
+      <div class="three-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Basic Plan</span><span class="badge bg">17 landlords</span></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;color:var(--green);margin-bottom:4px;">Free</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Up to 5 units free · KES 150/unit after</div>
+          <div class="fg"><label>Price per extra unit (KES)</label><input type="number" value="150"/></div>
+          <button class="btn btn-ghost btn-full" onclick="showToast('Basic plan settings saved!','s')">Save Changes</button>
+        </div>
+        <div class="card" style="border-color:rgba(99,102,241,0.3);">
+          <div class="card-hdr"><span class="card-title" style="color:var(--purple);">Standard Plan</span><span class="badge bp">89 landlords</span></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;color:var(--purple);margin-bottom:4px;">KES 2,000</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Up to 50 units · KES 100/unit after</div>
+          <div class="fg"><label>Monthly Price (KES)</label><input type="number" value="2000"/></div>
+          <div class="fg"><label>Unit limit</label><input type="number" value="50"/></div>
+          <div class="fg"><label>Extra unit price (KES)</label><input type="number" value="100"/></div>
+          <button class="btn btn-purple btn-full" onclick="showToast('Standard plan settings saved!','s')">Save Changes</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title" style="color:var(--gold);">Premium Plan</span><span class="badge ba">21 landlords</span></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;color:var(--gold);margin-bottom:4px;">KES 7,500</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Unlimited units · White-label option</div>
+          <div class="fg"><label>Monthly Price (KES)</label><input type="number" value="7500"/></div>
+          <div class="fg"><label>White-label add-on (KES)</label><input type="number" value="5000"/></div>
+          <button class="btn btn-gold btn-full" onclick="showToast('Premium plan settings saved!','s')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="pg" id="pg-settings">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:20px;">Platform Settings</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Platform Info</span></div>
+          <div class="fg"><label>Platform Name</label><input value="NyumbaLink"/></div>
+          <div class="fg"><label>Website URL</label><input value="https://nyumbalink.co.ke"/></div>
+          <div class="fg"><label>Support Email</label><input value="hello@nyumbalink.co.ke"/></div>
+          <div class="fg"><label>Support Phone</label><input value="+254 700 000 001"/></div>
+          <button class="btn btn-purple" onclick="showToast('Settings saved!','s')">Save Changes</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Suspension Rules</span></div>
+          <div class="fg"><label>Grace period after due date (days)</label><input type="number" value="7"/></div>
+          <div class="fg"><label>Warning notice before suspend (days)</label><input type="number" value="3"/></div>
+          <div class="fg"><label>Auto-suspend overdue accounts</label><select><option>Yes – auto-suspend after grace period</option><option>No – manual suspension only</option></select></div>
+          <button class="btn btn-purple" onclick="showToast('Suspension rules saved!','s')">Save Rules</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="mo-add-landlord">
+  <div class="modal">
+    <button class="modal-close" onclick="closeMo('mo-add-landlord')">✕</button>
+    <h3>Add New Landlord</h3>
+    <p class="msub">Register a landlord on the platform</p>
+    <div class="form-row">
+      <div class="fg"><label>Full Name</label><input placeholder="James Kariuki"/></div>
+      <div class="fg"><label>Phone</label><input placeholder="07XX XXX XXX"/></div>
+    </div>
+    <div class="fg"><label>Email</label><input type="email" placeholder="james@email.com"/></div>
+    <div class="form-row">
+      <div class="fg"><label>Plan</label><select><option>basic</option><option>standard</option><option>premium</option></select></div>
+      <div class="fg"><label>Town / City</label><input placeholder="e.g. Nairobi"/></div>
+    </div>
+    <div class="fg"><label>Property Name</label><input placeholder="e.g. Sunrise Court Apartments"/></div>
+    <div class="fg"><label>Number of Units</label><input type="number" placeholder="20"/></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-purple" style="flex:1;" onclick="addLandlord()">✅ Register Landlord</button>
+      <button class="btn btn-ghost" onclick="closeMo('mo-add-landlord')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mo-suspend">
+  <div class="modal">
+    <button class="modal-close" onclick="closeMo('mo-suspend')">✕</button>
+    <h3>⚠️ Suspend Account</h3>
+    <p class="msub">This will disable the landlord dashboard and all tenant portals under this account.</p>
+    <div class="fg"><label>Reason</label><select><option>Non-payment of subscription</option><option>Violation of terms</option><option>Fraudulent activity</option><option>Manual suspension</option></select></div>
+    <div class="fg"><label>Message to Landlord</label><textarea placeholder="Your account has been suspended due to..."></textarea></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-red" style="flex:1;" onclick="closeMo('mo-suspend');showToast('Account suspended. SMS sent to landlord.','w')">Suspend Account</button>
+      <button class="btn btn-ghost" onclick="closeMo('mo-suspend')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+const LANDLORDS=[
+  {name:'J. Mutua',email:'mutua@email.com',phone:'0700 000 001',plan:'premium',status:'active',properties:3,units:45,town:'Langata',initials:'JM',color:'#6366F1',revenue:'7,500'},
+  {name:'Kariuki Homes',email:'kariuki@email.com',phone:'0711 111 222',plan:'standard',status:'active',properties:2,units:30,town:'Ruaka',initials:'KH',color:'#10B981',revenue:'2,000'},
+  {name:'Sunrise Court',email:'sunrise@email.com',phone:'0722 222 333',plan:'standard',status:'suspended',properties:1,units:20,town:'Rongai',initials:'SC',color:'#EF4444',revenue:'0'},
+  {name:'Mary Njoroge',email:'mary@email.com',phone:'0733 333 444',plan:'premium',status:'active',properties:4,units:72,town:'Kilimani',initials:'MN',color:'#F59E0B',revenue:'7,500'},
+  {name:'Westgate Props',email:'westgate@email.com',phone:'0744 444 555',plan:'standard',status:'active',properties:1,units:18,town:'Westlands',initials:'WP',color:'#3B82F6',revenue:'2,000'},
+  {name:'Ali Mohamed',email:'ali@email.com',phone:'0755 555 666',plan:'basic',status:'active',properties:1,units:5,town:'Mombasa',initials:'AM',color:'#0EA5E9',revenue:'Free'},
+];
+const SMS_LOGS=[
+  {phone:'0734 567 890',type:'garbage_evening',msg:'🗑️ Garbage collection tomorrow…',status:'sent',time:'Today 6:00 PM'},
+  {phone:'0712 345 678',type:'rent_reminder_final',msg:'💳 FINAL REMINDER: Rent due tomorrow…',status:'sent',time:'Apr 9, 8:00 AM'},
+  {phone:'0722 111 222',type:'receipt',msg:'✅ NYUMBALINK RECEIPT: KES 12,000…',status:'sent',time:'Apr 1, 9:41 AM'},
+  {phone:'0799 000 111',type:'penalty_notice',msg:'⚠️ Your rent is 3 days overdue…',status:'failed',time:'Apr 13, 8:00 AM'},
+  {phone:'0745 678 901',type:'water_bill',msg:'💧 Your water bill for April is KES 1,615…',status:'sent',time:'Apr 1, 7:00 AM'},
+];
+const TICKETS=[
+  {id:'TKT-001',from:'J. Mutua',issue:'M-Pesa payments not matching to tenants',priority:'high',date:'Apr 22'},
+  {id:'TKT-002',from:'Kariuki Homes',issue:'Cannot enroll more than 30 tenants – hitting limit',priority:'normal',date:'Apr 20'},
+  {id:'TKT-003',from:'Mary Njoroge',issue:'How to change apartment logo / branding?',priority:'low',date:'Apr 19'},
+  {id:'TKT-004',from:'Ali Mohamed',issue:'SMS not sending to 0799 numbers (Airtel)',priority:'normal',date:'Apr 18'},
+];
+
+function nav(page){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sni').forEach(s=>s.classList.remove('active'));
+  document.getElementById('pg-'+page)?.classList.add('active');
+  document.querySelectorAll('.sni').forEach(s=>{if(s.getAttribute('onclick')?.includes("'"+page+"'"))s.classList.add('active');});
+  const titles={overview:'Platform Overview',landlords:'All Landlords',revenue:'Revenue & Financials',sms:'SMS Delivery Logs',mpesa:'M-Pesa Callback Logs',support:'Support Tickets',plans:'Plans & Pricing',settings:'Platform Settings'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+  if(page==='landlords')renderLandlords();
+  if(page==='sms')renderSMS();
+  if(page==='support')renderTickets();
+}
+
+function renderLandlords(){
+  const g=document.getElementById('landlord-cards');
+  if(!g)return;
+  const planBadge={premium:'<span class="badge ba">⭐ Premium</span>',standard:'<span class="badge bp">🔵 Standard</span>',basic:'<span class="badge bg">🟢 Basic</span>'};
+  g.innerHTML=LANDLORDS.map(l=>`
+    <div class="lcard">
+      <div class="lc-head">
+        <div class="lc-av" style="background:linear-gradient(135deg,${l.color}99,${l.color}44);color:${l.color};">${l.initials}</div>
+        <div class="lc-info"><strong>${l.name}</strong><span>${l.town} · ${l.phone}</span></div>
+        ${l.status==='suspended'?'<span class="badge br">Suspended</span>':planBadge[l.plan]}
+      </div>
+      <div class="lc-stats">
+        <div class="ls-item"><div class="ls-val">${l.properties}</div><div class="ls-label">Properties</div></div>
+        <div class="ls-item"><div class="ls-val">${l.units}</div><div class="ls-label">Units</div></div>
+        <div class="ls-item"><div class="ls-val">KES ${l.revenue}</div><div class="ls-label">MRR</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="showToast('Opening ${l.name} dashboard…','i')">View</button>
+        ${l.status==='active'?`<button class="btn btn-red btn-sm" onclick="showModal('mo-suspend')">Suspend</button>`:`<button class="btn btn-ghost btn-sm" onclick="showToast('${l.name} reactivated!','s')">Reactivate</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function renderSMS(){
+  const el=document.getElementById('sms-logs-list');
+  if(!el)return;
+  el.innerHTML=SMS_LOGS.map(s=>`
+    <div class="sms-item">
+      <div class="sms-status ${s.status==='sent'?'sms-sent':'sms-fail'}">${s.status.toUpperCase()}</div>
+      <div style="flex:1;"><strong style="display:block;font-size:12px;">${s.phone} · ${s.type}</strong><span style="color:#94A3B8;">${s.msg}</span></div>
+      <div style="font-size:11px;color:var(--muted);white-space:nowrap;">${s.time}</div>
+    </div>`).join('');
+}
+
+function renderTickets(){
+  const el=document.getElementById('support-tickets');
+  if(!el)return;
+  const pBadge={high:'<span class="badge br">🔴 High</span>',normal:'<span class="badge ba">🟡 Normal</span>',low:'<span class="badge bg">🟢 Low</span>'};
+  el.innerHTML=TICKETS.map(t=>`
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">
+      <div style="font-size:12px;color:var(--muted);min-width:80px;">${t.id}</div>
+      <div style="flex:1;"><strong style="display:block;font-size:13px;">${t.issue}</strong><span style="font-size:12px;color:var(--muted);">From: ${t.from} · ${t.date}</span></div>
+      ${pBadge[t.priority]}
+      <button class="btn btn-ghost btn-sm" onclick="showToast('Opening ticket ${t.id}…','i')">Reply</button>
+      <button class="btn btn-purple btn-sm" onclick="showToast('Ticket ${t.id} marked resolved!','s')">Resolve</button>
+    </div>`).join('');
+}
+
+function buildRevChart(){
+  const data=[{m:'Oct',v:162,g:false},{m:'Nov',v:203,g:false},{m:'Dec',v:228,g:false},{m:'Jan',v:270,g:false},{m:'Feb',v:309,g:false},{m:'Mar',v:338,g:false},{m:'Apr',v:361,g:true}];
+  const mx=Math.max(...data.map(d=>d.v));
+  const el=document.getElementById('rev-chart');
+  if(!el)return;
+  el.innerHTML=data.map(d=>`<div class="cb-w"><div class="cb-v">${d.v}K</div><div class="cb-b ${d.g?'gold':''}" style="height:${Math.round(d.v/mx*100)}%; ${d.g?'box-shadow:0 0 16px rgba(245,158,11,0.3);':''}"></div><div class="cb-l">${d.m}</div></div>`).join('');
+}
+
+function showModal(id){document.getElementById(id)?.classList.add('open');}
+function closeMo(id){document.getElementById(id)?.classList.remove('open');}
+function addLandlord(){closeMo('mo-add-landlord');showToast('✅ Landlord registered! Welcome SMS sent.','s');}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+let tt;
+function showToast(msg,type='s'){
+  clearTimeout(tt);
+  const el=document.getElementById('toast-el');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  tt=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// Live clock
+function updateClock(){
+  const now=new Date();
+  document.getElementById('live-date').textContent=now.toLocaleString('en-KE',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+updateClock();setInterval(updateClock,60000);
+buildRevChart();
+
+// Pulse animation
+const style=document.createElement('style');
+style.textContent='@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4);}50%{box-shadow:0 0 0 5px rgba(16,185,129,0);}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>
