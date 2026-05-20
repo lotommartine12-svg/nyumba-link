@@ -1,633 +1,540 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>NyumbaLink – Kenya's #1 Property Management Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NyumbaLink – Kenya's Smartest Property Management Platform</title>
+<meta name="description" content="Collect rent via M-Pesa, track repairs, automate water bills and garbage alerts. Built for every Kenyan landlord."/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital,opsz,wght@0,10..144,400;0,10..144,700;1,10..144,400&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --gold:#C9A84C;--gold2:#F0C96B;--gold-glow:rgba(201,168,76,0.15);
-  --ink:#08090A;--ink2:#111318;--ink3:#1A1E27;
-  --border:rgba(201,168,76,0.15);--border2:rgba(255,255,255,0.06);
-  --text:#F2F2F2;--muted:#8A9AB5;--subtle:#4A5568;
-  --green:#22C55E;--blue:#3B82F6;--red:#EF4444;--purple:#A855F7;
-  --r:16px;
-}
 *{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#0A9690;--teal2:#0CBAB4;--gold:#C9921A;--gold2:#F5C030;
+  --ink:#070A0E;--ink2:#0D1219;--ink3:#141C26;
+  --text:#EEF2F8;--muted:#7A8A9E;--border:rgba(255,255,255,0.07);
+  --green:#22C55E;--red:#EF4444;--blue:#3B82F6;
+}
 html{scroll-behavior:smooth;}
-body{font-family:'Satoshi',sans-serif;background:var(--ink);color:var(--text);overflow-x:hidden;}
+body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--ink);color:var(--text);overflow-x:hidden;}
 
-/* CURSOR */
-*{cursor:none;}
-.cursor{position:fixed;width:12px;height:12px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.3s,height 0.3s,opacity 0.3s;mix-blend-mode:difference;}
-.cursor-ring{position:fixed;width:40px;height:40px;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:all 0.15s ease;opacity:0.6;}
-
-/* NOISE OVERLAY */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.4;pointer-events:none;z-index:1;}
+/* BG GLOW */
+.bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% -5%, rgba(10,150,144,0.09), transparent),
+    radial-gradient(ellipse 50% 40% at 85% 105%, rgba(201,146,26,0.06), transparent);}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,9,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
-.nav-logo{font-family:'Clash Display',sans-serif;font-size:24px;color:var(--gold);letter-spacing:-0.5px;}
-.nav-logo span{color:var(--text);opacity:0.5;font-size:12px;display:block;letter-spacing:2px;text-transform:uppercase;}
-.nav-links{display:flex;gap:32px;align-items:center;}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,10,14,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),#054E4B);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 4px 14px rgba(10,150,144,0.3);}
+.nav-logo-name{font-family:"Instrument Serif",serif;font-size:21px;color:#fff;}
+.nav-logo-name span{color:var(--teal);}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s;}
 .nav-links a:hover{color:var(--text);}
-.nav-cta{display:flex;gap:12px;}
-.btn-outline{padding:10px 22px;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s;font-family:'Satoshi',sans-serif;}
-.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
-.btn-gold{padding:10px 22px;background:linear-gradient(135deg,var(--gold),#A07830);border-radius:10px;color:var(--ink);font-size:14px;font-weight:700;text-decoration:none;transition:all 0.2s;font-family:'Satoshi',sans-serif;}
-.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,168,76,0.35);}
+.nav-cta{display:flex;gap:10px;align-items:center;}
+.btn-nav-ghost{padding:8px 18px;border:1.5px solid rgba(255,255,255,0.12);border-radius:9px;color:var(--muted);font-size:13px;font-weight:600;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;}
+.btn-nav-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
+.btn-nav-primary{padding:8px 18px;background:var(--teal);border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;}
+.btn-nav-primary:hover{background:#088580;transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,150,144,0.3);}
+.mob-menu{display:none;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 9px;cursor:pointer;font-size:17px;color:var(--muted);}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden;}
-.hero-orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;}
-.orb1{width:700px;height:700px;background:radial-gradient(circle,rgba(201,168,76,0.12),transparent);top:-200px;left:-200px;}
-.orb2{width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent);bottom:-150px;right:-150px;}
-.orb3{width:400px;height:400px;background:radial-gradient(circle,rgba(168,85,247,0.06),transparent);top:40%;left:50%;transform:translate(-50%,-50%);}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 24px 80px;position:relative;z-index:1;}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(10,150,144,0.1);border:1px solid rgba(10,150,144,0.22);border-radius:999px;padding:6px 18px;font-size:11px;font-weight:700;color:var(--teal);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease infinite;}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);}}
+.hero h1{font-family:"Instrument Serif",serif;font-size:clamp(44px,7vw,90px);line-height:1.04;letter-spacing:-2.5px;margin-bottom:22px;}
+.hero h1 em{color:var(--teal);font-style:italic;}
+.hero h1 .dim{color:rgba(238,242,248,0.22);}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:44px;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:64px;}
+.btn-hero{padding:16px 36px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:9px;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 4px 20px rgba(10,150,144,0.3);}
+.btn-primary:hover{background:#088580;transform:translateY(-3px);box-shadow:0 14px 40px rgba(10,150,144,0.4);}
+.btn-secondary{background:rgba(255,255,255,0.06);color:var(--text);border:1.5px solid rgba(255,255,255,0.1);}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
 
-.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:999px;padding:6px 18px;font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:32px;animation:fadeDown 0.8s ease both;}
-@keyframes fadeDown{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:none;}}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);}}
+/* STATS BAR */
+.stats-bar{display:flex;gap:0;max-width:820px;width:100%;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);}
+.stat{flex:1;padding:22px 16px;text-align:center;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:"Instrument Serif",serif;font-size:32px;color:var(--teal);}
+.stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;margin-top:4px;}
 
-.hero h1{font-family:'Clash Display',sans-serif;font-size:clamp(48px,8vw,96px);font-weight:700;line-height:1.0;letter-spacing:-3px;margin-bottom:28px;animation:fadeUp 0.8s 0.1s ease both;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:none;}}
-.hero h1 .gold{background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero h1 .dim{color:rgba(242,242,242,0.3);}
-
-.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:640px;line-height:1.7;margin-bottom:48px;animation:fadeUp 0.8s 0.2s ease both;}
-
-.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;animation:fadeUp 0.8s 0.3s ease both;}
-.btn-hero-primary{padding:16px 36px;background:linear-gradient(135deg,var(--gold),#A07830);border-radius:14px;color:var(--ink);font-size:16px;font-weight:800;text-decoration:none;transition:all 0.3s;font-family:'Satoshi',sans-serif;display:inline-flex;align-items:center;gap:8px;}
-.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 16px 50px rgba(201,168,76,0.4);}
-.btn-hero-ghost{padding:16px 36px;border:1.5px solid var(--border2);border-radius:14px;color:var(--text);font-size:16px;font-weight:600;text-decoration:none;transition:all 0.3s;font-family:'Satoshi',sans-serif;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(10px);}
-.btn-hero-ghost:hover{border-color:var(--gold);color:var(--gold);}
-
-/* STATS TICKER */
-.stats-bar{display:flex;gap:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);animation:fadeUp 0.8s 0.4s ease both;}
-.stat-item{flex:1;padding:24px 32px;text-align:center;border-right:1px solid var(--border);}
-.stat-item:last-child{border-right:none;}
-.stat-num{font-family:'Clash Display',sans-serif;font-size:36px;color:var(--gold);letter-spacing:-1px;}
-.stat-lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
-
-/* SECTION */
-section{padding:100px 60px;position:relative;}
-.section-label{display:inline-block;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;padding:5px 14px;border:1px solid rgba(201,168,76,0.2);border-radius:999px;background:rgba(201,168,76,0.06);}
-.section-title{font-family:'Clash Display',sans-serif;font-size:clamp(32px,5vw,56px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px;}
-.section-sub{font-size:18px;color:var(--muted);max-width:560px;line-height:1.7;}
-
-/* WHO WE SERVE */
-.income-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px;}
-.income-card{border-radius:24px;padding:36px 30px;position:relative;overflow:hidden;transition:transform 0.3s;}
-.income-card:hover{transform:translateY(-8px);}
-.income-card.low{background:linear-gradient(135deg,#0A1628,#0F2040);border:1px solid rgba(59,130,246,0.2);}
-.income-card.mid{background:linear-gradient(135deg,#1A1200,#2A1E00);border:1px solid rgba(201,168,76,0.25);}
-.income-card.high{background:linear-gradient(135deg,#120A28,#1E0F40);border:1px solid rgba(168,85,247,0.2);}
-.income-card .ic-badge{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 14px;border-radius:999px;margin-bottom:20px;}
-.low .ic-badge{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.25);}
-.mid .ic-badge{background:rgba(201,168,76,0.12);color:var(--gold2);border:1px solid rgba(201,168,76,0.2);}
-.high .ic-badge{background:rgba(168,85,247,0.12);color:#C084FC;border:1px solid rgba(168,85,247,0.2);}
-.income-card .ic-icon{font-size:48px;margin-bottom:16px;display:block;}
-.income-card h3{font-family:'Clash Display',sans-serif;font-size:24px;margin-bottom:10px;}
-.income-card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
-.ic-features{list-style:none;}
-.ic-features li{font-size:13px;color:var(--muted);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:8px;}
-.ic-features li:last-child{border-bottom:none;}
-.ic-features li::before{content:'✓';font-size:11px;font-weight:700;flex-shrink:0;}
-.low .ic-features li::before{color:var(--blue);}
-.mid .ic-features li::before{color:var(--gold);}
-.high .ic-features li::before{color:#C084FC;}
+/* SECTIONS */
+section{padding:100px 56px;position:relative;z-index:1;}
+.sec-pill{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:2px;padding:5px 14px;border:1px solid rgba(10,150,144,0.22);border-radius:999px;background:rgba(10,150,144,0.08);margin-bottom:18px;}
+.sec-title{font-family:"Instrument Serif",serif;font-size:clamp(30px,4.5vw,52px);letter-spacing:-1.5px;line-height:1.1;margin-bottom:18px;}
+.sec-sub{font-size:17px;color:var(--muted);max-width:520px;line-height:1.7;}
 
 /* FEATURES BENTO */
-.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:60px;}
-.bento-card{background:var(--ink2);border:1px solid var(--border2);border-radius:20px;padding:28px;overflow:hidden;position:relative;transition:all 0.3s;}
-.bento-card:hover{border-color:rgba(201,168,76,0.25);transform:translateY(-4px);}
-.bento-card.span-4{grid-column:span 4;}
-.bento-card.span-5{grid-column:span 5;}
-.bento-card.span-7{grid-column:span 7;}
-.bento-card.span-6{grid-column:span 6;}
-.bento-card.span-8{grid-column:span 8;}
-.bento-card.span-12{grid-column:span 12;}
-.bento-card.tall{grid-row:span 2;}
-.bento-icon{font-size:36px;margin-bottom:16px;display:block;}
-.bento-card h3{font-family:'Clash Display',sans-serif;font-size:20px;margin-bottom:8px;letter-spacing:-0.3px;}
-.bento-card p{font-size:13px;color:var(--muted);line-height:1.6;}
-.bento-glow{position:absolute;width:200px;height:200px;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:0.08;}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:54px;}
+.bc{background:var(--ink2);border:1px solid rgba(255,255,255,0.05);border-radius:18px;padding:28px;overflow:hidden;position:relative;transition:all .3s;}
+.bc:hover{border-color:rgba(10,150,144,0.25);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.3);}
+.bc::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,150,144,0.03),transparent);pointer-events:none;}
+.s4{grid-column:span 4;}.s5{grid-column:span 5;}.s7{grid-column:span 7;}.s6{grid-column:span 6;}.s8{grid-column:span 8;}.s12{grid-column:span 12;}
+.bc-ico{font-size:32px;margin-bottom:16px;display:block;}
+.bc h3{font-family:"Instrument Serif",serif;font-size:19px;margin-bottom:8px;color:#fff;}
+.bc p{font-size:13px;color:var(--muted);line-height:1.65;}
+.bc-tag{display:inline-block;background:rgba(10,150,144,0.1);color:var(--teal);border:1px solid rgba(10,150,144,0.2);border-radius:8px;padding:4px 11px;font-size:10px;font-weight:700;margin-top:12px;margin-right:5px;}
+.bc-featured{background:linear-gradient(135deg,#061820,#09222E);border-color:rgba(10,150,144,0.2);}
+.bc-ai{background:linear-gradient(135deg,#060B18,#0A1228);border-color:rgba(59,130,246,0.18);}
+.bc-gold{background:linear-gradient(135deg,#140C00,#231400);border-color:rgba(201,146,26,0.18);}
 
-/* COMPARISON TABLE */
-.comp-wrap{margin-top:60px;overflow-x:auto;}
-.comp-table{width:100%;border-collapse:collapse;min-width:700px;}
-.comp-table th{padding:16px 20px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);border-bottom:1px solid var(--border2);}
-.comp-table th.highlight{color:var(--gold);border-bottom-color:var(--gold);}
-.comp-table td{padding:14px 20px;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.04);}
-.comp-table td.feature-name{color:var(--muted);}
-.comp-table td.highlight{background:rgba(201,168,76,0.04);border-left:1px solid rgba(201,168,76,0.1);border-right:1px solid rgba(201,168,76,0.1);}
-.check{color:var(--green);font-size:16px;}
-.cross{color:var(--subtle);font-size:16px;}
+/* WHO WE SERVE */
+.serve-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px;}
+.sc{border-radius:20px;padding:30px 26px;position:relative;overflow:hidden;transition:transform .3s;}
+.sc:hover{transform:translateY(-6px);}
+.sc-low{background:linear-gradient(145deg,#060D1C,#0A1530);border:1px solid rgba(59,130,246,0.2);}
+.sc-mid{background:linear-gradient(145deg,#061410,#0A2018);border:1px solid rgba(10,150,144,0.25);}
+.sc-high{background:linear-gradient(145deg,#140C00,#201200);border:1px solid rgba(201,146,26,0.2);}
+.sc-badge{display:inline-block;font-size:10px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:18px;}
+.sc-low .sc-badge{background:rgba(59,130,246,0.12);color:#93C5FD;border:1px solid rgba(59,130,246,0.2);}
+.sc-mid .sc-badge{background:rgba(10,150,144,0.12);color:var(--teal2);border:1px solid rgba(10,150,144,0.2);}
+.sc-high .sc-badge{background:rgba(201,146,26,0.12);color:var(--gold2);border:1px solid rgba(201,146,26,0.2);}
+.sc-ico{font-size:44px;display:block;margin-bottom:14px;}
+.sc h3{font-family:"Instrument Serif",serif;font-size:22px;margin-bottom:9px;color:#fff;}
+.sc p{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:18px;}
+.sc ul{list-style:none;}
+.sc ul li{font-size:12px;color:rgba(255,255,255,0.42);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:8px;}
+.sc ul li:last-child{border-bottom:none;}
+.sc-low ul li::before{content:"✓";color:#60A5FA;font-size:10px;font-weight:700;}
+.sc-mid ul li::before{content:"✓";color:var(--teal);font-size:10px;font-weight:700;}
+.sc-high ul li::before{content:"✓";color:var(--gold2);font-size:10px;font-weight:700;}
+
+/* COMPARE TABLE */
+.compare-wrap{margin-top:52px;border-radius:16px;overflow:hidden;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{padding:14px 18px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;background:var(--ink3);border-bottom:1px solid var(--border);font-weight:700;}
+th.hl{color:var(--teal);}
+td{padding:12px 18px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+td.feat{color:var(--muted);}
+td.hl{background:rgba(10,150,144,0.04);}
+tr:last-child td{border-bottom:none;}
+.yes{color:var(--green);font-size:16px;}
+.no{color:rgba(255,255,255,0.15);font-size:16px;}
+.legal-note{font-size:11px;color:rgba(255,255,255,0.2);margin-top:16px;line-height:1.6;padding:12px 16px;background:rgba(255,255,255,0.02);border-radius:9px;border:1px solid rgba(255,255,255,0.04);}
 
 /* PRICING */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px;}
-.plan{background:var(--ink2);border:1px solid var(--border2);border-radius:24px;padding:36px 30px;position:relative;overflow:hidden;transition:transform 0.3s;}
-.plan:hover{transform:translateY(-6px);}
-.plan.featured{border-color:var(--gold);background:linear-gradient(135deg,#1A1200,#2A1E00);}
-.plan-badge{position:absolute;top:20px;right:20px;font-size:11px;font-weight:700;color:var(--ink);background:var(--gold);padding:4px 12px;border-radius:999px;}
-.plan-name{font-family:'Clash Display',sans-serif;font-size:22px;margin-bottom:8px;}
-.plan-desc{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-.plan-price{font-family:'Clash Display',sans-serif;font-size:42px;color:var(--gold);letter-spacing:-1px;margin-bottom:4px;}
-.plan-price span{font-size:16px;color:var(--muted);font-family:'Satoshi',sans-serif;font-weight:400;}
-.plan-features{list-style:none;margin:24px 0;}
-.plan-features li{padding:8px 0;font-size:14px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:10px;}
-.plan-features li.on{color:var(--text);}
-.plan-features li.on::before{content:'✓';color:var(--gold);font-weight:700;font-size:13px;}
-.plan-features li.off::before{content:'–';color:var(--subtle);}
-.plan-btn{display:block;width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;text-align:center;text-decoration:none;transition:all 0.2s;font-family:'Satoshi',sans-serif;margin-top:8px;cursor:pointer;border:none;}
-.plan-btn.ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text);}
-.plan-btn.ghost:hover{border-color:var(--gold);color:var(--gold);}
-.plan-btn.primary{background:linear-gradient(135deg,var(--gold),#A07830);color:var(--ink);}
-.plan-btn.primary:hover{box-shadow:0 8px 30px rgba(201,168,76,0.4);}
+.billing-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:40px;margin-bottom:46px;}
+.bl{font-size:14px;font-weight:600;color:var(--muted);}
+.bl.on{color:var(--text);}
+.btog-wrap{position:relative;width:46px;height:26px;cursor:pointer;}
+.btog-wrap input{opacity:0;width:0;height:0;}
+.btog-sl{position:absolute;inset:0;background:rgba(255,255,255,0.12);border-radius:999px;transition:.2s;}
+.btog-sl::before{content:"";position:absolute;width:18px;height:18px;left:4px;top:4px;background:#fff;border-radius:50%;transition:.2s;}
+.btog-wrap input:checked+.btog-sl{background:var(--teal);}
+.btog-wrap input:checked+.btog-sl::before{transform:translateX(20px);}
+.save-tag{background:rgba(201,146,26,0.12);color:var(--gold2);border:1px solid rgba(201,146,26,0.22);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.plan-box{background:var(--ink2);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:30px 26px;position:relative;overflow:hidden;transition:transform .3s;}
+.plan-box:hover{transform:translateY(-6px);}
+.plan-box.feat{border-color:rgba(10,150,144,0.3);background:linear-gradient(145deg,#061A18,#09241E);}
+.pb-hot{position:absolute;top:18px;right:18px;background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:4px 12px;border-radius:999px;}
+.pb-name{font-family:"Instrument Serif",serif;font-size:22px;margin-bottom:6px;color:#fff;}
+.plan-box.feat .pb-name{color:var(--teal);}
+.pb-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.pb-price{font-family:"Instrument Serif",serif;font-size:40px;color:var(--teal);line-height:1;}
+.pb-price.gold{color:var(--gold2);}
+.pb-per{font-size:13px;color:var(--muted);}
+.pb-orig{font-size:13px;color:rgba(255,255,255,0.2);text-decoration:line-through;height:20px;margin-bottom:18px;}
+.pb-feats{list-style:none;margin:20px 0;}
+.pb-feats li{padding:7px 0;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:9px;}
+.pb-feats li.on{color:var(--text);}
+.pb-feats li.on::before{content:"✓";color:var(--teal);font-size:12px;font-weight:700;}
+.pb-feats li.off::before{content:"–";color:rgba(255,255,255,0.15);}
+.pb-btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;cursor:pointer;border:none;}
+.pb-btn-primary{background:var(--teal);color:#fff;}
+.pb-btn-primary:hover{background:#088580;box-shadow:0 6px 24px rgba(10,150,144,0.35);}
+.pb-btn-ghost{background:transparent;color:var(--muted);border:1.5px solid rgba(255,255,255,0.1);}
+.pb-btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
 
 /* TESTIMONIALS */
-.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px;}
-.testi{background:var(--ink2);border:1px solid var(--border2);border-radius:20px;padding:28px;}
-.testi-text{font-size:15px;line-height:1.7;color:var(--text);margin-bottom:20px;font-style:italic;}
-.testi-text::before{content:'"';font-family:'Clash Display',sans-serif;font-size:40px;color:var(--gold);opacity:0.3;line-height:0;vertical-align:-16px;margin-right:4px;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px;}
+.testi{background:var(--ink2);border:1px solid rgba(255,255,255,0.05);border-radius:18px;padding:26px;transition:all .3s;}
+.testi:hover{border-color:rgba(10,150,144,0.2);transform:translateY(-3px);}
+.testi-stars{color:var(--gold2);font-size:14px;margin-bottom:14px;}
+.testi-q{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:18px;font-style:italic;}
+.testi-q::before{content:open-quote;font-family:"Instrument Serif",serif;font-size:40px;color:rgba(10,150,144,0.25);line-height:0;vertical-align:-18px;margin-right:2px;}
 .testi-author{display:flex;align-items:center;gap:12px;}
-.testi-av{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;}
-.testi-info strong{display:block;font-size:14px;}
-.testi-info span{font-size:12px;color:var(--muted);}
-.stars{color:var(--gold);font-size:13px;margin-bottom:16px;}
-
-/* TECH STACK */
-.tech-strip{display:flex;gap:16px;flex-wrap:wrap;margin-top:40px;}
-.tech-pill{background:var(--ink3);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px;}
-
-/* ROADMAP */
-.roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:60px;}
-.rm-step{position:relative;}
-.rm-step::after{content:'→';position:absolute;right:-14px;top:20px;color:var(--gold);opacity:0.4;font-size:20px;}
-.rm-step:last-child::after{display:none;}
-.rm-num{font-family:'Clash Display',sans-serif;font-size:48px;color:rgba(201,168,76,0.15);line-height:1;}
-.rm-title{font-family:'Clash Display',sans-serif;font-size:18px;margin-bottom:8px;}
-.rm-desc{font-size:13px;color:var(--muted);line-height:1.6;}
-.rm-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:999px;margin-top:10px;}
-.rm-badge.now{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
-.rm-badge.soon{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.2);}
-.rm-badge.future{background:rgba(168,85,247,0.12);color:#C084FC;border:1px solid rgba(168,85,247,0.2);}
+.ta-av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.ta-n{font-size:13px;font-weight:700;color:#fff;}
+.ta-r{font-size:11px;color:var(--muted);}
 
 /* CTA */
-.cta-section{text-align:center;padding:120px 60px;background:linear-gradient(180deg,transparent,rgba(201,168,76,0.04),transparent);}
-.cta-section h2{font-family:'Clash Display',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:-2px;margin-bottom:24px;}
-.cta-section p{font-size:18px;color:var(--muted);max-width:500px;margin:0 auto 40px;}
+.cta-sec{text-align:center;padding:100px 56px;position:relative;z-index:1;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.06),transparent);pointer-events:none;}
+.cta-sec h2{font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
+.cta-sec p{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
+
+/* CHAT WIDGET (live demo) */
+.chat-demo{position:fixed;bottom:28px;right:28px;z-index:200;}
+.chat-demo-fab{width:52px;height:52px;background:linear-gradient(135deg,var(--teal),#077A75);border-radius:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(10,150,144,0.4);font-size:22px;border:none;transition:all .2s;animation:fabpop 3s ease-in-out infinite;}
+@keyframes fabpop{0%,100%{box-shadow:0 6px 24px rgba(10,150,144,0.4);}50%{box-shadow:0 6px 32px rgba(10,150,144,0.6),0 0 0 8px rgba(10,150,144,0.08);}}
+.chat-demo-fab:hover{transform:scale(1.08);}
+.chat-tooltip{position:absolute;bottom:62px;right:0;background:var(--ink2);border:1px solid rgba(10,150,144,0.2);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--text);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.chat-tooltip::after{content:"";position:absolute;bottom:-6px;right:18px;width:12px;height:12px;background:var(--ink2);border-right:1px solid rgba(10,150,144,0.2);border-bottom:1px solid rgba(10,150,144,0.2);transform:rotate(45deg);}
 
 /* FOOTER */
-footer{padding:60px;border-top:1px solid var(--border);display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;}
-.footer-brand .nav-logo{font-size:28px;margin-bottom:12px;display:block;}
-.footer-brand p{font-size:14px;color:var(--muted);line-height:1.7;max-width:260px;margin-bottom:20px;}
-.footer-col h4{font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px;}
-.footer-col a{display:block;font-size:14px;color:var(--muted);text-decoration:none;margin-bottom:10px;transition:color 0.2s;}
-.footer-col a:hover{color:var(--gold);}
-.footer-bottom{padding:24px 60px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--subtle);}
+footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relative;z-index:1;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
+.fb-logo{font-family:"Instrument Serif",serif;font-size:24px;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:9px;}
+.fb-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),#054E4B);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.fb-desc{font-size:13px;color:var(--muted);line-height:1.7;max-width:240px;margin-bottom:16px;}
+.fb-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.fb-badge{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:5px 11px;font-size:10px;color:var(--muted);}
+.fc h4{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;}
+.fc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:9px;transition:color .2s;}
+.fc a:hover{color:var(--teal);}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:rgba(255,255,255,0.2);}
 
-/* ANIMATE ON SCROLL */
-.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s cubic-bezier(0.34,1.2,0.64,1);}
-.reveal.visible{opacity:1;transform:none;}
-
-/* MOBILE */
-@media(max-width:768px){
-  nav{padding:16px 24px;}
-  .nav-links{display:none;}
-  section{padding:60px 24px;}
-  .income-grid,.pricing-grid,.testi-grid,.roadmap{grid-template-columns:1fr;}
-  .bento-card.span-4,.bento-card.span-5,.bento-card.span-7,.bento-card.span-6,.bento-card.span-8{grid-column:span 12;}
+@media(max-width:900px){
+  nav{padding:14px 20px;}
+  .nav-links,.nav-cta .btn-nav-ghost{display:none;}
+  .mob-menu{display:block;}
+  section{padding:60px 20px;}
+  .hero{padding:110px 20px 60px;}
+  .bento{grid-template-columns:1fr 1fr;}
+  .s4,.s5,.s6,.s7,.s8{grid-column:span 2;}
+  .serve-grid,.pricing-grid,.testi-grid{grid-template-columns:1fr;}
   .stats-bar{flex-wrap:wrap;}
-  .stat-item{flex:1 1 50%;border-right:none;border-bottom:1px solid var(--border);}
-  footer{grid-template-columns:1fr;padding:40px 24px;}
-  .footer-bottom{padding:20px 24px;flex-direction:column;gap:10px;text-align:center;}
+  .stat{flex:1 1 50%;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
+  .cta-sec{padding:60px 20px;}
+}
+@media(max-width:480px){
+  .bento{grid-template-columns:1fr;}
+  .s4,.s5,.s6,.s7,.s8{grid-column:span 1;}
+  .stat{flex:1 1 50%;}
+  .hero h1{letter-spacing:-1.5px;}
+  .footer-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
-
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursor-ring"></div>
+<div class="bg-glow"></div>
 
 <!-- NAV -->
-<nav>
-  <div class="nav-logo">NyumbaLink<span>Smart Property Platform</span></div>
+<nav id="main-nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">🏠</div>
+    <div class="nav-logo-name">Nyumba<span>Link</span></div>
+  </a>
   <div class="nav-links">
     <a href="#features">Features</a>
-    <a href="#who">Who We Serve</a>
+    <a href="#serve">Who We Serve</a>
     <a href="#pricing">Pricing</a>
-    <a href="#roadmap">Roadmap</a>
     <a href="landlord.html">Landlords</a>
     <a href="tenant.html">Tenants</a>
   </div>
   <div class="nav-cta">
-    <a href="tenant.html" class="btn-outline">Sign In</a>
-    <a href="landlord.html" class="btn-gold">Get Started Free</a>
+    <a href="tenant.html" class="btn-nav-ghost">Tenant Login</a>
+    <a href="landlord.html" class="btn-nav-primary">Get Started Free →</a>
   </div>
+  <div class="mob-menu" onclick="this.textContent=this.textContent==='☰'?'✕':'☰'">☰</div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-orb orb1"></div>
-  <div class="hero-orb orb2"></div>
-  <div class="hero-orb orb3"></div>
-
-  <div class="hero-eyebrow"><span class="live-dot"></span> Now Live in Kenya · Trusted by 500+ Properties</div>
-  <h1>Property Management<br/><span class="gold">Reimagined</span> for <span class="dim">Africa</span></h1>
-  <p class="hero-sub">From bedsitters in Mathare to luxury apartments in Kilimani — NyumbaLink gives every landlord, tenant and technician the tools they deserve. Modern. Powerful. Built for Kenya.</p>
-
+  <div class="hero-pill"><span class="pill-dot"></span> Live · Nairobi, Kenya</div>
+  <h1>Property Management<br/><em>Reimagined</em><br/>for <span class="dim">Kenya</span></h1>
+  <p class="hero-sub">Collect rent via M-Pesa, track repairs, automate water billing and garbage alerts. Built for every Kenyan landlord — from bedsitters to luxury estates.</p>
   <div class="hero-btns">
-    <a href="landlord.html" class="btn-hero-primary">Start as Landlord →</a>
-    <a href="tenant.html" class="btn-hero-ghost">Tenant Portal ↗</a>
+    <a href="landlord.html" class="btn-hero btn-primary">🏢 I'm a Landlord →</a>
+    <a href="tenant.html" class="btn-hero btn-secondary">🏠 I'm a Tenant ↗</a>
   </div>
-
-  <div class="stats-bar" style="width:100%;max-width:900px;">
-    <div class="stat-item"><div class="stat-num" data-target="500">0</div><div class="stat-lbl">Properties Managed</div></div>
-    <div class="stat-item"><div class="stat-num" data-target="12400">0</div><div class="stat-lbl">Happy Tenants</div></div>
-    <div class="stat-item"><div class="stat-num" data-target="98">0</div><div class="stat-lbl">% Uptime Guarantee</div></div>
-    <div class="stat-item"><div class="stat-num" data-target="47">0</div><div class="stat-lbl">Counties Covered</div></div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-n" data-t="500">0</div><div class="stat-l">Properties Managed</div></div>
+    <div class="stat"><div class="stat-n" data-t="12400">0</div><div class="stat-l">Happy Tenants</div></div>
+    <div class="stat"><div class="stat-n" data-t="98">0</div><div class="stat-l">% Uptime</div></div>
+    <div class="stat"><div class="stat-n" data-t="47">0</div><div class="stat-l">Counties Covered</div></div>
   </div>
 </div>
 
-<!-- WHO WE SERVE -->
-<section id="who" style="background:var(--ink2);">
-  <div class="reveal">
-    <span class="section-label">Who We Serve</span>
-    <h2 class="section-title">Built for <span style="color:var(--gold)">every Kenyan</span></h2>
-    <p class="section-sub">Whether you manage a single room in Kibera or a 200-unit complex in Runda — NyumbaLink scales to your world.</p>
-  </div>
-  <div class="income-grid reveal">
-    <div class="income-card low">
-      <span class="ic-badge">Basic Plan · Free Start</span>
-      <span class="ic-icon">🏠</span>
-      <h3>Low Income Housing</h3>
-      <p>Single rooms, bedsitters, and simple rental units in estates like Huruma, Mathare, Kayole, Mukuru and similar. Affordable pricing, USSD access, Swahili support.</p>
-      <ul class="ic-features">
-        <li>M-Pesa rent collection</li>
-        <li>SMS receipts and reminders</li>
-        <li>Basic repair logging</li>
-        <li>USSD *384# access (no smartphone needed)</li>
-        <li>Swahili & English interface</li>
-        <li>WhatsApp notifications</li>
-      </ul>
+<!-- FEATURES -->
+<section id="features" style="background:var(--ink2);">
+  <span class="sec-pill">Platform Features</span>
+  <h2 class="sec-title">Everything. <em>One platform.</em></h2>
+  <p class="sec-sub">The most comprehensive property management platform built specifically for Kenyan landlords and tenants.</p>
+  <div class="bento">
+    <div class="bc s7 bc-featured">
+      <span class="bc-ico">💳</span>
+      <h3>Smart M-Pesa Payment Engine</h3>
+      <p>Real-time Paybill integration. STK Push prompts tenant phone directly. Payment recorded in 5 seconds. KES 20/day penalty auto-applied. SMS receipt sent instantly.</p>
+      <span class="bc-tag">STK Push</span><span class="bc-tag">Auto-Receipts</span><span class="bc-tag">Penalty Engine</span>
     </div>
-    <div class="income-card mid">
-      <span class="ic-badge">Standard Plan · Most Popular</span>
-      <span class="ic-icon">🏢</span>
-      <h3>Middle Income Apartments</h3>
-      <p>1–3 bedroom units in estates like Langata, South B, Umoja, Rongai, Ruaka, Thika Road, Githurai and similar across Kenya.</p>
-      <ul class="ic-features">
-        <li>Full tenant portal with app</li>
-        <li>Water bill auto-calculation</li>
-        <li>Garbage collection system</li>
-        <li>Technician marketplace</li>
-        <li>Lease signing digital</li>
-        <li>Community board & events</li>
-        <li>Payment penalty tracking</li>
-        <li>Document storage</li>
-      </ul>
+    <div class="bc s5 bc-ai">
+      <span class="bc-ico">🤖</span>
+      <h3>AI Property Chatbot</h3>
+      <p>Chat to manage everything. Say "Water readings: A1=145, A2=112" and all bills update instantly. Record payments, send announcements, analyse property — all by text.</p>
+      <span class="bc-tag">NLP Commands</span><span class="bc-tag">Real-time</span>
     </div>
-    <div class="income-card high">
-      <span class="ic-badge">Premium Plan · Full Suite</span>
-      <span class="ic-icon">🏰</span>
-      <h3>High Income & Gated Communities</h3>
-      <p>Luxury apartments, gated estates, serviced residences, student housing, and commercial properties in Westlands, Kilimani, Karen, Runda, Lavington and beyond.</p>
-      <ul class="ic-features">
-        <li>Everything in Standard</li>
-        <li>AI rent prediction & analytics</li>
-        <li>Tenant credit scoring (Rent Score™)</li>
-        <li>CRB & background checks</li>
-        <li>Amenity booking system</li>
-        <li>Smart visitor management</li>
-        <li>Landlord financing access</li>
-        <li>Custom branded app</li>
-        <li>Dedicated account manager</li>
-        <li>KRA-ready tax statements</li>
-      </ul>
+    <div class="bc s5">
+      <span class="bc-ico">💧</span>
+      <h3>Water & Utility Meter Entry</h3>
+      <p>Enter monthly readings once. Bills auto-calculated per unit and pushed to every tenant portal with SMS notification. Full history tracked.</p>
+    </div>
+    <div class="bc s7 bc-gold">
+      <span class="bc-ico">📊</span>
+      <h3>AI Insights & Rent Prediction</h3>
+      <p>Machine learning flags tenants likely to default. Predicts vacancy windows. Suggests optimal rent pricing. Monthly analysis delivered automatically.</p>
+    </div>
+    <div class="bc s4">
+      <span class="bc-ico">🔧</span>
+      <h3>Repair Tracking</h3>
+      <p>6 categories. Vetted local technicians. Assign and track from open to resolved. Tenant sees status in real time.</p>
+    </div>
+    <div class="bc s4">
+      <span class="bc-ico">🗑️</span>
+      <h3>Garbage Alerts</h3>
+      <p>Set your own collection day per property. Automated SMS Tuesday 6PM + Wednesday 5:45AM — no manual effort.</p>
+    </div>
+    <div class="bc s4">
+      <span class="bc-ico">⭐</span>
+      <h3>Tenant Rent Score™</h3>
+      <p>Kenya's first rental credit score. Tenants build payment history. Share for new housing, bank loans, or employment.</p>
     </div>
   </div>
 </section>
 
-<!-- FEATURES BENTO -->
-<section id="features">
-  <div class="reveal">
-    <span class="section-label">Platform Features</span>
-    <h2 class="section-title">Everything. <span style="color:var(--gold)">One platform.</span></h2>
-    <p class="section-sub">We've built what BomaHut, AppFolio and Buildium combined still can't offer for the Kenyan market.</p>
-  </div>
-  <div class="bento reveal">
-    <div class="bento-card span-7 tall" style="background:linear-gradient(135deg,#0A1628,#111827);border-color:rgba(59,130,246,0.2);">
-      <div class="bento-glow" style="background:var(--blue);top:-50px;left:-50px;"></div>
-      <span class="bento-icon">💳</span>
-      <h3>Smart Payment Engine</h3>
-      <p>Real-time M-Pesa Paybill integration. Bank transfers from Equity, KCB, Co-op. Automatic payment recording the second money lands. KES 20/day penalty auto-applied after 10th. SMS receipt within 5 seconds of payment.</p>
-      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
-        <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--blue);">M-Pesa Daraja API</span>
-        <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--blue);">Auto-Receipts</span>
-        <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--blue);">Penalty Engine</span>
-        <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--blue);">WhatsApp Receipts</span>
-      </div>
+<!-- WHO WE SERVE -->
+<section id="serve">
+  <span class="sec-pill">Who We Serve</span>
+  <h2 class="sec-title">Built for <em>every Kenyan</em></h2>
+  <p class="sec-sub">From a single room in Kayole to a 200-unit gated estate in Karen — NyumbaLink scales with every landlord.</p>
+  <div class="serve-grid">
+    <div class="sc sc-low">
+      <span class="sc-badge">Basic · Free Start</span>
+      <span class="sc-ico">🏠</span>
+      <h3>Low Income Housing</h3>
+      <p>Bedsitters, single rooms in Huruma, Mathare, Kayole, Mukuru. Simple, affordable, Swahili supported.</p>
+      <ul><li>M-Pesa rent collection</li><li>SMS receipts & reminders</li><li>Basic repair logging</li><li>Swahili interface</li></ul>
     </div>
-    <div class="bento-card span-5" style="background:linear-gradient(135deg,#0A1A0A,#0F1F0F);border-color:rgba(34,197,94,0.2);">
-      <div class="bento-glow" style="background:var(--green);bottom:-50px;right:-50px;"></div>
-      <span class="bento-icon">🔧</span>
-      <h3>Repair & Technician Network</h3>
-      <p>6 categories. Vetted local technicians. Real-time job assignment. Live status tracking from "submitted" to "resolved." Tenant can call tech directly.</p>
+    <div class="sc sc-mid">
+      <span class="sc-badge">Standard · Most Popular</span>
+      <span class="sc-ico">🏢</span>
+      <h3>Middle Income Apartments</h3>
+      <p>1–3 bedroom units in Langata, South B, Rongai, Ruaka, Thika Road, Githurai.</p>
+      <ul><li>Full tenant portal</li><li>Water & electricity billing</li><li>Garbage collection alerts</li><li>Technician marketplace</li><li>Digital lease signing</li><li>Community board</li></ul>
     </div>
-    <div class="bento-card span-5" style="background:linear-gradient(135deg,#1A0A00,#2A1500);border-color:rgba(201,168,76,0.2);">
-      <span class="bento-icon">🤝</span>
-      <h3>Tenant Screening</h3>
-      <p>CRB credit check via Metropol. ID verification via IPRS. Digital application forms. Online lease signing. Full paperless move-in workflow.</p>
-    </div>
-    <div class="bento-card span-7" style="background:linear-gradient(135deg,#120028,#1E0040);border-color:rgba(168,85,247,0.2);">
-      <span class="bento-icon">📊</span>
-      <h3>AI Analytics & Rent Prediction</h3>
-      <p>Machine learning flags tenants likely to default before they do. Predicts vacancy. Suggests optimal rent pricing based on market data. KRA-ready annual financial statements generated automatically.</p>
-    </div>
-    <div class="bento-card span-4">
-      <span class="bento-icon">💧</span>
-      <h3>Utility Auto-Billing</h3>
-      <p>Water, electricity, garbage — enter meter readings and bills split automatically per unit. No more arithmetic disputes.</p>
-    </div>
-    <div class="bento-card span-4">
-      <span class="bento-icon">🗑️</span>
-      <h3>Garbage Alerts</h3>
-      <p>Automated SMS every Tuesday 6PM and Wednesday 5:45AM. Live countdown timer in tenant app. Bin-out reminders never missed.</p>
-    </div>
-    <div class="bento-card span-4">
-      <span class="bento-icon">⭐</span>
-      <h3>Rent Score™</h3>
-      <p>Tenants build a verified rental credit score. Share it when applying for new homes, loans, or jobs. Kenya's first rental credit system.</p>
-    </div>
-    <div class="bento-card span-6" style="background:linear-gradient(135deg,#0A1A1A,#0F2828);border-color:rgba(20,184,166,0.2);">
-      <span class="bento-icon">🏘️</span>
-      <h3>Digital Community Board</h3>
-      <p>Private resident social network per apartment. Share resources, post events, emergency alerts, lost & found, neighbour requests. Curated monthly events calendar managed by landlord.</p>
-    </div>
-    <div class="bento-card span-6">
-      <span class="bento-icon">📱</span>
-      <h3>USSD + WhatsApp + App</h3>
-      <p>Smartphone app, mobile browser, WhatsApp bot, and USSD *384# for basic phones. Every Kenyan can use NyumbaLink regardless of device or data access.</p>
-    </div>
-    <div class="bento-card span-12" style="background:linear-gradient(135deg,#1A1200,#251A00);border-color:rgba(201,168,76,0.15);display:flex;gap:40px;align-items:center;">
-      <div style="flex:1;">
-        <span class="bento-icon">🏦</span>
-        <h3>Landlord Financing</h3>
-        <p>12 months of clean NyumbaLink payment history unlocks access to renovation loans, bridge financing, and mortgage applications through partner banks and SACCOs. Your rental record becomes your credit history.</p>
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:14px 20px;text-align:center;min-width:120px;"><div style="font-family:'Clash Display',sans-serif;font-size:24px;color:var(--gold);">KES 2M</div><div style="font-size:11px;color:var(--muted);">Max loan access</div></div>
-        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:14px 20px;text-align:center;min-width:120px;"><div style="font-family:'Clash Display',sans-serif;font-size:24px;color:var(--gold);">12%</div><div style="font-size:11px;color:var(--muted);">Partner rate p.a.</div></div>
-        <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:14px 20px;text-align:center;min-width:120px;"><div style="font-family:'Clash Display',sans-serif;font-size:24px;color:var(--gold);">48h</div><div style="font-size:11px;color:var(--muted);">Approval time</div></div>
-      </div>
+    <div class="sc sc-high">
+      <span class="sc-badge">Premium · Full Suite</span>
+      <span class="sc-ico">🏰</span>
+      <h3>High Income & Gated Estates</h3>
+      <p>Luxury apartments, gated communities in Westlands, Kilimani, Karen, Runda.</p>
+      <ul><li>Everything in Standard</li><li>AI rent prediction</li><li>Tenant Rent Score™</li><li>CRB background checks</li><li>KRA tax statements</li><li>Custom branded app</li></ul>
     </div>
   </div>
 </section>
 
 <!-- COMPARISON -->
 <section style="background:var(--ink2);">
-  <div class="reveal">
-    <span class="section-label">How We Compare</span>
-    <h2 class="section-title">NyumbaLink vs <span style="color:var(--gold)">the rest</span></h2>
-  </div>
-  <div class="comp-wrap reveal">
-    <table class="comp-table">
-      <thead>
-        <tr>
-          <th>Feature</th>
-          <th>BomaHut</th>
-          <th>AppFolio (Global)</th>
-          <th class="highlight">NyumbaLink ✦</th>
-        </tr>
-      </thead>
+  <span class="sec-pill">Why NyumbaLink</span>
+  <h2 class="sec-title">The platform <em>others can't match</em></h2>
+  <p class="sec-sub">Other platforms were built for other markets. NyumbaLink was built from the ground up for Kenya.</p>
+  <div class="compare-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Typical Local Platform</th><th>Global Platforms</th><th class="hl">NyumbaLink ✦</th></tr></thead>
       <tbody>
-        <tr><td class="feature-name">M-Pesa Integration</td><td><span class="check">✓</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">SMS Receipts</td><td><span class="check">✓</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Full Tenant Portal</td><td><span class="cross">–</span></td><td><span class="check">✓</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Technician Marketplace</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Water Bill Auto-Split</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Garbage Collection Alerts</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">CRB Tenant Screening</td><td><span class="cross">–</span></td><td><span class="check">✓</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Digital Lease Signing</td><td><span class="cross">–</span></td><td><span class="check">✓</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">AI Rent Prediction</td><td><span class="cross">–</span></td><td>Partial</td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Tenant Rent Score™</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Community Board</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">USSD Access (*384#)</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Swahili Interface</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Landlord Financing Access</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">KRA Tax Statements</td><td><span class="cross">–</span></td><td><span class="check">✓</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Offline Mode</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
-        <tr><td class="feature-name">Super Admin Dashboard</td><td><span class="cross">–</span></td><td><span class="cross">–</span></td><td class="highlight"><span class="check">✓</span></td></tr>
+        <tr><td class="feat">M-Pesa STK Push</td><td><span class="yes">✓</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">AI Property Chatbot</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Full Tenant Portal</td><td>Basic</td><td><span class="yes">✓</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Technician Marketplace</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Water Auto-Billing</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Garbage Alerts</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Tenant Rent Score™</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">AI Rent Prediction</td><td><span class="no">–</span></td><td>Partial</td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">Annual Plan (Save 20%)</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
+        <tr><td class="feat">KRA Tax Statements</td><td><span class="no">–</span></td><td><span class="yes">✓</span></td><td class="hl"><span class="yes">✓</span></td></tr>
       </tbody>
     </table>
   </div>
+  <p class="legal-note">⚖️ This comparison reflects general market feature categories as of 2026 and does not reference specific named products. NyumbaLink makes no claims about any individual competitor's capabilities.</p>
 </section>
 
 <!-- PRICING -->
 <section id="pricing">
-  <div class="reveal">
-    <span class="section-label">Pricing</span>
-    <h2 class="section-title">Honest pricing. <span style="color:var(--gold)">No surprises.</span></h2>
-    <p class="section-sub">Start free. Scale as you grow. Cancel any time.</p>
+  <div style="text-align:center">
+    <span class="sec-pill">Pricing</span>
+    <h2 class="sec-title">Honest pricing.<br/><em>No surprises.</em></h2>
   </div>
-  <div class="pricing-grid reveal">
-    <div class="plan">
-      <div class="plan-name">Basic</div>
-      <div class="plan-desc">For landlords managing a few units. Get started with the essentials — free forever under 5 units.</div>
-      <div class="plan-price">Free<span> / month</span></div>
-      <div style="font-size:12px;color:var(--muted);">Up to 5 units · KES 150/unit after</div>
-      <ul class="plan-features">
+  <div class="billing-row">
+    <span class="bl on" id="bl-mo">Monthly</span>
+    <label class="btog-wrap"><input type="checkbox" id="billing-tog" onchange="togglePricing()"/><div class="btog-sl"></div></label>
+    <span class="bl" id="bl-an">Annual</span>
+    <span class="save-tag" id="save-tag" style="display:none">Save 20%</span>
+  </div>
+  <div class="pricing-grid">
+    <div class="plan-box">
+      <div class="pb-name">Basic</div>
+      <div class="pb-desc">For landlords with a few units. Start free, no card needed.</div>
+      <div class="pb-price">Free</div>
+      <div class="pb-orig" id="b-orig">&nbsp;</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Up to 5 units · KES 150/unit after</div>
+      <ul class="pb-feats">
         <li class="on">M-Pesa rent collection</li>
         <li class="on">SMS receipts & reminders</li>
-        <li class="on">Tenant records</li>
-        <li class="on">Basic repair logging</li>
+        <li class="on">Basic tenant portal</li>
+        <li class="on">Repair logging</li>
         <li class="on">Garbage alerts</li>
-        <li class="off">Technician marketplace</li>
-        <li class="off">Water bill auto-split</li>
-        <li class="off">AI analytics</li>
-        <li class="off">Tenant screening</li>
+        <li class="off">AI chatbot</li>
+        <li class="off">Water auto-billing</li>
+        <li class="off">AI insights</li>
       </ul>
-      <button class="plan-btn ghost" onclick="window.location.href='landlord.html'">Get Started Free</button>
+      <a href="landlord.html" class="pb-btn pb-btn-ghost">Get Started Free</a>
     </div>
-    <div class="plan featured">
-      <div class="plan-badge">Most Popular</div>
-      <div class="plan-name" style="color:var(--gold)">Standard</div>
-      <div class="plan-desc">The complete platform for professional landlords and property managers. Everything you need to scale.</div>
-      <div class="plan-price">KES 2,000<span> / month</span></div>
-      <div style="font-size:12px;color:var(--muted);">Up to 50 units · KES 100/unit after</div>
-      <ul class="plan-features">
+    <div class="plan-box feat">
+      <div class="pb-hot">Most Popular</div>
+      <div class="pb-name">Standard</div>
+      <div class="pb-desc">Complete platform. Up to 50 units. Everything you need.</div>
+      <div><span class="pb-price" id="std-price">KES 2,000</span><span class="pb-per" id="std-per">/month</span></div>
+      <div class="pb-orig" id="std-orig">&nbsp;</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px" id="std-sub">Billed monthly</div>
+      <ul class="pb-feats">
         <li class="on">Everything in Basic</li>
+        <li class="on">AI Property Chatbot</li>
         <li class="on">Full tenant portal</li>
         <li class="on">Water & utility billing</li>
         <li class="on">Technician marketplace</li>
         <li class="on">Digital lease signing</li>
         <li class="on">Community board</li>
-        <li class="on">Payment ledger & receipts</li>
-        <li class="on">Inspection reports</li>
-        <li class="on">Swahili interface</li>
         <li class="off">AI rent prediction</li>
-        <li class="off">Tenant credit scoring</li>
+        <li class="off">Rent Score™</li>
       </ul>
-      <button class="plan-btn primary" onclick="window.location.href='landlord.html'">Start Standard Plan</button>
+      <a href="landlord.html" class="pb-btn pb-btn-primary">Start Standard Plan</a>
     </div>
-    <div class="plan">
-      <div class="plan-name">Premium</div>
-      <div class="plan-desc">For serious property managers, gated communities, and institutional landlords who demand the best.</div>
-      <div class="plan-price">KES 7,500<span> / month</span></div>
-      <div style="font-size:12px;color:var(--muted);">Unlimited units · White-label option</div>
-      <ul class="plan-features">
+    <div class="plan-box">
+      <div class="pb-name">Premium</div>
+      <div class="pb-desc">For serious managers and gated communities. Unlimited.</div>
+      <div><span class="pb-price gold" id="prem-price">KES 7,500</span><span class="pb-per" id="prem-per">/month</span></div>
+      <div class="pb-orig" id="prem-orig">&nbsp;</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px" id="prem-sub">Unlimited units · Billed monthly</div>
+      <ul class="pb-feats">
         <li class="on">Everything in Standard</li>
         <li class="on">AI rent prediction</li>
         <li class="on">Tenant Rent Score™</li>
         <li class="on">CRB background checks</li>
         <li class="on">Landlord financing access</li>
-        <li class="on">Amenity booking system</li>
-        <li class="on">Visitor management</li>
         <li class="on">KRA tax statements</li>
         <li class="on">Custom branded app</li>
         <li class="on">Dedicated account manager</li>
-        <li class="on">API access</li>
       </ul>
-      <button class="plan-btn ghost" onclick="window.location.href='landlord.html'">Contact Sales</button>
+      <a href="landlord.html" class="pb-btn pb-btn-ghost">Contact Sales</a>
     </div>
   </div>
+  <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:22px">All plans include a 30-day free trial. Cancel any time. Funds go directly to your M-Pesa.</p>
 </section>
 
 <!-- TESTIMONIALS -->
 <section style="background:var(--ink2);">
-  <div class="reveal">
-    <span class="section-label">Testimonials</span>
-    <h2 class="section-title">Loved by <span style="color:var(--gold)">landlords & tenants</span></h2>
-  </div>
-  <div class="testi-grid reveal">
+  <span class="sec-pill">Testimonials</span>
+  <h2 class="sec-title">Loved by landlords <em>& tenants</em></h2>
+  <div class="testi-grid">
     <div class="testi">
-      <div class="stars">★★★★★</div>
-      <p class="testi-text">I used to chase 15 tenants every month on WhatsApp. Now NyumbaLink sends them reminders and the money just comes in. I collected 100% rent in my first month using it.</p>
-      <div class="testi-author"><div class="testi-av" style="background:linear-gradient(135deg,#1a5c28,#0a3018);">JM</div><div class="testi-info"><strong>James Mwangi</strong><span>Landlord · 24 units · Githurai</span></div></div>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-q">I used to chase 15 tenants on WhatsApp every month. With NyumbaLink the money just comes in and I get an SMS. I collected 100% rent in my first month.</p>
+      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#0A4020,#062C14)">JM</div><div><div class="ta-n">James Mwangi</div><div class="ta-r">Landlord · 24 units · Githurai</div></div></div>
     </div>
     <div class="testi">
-      <div class="stars">★★★★★</div>
-      <p class="testi-text">As a tenant I love that I can see my water bill, raise a complaint, and track when the plumber is coming — all from my phone. This is how renting should work everywhere.</p>
-      <div class="testi-author"><div class="testi-av" style="background:linear-gradient(135deg,#1a2a6c,#0a1540);">FN</div><div class="testi-info"><strong>Fatuma Njoroge</strong><span>Tenant · Unit B4 · South B</span></div></div>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-q">As a tenant I can see my water bill, raise a complaint and track when the plumber is coming — all on my phone. This is how renting should work in Kenya.</p>
+      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#0A1840,#060E28)">FN</div><div><div class="ta-n">Fatuma Njoroge</div><div class="ta-r">Tenant · Unit B4 · South B</div></div></div>
     </div>
     <div class="testi">
-      <div class="stars">★★★★★</div>
-      <p class="testi-text">We manage 3 apartment blocks for diaspora clients in the UK. NyumbaLink gives them a dashboard to see everything in real time. Our clients trust us more now because of the transparency.</p>
-      <div class="testi-author"><div class="testi-av" style="background:linear-gradient(135deg,#5c1a1a,#300a0a);">AO</div><div class="testi-info"><strong>Amina Ochieng</strong><span>Property Manager · 87 units · Kilimani</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ROADMAP -->
-<section id="roadmap">
-  <div class="reveal">
-    <span class="section-label">Product Roadmap</span>
-    <h2 class="section-title">Where we're <span style="color:var(--gold)">going</span></h2>
-  </div>
-  <div class="roadmap reveal">
-    <div class="rm-step">
-      <div class="rm-num">01</div>
-      <h3 class="rm-title">Web Platform</h3>
-      <p class="rm-desc">Full web app for landlords, tenants and technicians. M-Pesa integration. All core features live.</p>
-      <span class="rm-badge now">Live Now</span>
-    </div>
-    <div class="rm-step">
-      <div class="rm-num">02</div>
-      <h3 class="rm-title">Android App</h3>
-      <p class="rm-desc">Native Android app on Google Play. Push notifications. Offline mode. Mobile-first experience.</p>
-      <span class="rm-badge soon">Q3 2026</span>
-    </div>
-    <div class="rm-step">
-      <div class="rm-num">03</div>
-      <h3 class="rm-title">iOS App + USSD</h3>
-      <p class="rm-desc">iPhone app on App Store. USSD *384# for basic phones. WhatsApp bot integration.</p>
-      <span class="rm-badge soon">Q4 2026</span>
-    </div>
-    <div class="rm-step">
-      <div class="rm-num">04</div>
-      <h3 class="rm-title">East Africa Scale</h3>
-      <p class="rm-desc">Uganda, Tanzania, Rwanda expansion. Multi-currency. Local payment methods per country.</p>
-      <span class="rm-badge future">2027</span>
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-q">We manage 3 blocks for diaspora clients in the UK. NyumbaLink gives them a real-time dashboard. Our clients trust us more because of the transparency.</p>
+      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#3A0A0A,#280606)">AO</div><div><div class="ta-n">Amina Ochieng</div><div class="ta-r">Property Manager · 87 units · Kilimani</div></div></div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<div class="cta-section reveal">
-  <h2>Ready to transform<br/><span style="color:var(--gold)">your property?</span></h2>
+<div class="cta-sec">
+  <div class="cta-glow"></div>
+  <h2>Ready to transform<br/><em>your property?</em></h2>
   <p>Join 500+ properties already saving time, collecting more rent, and keeping tenants happy.</p>
-  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-    <a href="landlord.html" class="btn-hero-primary">Start Free as Landlord →</a>
-    <a href="tenant.html" class="btn-hero-ghost">Tenant Login ↗</a>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="landlord.html" class="btn-hero btn-primary">🏢 Start as Landlord →</a>
+    <a href="tenant.html" class="btn-hero btn-secondary">🏠 Tenant Portal ↗</a>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-brand">
-    <span class="nav-logo">NyumbaLink</span>
-    <p>Kenya's most comprehensive property management platform. Built for landlords, tenants, and technicians across all income levels.</p>
-    <div class="tech-strip" style="flex-wrap:wrap;gap:8px;">
-      <span class="tech-pill">🔒 SSL Encrypted</span>
-      <span class="tech-pill">📱 M-Pesa Ready</span>
-      <span class="tech-pill">☁️ Cloud Hosted</span>
+  <div class="footer-grid">
+    <div>
+      <div class="fb-logo"><div class="fb-logo-mark">🏠</div>NyumbaLink</div>
+      <p class="fb-desc">Kenya's most comprehensive property management platform. Built for landlords, tenants and technicians across all income levels.</p>
+      <div class="fb-badges">
+        <span class="fb-badge">🔒 SSL Encrypted</span>
+        <span class="fb-badge">📱 M-Pesa Ready</span>
+        <span class="fb-badge">☁️ Cloud Hosted</span>
+      </div>
     </div>
+    <div class="fc"><h4>Platform</h4><a href="landlord.html">Landlord Portal</a><a href="tenant.html">Tenant Portal</a><a href="admin.html">Admin Panel</a></div>
+    <div class="fc"><h4>Features</h4><a href="#">M-Pesa Payments</a><a href="#">Repair Tracking</a><a href="#">Water Billing</a><a href="#">Rent Score™</a></div>
+    <div class="fc"><h4>Support</h4><a href="#">Help Center</a><a href="mailto:hello@nyumbalink.co.ke">hello@nyumbalink.co.ke</a><a href="tel:+254700000001">+254 700 000 001</a><a href="#">Privacy Policy</a></div>
   </div>
-  <div class="footer-col">
-    <h4>Platform</h4>
-    <a href="landlord.html">Landlord Dashboard</a>
-    <a href="tenant.html">Tenant Portal</a>
-    <a href="admin.html">Admin Panel</a>
-    <a href="#">Technician Board</a>
-    <a href="#">USSD Access</a>
-  </div>
-  <div class="footer-col">
-    <h4>Features</h4>
-    <a href="#">M-Pesa Payments</a>
-    <a href="#">Repair Tracking</a>
-    <a href="#">Water Billing</a>
-    <a href="#">Tenant Screening</a>
-    <a href="#">Rent Score™</a>
-  </div>
-  <div class="footer-col">
-    <h4>Support</h4>
-    <a href="#">Help Center</a>
-    <a href="#">WhatsApp Support</a>
-    <a href="mailto:hello@nyumbalink.co.ke">hello@nyumbalink.co.ke</a>
-    <a href="tel:+254700000001">+254 700 000 001</a>
-    <a href="#">Privacy Policy</a>
+  <div class="footer-bottom">
+    <span>© 2026 NyumbaLink Limited · Nairobi, Kenya · All rights reserved</span>
+    <span>Built with ❤️ for Kenya</span>
   </div>
 </footer>
-<div class="footer-bottom">
-  <span>© 2026 NyumbaLink Limited. All rights reserved. Nairobi, Kenya.</span>
-  <span>Built with ❤️ for Kenya</span>
+
+<!-- Chat demo fab -->
+<div class="chat-demo">
+  <div class="chat-tooltip" id="chat-tip">🤖 AI Assistant inside portal</div>
+  <button class="chat-demo-fab" onclick="window.location.href='landlord.html'" title="Try AI Assistant">🤖</button>
 </div>
 
 <script>
-// Cursor
-const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
-setInterval(()=>{rx+=(mx-rx)*0.15;ry+=(my-ry)*0.15;ring.style.left=rx+'px';ring.style.top=ry+'px';},10);
-
-// Reveal on scroll
-const reveals=document.querySelectorAll('.reveal');
-const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
-reveals.forEach(r=>obs.observe(r));
-
 // Counter animation
-function animateCounter(el,target){
-  let start=0;const dur=2000;const step=target/dur*16;
-  const interval=setInterval(()=>{start+=step;if(start>=target){el.textContent=target.toLocaleString();clearInterval(interval);}else{el.textContent=Math.floor(start).toLocaleString();}},16);
+const nums = document.querySelectorAll('[data-t]');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const target = parseInt(e.target.dataset.t);
+      let current = 0;
+      const step = target / 80;
+      const iv = setInterval(() => {
+        current = Math.min(current + step, target);
+        e.target.textContent = Math.floor(current).toLocaleString() + (target === 98 ? '%' : '+');
+        if(current >= target) { e.target.textContent = target.toLocaleString() + (target === 98 ? '%' : '+'); clearInterval(iv); }
+      }, 20);
+      obs.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.5});
+nums.forEach(n => obs.observe(n));
+
+// Pricing toggle
+const plans = {standard:{mo:2000,an:1600}, premium:{mo:7500,an:6000}};
+function togglePricing() {
+  const annual = document.getElementById('billing-tog').checked;
+  document.getElementById('bl-mo').classList.toggle('on', !annual);
+  document.getElementById('bl-an').classList.toggle('on', annual);
+  document.getElementById('save-tag').style.display = annual ? 'inline-flex' : 'none';
+  // Standard
+  document.getElementById('std-price').textContent = 'KES ' + (annual ? plans.standard.an : plans.standard.mo).toLocaleString();
+  document.getElementById('std-sub').textContent = annual ? 'Billed annually · KES ' + (plans.standard.an * 12).toLocaleString() + '/year' : 'Billed monthly';
+  document.getElementById('std-orig').textContent = annual ? 'KES 2,000/mo normally' : ' ';
+  // Premium
+  document.getElementById('prem-price').textContent = 'KES ' + (annual ? plans.premium.an : plans.premium.mo).toLocaleString();
+  document.getElementById('prem-sub').textContent = annual ? 'Unlimited · Billed annually · KES ' + (plans.premium.an * 12).toLocaleString() + '/year' : 'Unlimited units · Billed monthly';
+  document.getElementById('prem-orig').textContent = annual ? 'KES 7,500/mo normally' : ' ';
 }
-const statNums=document.querySelectorAll('[data-target]');
-const statsObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){animateCounter(e.target,parseInt(e.target.dataset.target));statsObs.unobserve(e.target);}});},{threshold:0.5});
-statNums.forEach(s=>statsObs.observe(s));
+
+// Hide chat tooltip after 5s
+setTimeout(() => { const t = document.getElementById('chat-tip'); if(t) t.style.opacity='0'; }, 5000);
+
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('main-nav');
+  if(window.scrollY > 60) { nav.style.padding = '11px 56px'; }
+  else { nav.style.padding = '16px 56px'; }
+});
 </script>
 </body>
 </html>

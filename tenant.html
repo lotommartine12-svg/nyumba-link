@@ -1,5 +1,3 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1387,6 +1385,9 @@ function showToast(msg,type='success'){
   el.textContent=msg;el.className=`toast ${type} show`;
   tt=setTimeout(()=>el.classList.remove('show'),3500);
 }
+const SUPA_URL = 'https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 </script>
 </body>
 </html>

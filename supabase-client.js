@@ -7,8 +7,8 @@
 // ============================================================
 
 // ── STEP 1: ADD YOUR REAL KEYS FROM supabase.com ──
-const SUPABASE_URL = 'https://cqxeraovwxlmevvyjtng.supabase.co/rest/v1/';   // Replace this
-const SUPABASE_ANON_KEY = 'sb_publishable_bYCBupOquxymPjm_007iKg_B-qXkivU';            // Replace this
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';   // Replace this
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';            // Replace this
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

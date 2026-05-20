@@ -548,6 +548,9 @@ buildRevChart();
 const style=document.createElement('style');
 style.textContent='@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4);}50%{box-shadow:0 0 0 5px rgba(16,185,129,0);}}';
 document.head.appendChild(style);
-</script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>>
+const SUPA_URL = 'https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';
+const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+</script>
 </body>
 </html>
