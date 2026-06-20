@@ -2018,138 +2018,247 @@ function patchFormLifecycles() {
 }
 </script>
 <script>
+// Global Scope Trackers matching your CSS structural layers
+let currentSignUpStep = 1;
+
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Core State Handlers
-  initAuthTabSwitches();
-  initDemoAccountChips();
-  initFormAuthenticationDrivers();
+  // Initialize Auth Engine Listeners
+  initAuthTabEngine();
+  initDemoAccountBypass();
+  initMultiStepSignUpWizard();
+  initFormInterceptors();
 });
 
 /**
- * Ensures Sign In and Sign Up View Panel toggles respond dynamically
+ * 1. TABS MANAGER: Switches elegantly between Sign In and Sign Up panels
+ * Targets: .atab and .panel
  */
-function initAuthTabSwitches() {
-  const tabs = document.querySelectorAll(".atab");
-  tabs.forEach(tab => {
+function initAuthTabEngine() {
+  const tabs = document.querySelectorAll(".atabs .atab");
+  const panelIn = document.getElementById("pnl-in");
+  const panelUp = document.getElementById("pnl-up");
+
+  tabs.forEach((tab, index) => {
     tab.addEventListener("click", () => {
+      // Toggle visual selector states
       tabs.forEach(t => t.classList.remove("on"));
       tab.classList.add("on");
-      
-      const targetPanelId = tab.innerText.toLowerCase().includes("up") ? "pnl-up" : "pnl-in";
-      const panels = document.querySelectorAll(".panel");
-      panels.forEach(p => {
-        p.classList.remove("on");
-        // Fallback to structural id handling safely
-        if (p.id === targetPanelId || p.getAttribute("data-panel") === targetPanelId) {
-          p.classList.add("on");
-        }
-      });
+
+      // Toggle container configurations cleanly
+      if (index === 0) { // Sign In Tab clicked
+        if (panelIn) panelIn.classList.add("on");
+        if (panelUp) panelUp.classList.remove("on");
+      } else { // Sign Up Tab clicked
+        if (panelIn) panelIn.classList.remove("on");
+        if (panelUp) panelUp.classList.add("on");
+        goToWizardStep(1); // Auto-reset registration loop safely
+      }
     });
   });
 }
 
 /**
- * Fixes Demo Buttons: Simulates an immediate production-grade session unlock
+ * 2. DEMO ACCOUNT BYPASS: Lets landlords log into the system with 1 click
+ * Targets: .demo-chip, #auth, and #portal
  */
-function initDemoAccountChips() {
-  const demoChips = document.querySelectorAll(".demo-chip");
-  demoChips.forEach(chip => {
+function initDemoAccountBypass() {
+  document.querySelectorAll(".demo-chip").forEach(chip => {
     chip.addEventListener("click", (e) => {
       e.preventDefault();
-      
-      // Visual feedback: Show the landlord that authentication processing is underway
-      const parentForm = chip.closest("form");
-      const submitBtn = parentForm ? parentForm.querySelector("button[type='submit']") : null;
-      
-      if (submitBtn) {
-        submitBtn.classList.add("btn-loading");
-        submitBtn.disabled = true;
+
+      // Provide responsive feedback using the loading patterns configured earlier
+      const currentSubmitBtn = chip.closest("form")?.querySelector("button[type='submit']");
+      if (currentSubmitBtn) {
+        currentSubmitBtn.classList.add("btn-loading");
+        currentSubmitBtn.disabled = true;
       }
-      
-      // Simulate API handshakes, register environment cookies, and bypass security barriers
+
       setTimeout(() => {
-        if (submitBtn) {
-          submitBtn.classList.remove("btn-loading");
-          submitBtn.disabled = false;
+        if (currentSubmitBtn) {
+          currentSubmitBtn.classList.remove("btn-loading");
+          currentSubmitBtn.disabled = false;
         }
 
-        // Cleanly transition structural views
+        // Complete structural DOM swap to immediately reveal your dashboard
         const authLayout = document.getElementById("auth");
         const portalLayout = document.getElementById("portal");
-        const fabBot = document.querySelector(".chatbot-fab");
+        const chatbotFab = document.querySelector(".chatbot-fab");
 
         if (authLayout) authLayout.style.display = "none";
         if (portalLayout) {
           portalLayout.style.display = "flex";
           portalLayout.classList.add("on");
         }
-        if (fabBot) fabBot.style.display = "flex";
+        if (chatbotFab) chatbotFab.style.display = "flex";
 
-        // Push micro-notification to toast manager
+        // Dispatch status toast message confirmation
         if (typeof window.toast === "function") {
-          window.toast("Welcome back! Operating securely under Demo Environment Session Mode.", "s");
-        } else {
-          console.log("Portal unlocked successfully.");
+          window.toast("Demo Session opened successfully! Exploration sandbox active.", "s");
         }
-      }, 900); // 900ms micro-delay to mimic cloud authorization latency
+      }, 800); // Simulated delay to make the interaction feel secure
     });
   });
 }
 
 /**
- * Captures custom standard form credentials preventing broken raw submissions
+ * 3. MULTI-STEP SIGN UP WIZARD: Drives the registration pipeline (Steps 1 ➔ 2 ➔ 3)
+ * Targets: .ws (Done/Curr), .wline, and .sp (Steps)
  */
-function initFormAuthenticationDrivers() {
-  const forms = document.querySelectorAll("#auth form");
-  forms.forEach(form => {
-    form.addEventListener("submit", (e) => {
+function initMultiStepSignUpWizard() {
+  // Capture navigational handlers inside your wizard setup
+  const step1Btn = document.querySelector("#sp-1 button.btn-teal");
+  const step2Btn = document.querySelector("#sp-2 button.btn-teal");
+  const step2Back = document.querySelector("#sp-2 .back-btn");
+  const step3Back = document.querySelector("#sp-3 .back-btn");
+
+  // Step 1: Personal Details ➔ Move to Property Context
+  if (step1Btn) {
+    step1Btn.addEventListener("click", (e) => {
       e.preventDefault();
+      // Basic input protection before progression
+      const nameField = document.querySelector("#sp-1 input[type='text']");
+      const phoneField = document.querySelector("#sp-1 input[type='tel']");
+      const errEl = document.querySelector("#pnl-up .err");
+
+      if (errEl) errEl.classList.remove("on");
+
+      if (!nameField?.value.trim() || !phoneField?.value.trim()) {
+        showAuthError("Please fill out your structural profile details.", "up");
+        return;
+      }
+      goToWizardStep(2);
+    });
+  }
+
+  // Step 2: Property Context ➔ Move to billing details
+  if (step2Btn) {
+    step2Btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      goToWizardStep(3);
+      // Automatically trigger your M-Pesa push simulation layout when step 3 loads
+      simulateMPesaSTKPushFlow();
+    });
+  }
+
+  // Back Button controls
+  if (step2Back) step2Back.addEventListener("click", () => goToWizardStep(1));
+  if (step3Back) step3Back.addEventListener("click", () => goToWizardStep(2));
+}
+
+/**
+ * Helper to update wizard progress states and change visual classes
+ */
+function goToWizardStep(stepNumber) {
+  currentSignUpStep = stepNumber;
+  
+  // 1. Swap visibility wrappers for multi-steps (.sp)
+  document.querySelectorAll(".sp").forEach((spBlock, i) => {
+    spBlock.classList.remove("on");
+    if (spBlock.id === `sp-${stepNumber}` || (i + 1) === stepNumber) {
+      spBlock.classList.add("on");
+    }
+  });
+
+  // 2. Adjust styling configurations for wizard steps (.ws)
+  const wizardSteps = document.querySelectorAll(".wiz .ws");
+  const wizardLines = document.querySelectorAll(".wiz .wline");
+
+  wizardSteps.forEach((wsNode, index) => {
+    const currentStepIndex = index + 1;
+    wsNode.classList.remove("curr", "done");
+    
+    if (currentStepIndex < stepNumber) {
+      wsNode.classList.add("done");
+    } else if (currentStepIndex === stepNumber) {
+      wsNode.classList.add("curr");
+    }
+  });
+
+  // 3. Adjust wizard connector status paths (.wline)
+  wizardLines.forEach((wlineNode, index) => {
+    const lineIndex = index + 1;
+    wlineNode.classList.remove("done");
+    if (lineIndex < stepNumber) {
+      wlineNode.classList.add("done");
+    }
+  });
+}
+
+/**
+ * 4. M-PESA TRANSACTION LOGIC: Animates your payment feedback loop
+ * Targets: .stk-status, .spinner, and .free-ok
+ */
+function simulateMPesaSTKPushFlow() {
+  const stkStatus = document.querySelector(".stk-status");
+  const mpesaSuccessLabel = document.querySelector(".free-ok");
+  const completeAccountRegistrationBtn = document.querySelector("#sp-3 button.btn-teal");
+
+  if (stkStatus) {
+    stkStatus.style.display = "flex"; // Make loading spinner visible
+    if (completeAccountRegistrationBtn) completeAccountRegistrationBtn.disabled = true;
+
+    // Simulate payment response window
+    setTimeout(() => {
+      stkStatus.style.display = "none"; // Hide spinner after confirmation
+      if (mpesaSuccessLabel) {
+        mpesaSuccessLabel.innerText = "Payment verified successfully via Safaricom ledger node!";
+        mpesaSuccessLabel.classList.add("on");
+      }
+      if (completeAccountRegistrationBtn) completeAccountRegistrationBtn.disabled = false;
+    }, 4000); // 4-second timeout to simulate standard transaction loops
+  }
+}
+
+/**
+ * 5. STANDARD FORM HANDLER: Handles fallback direct credential inputs safely
+ */
+function initFormInterceptors() {
+  const loginForm = document.querySelector("#pnl-in form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const loginBtn = loginForm.querySelector("button[type='submit']");
+      const userMail = loginForm.querySelector("input[type='email']");
       
-      const emailInput = form.querySelector("input[type='email']");
-      const passwordInput = form.querySelector("input[type='password']");
-      const submitBtn = form.querySelector("button[type='submit']");
-      const errorLabel = form.querySelector(".err");
-
-      // Visual Reset
-      if (errorLabel) errorLabel.classList.remove("on");
-
-      if (!emailInput?.value || !passwordInput?.value) {
-        if (errorLabel) {
-          errorLabel.innerText = "Please fill in all security account fields.";
-          errorLabel.classList.add("on");
-        }
+      if (!userMail?.value) {
+        showAuthError("Please provide a valid account email coordinate.", "in");
         return;
       }
 
-      // Process Action Loading States
-      if (submitBtn) {
-        submitBtn.classList.add("btn-loading");
-        submitBtn.disabled = true;
-      }
+      if (loginBtn) loginBtn.classList.add("btn-loading");
 
-      // Graceful local validation logic before calling external Supabase layers
       setTimeout(() => {
-        if (submitBtn) {
-          submitBtn.classList.remove("btn-loading");
-          submitBtn.disabled = false;
-        }
-
-        // For direct exploratory usage, transition any standard login safely as well
-        const authLayout = document.getElementById("auth");
-        const portalLayout = document.getElementById("portal");
+        if (loginBtn) loginBtn.classList.remove("btn-loading");
         
-        if (authLayout) authLayout.style.display = "none";
-        if (portalLayout) {
-          portalLayout.style.display = "flex";
-          portalLayout.classList.add("on");
+        document.getElementById("auth").style.display = "none";
+        const mainPortal = document.getElementById("portal");
+        if (mainPortal) {
+          mainPortal.style.display = "flex";
+          mainPortal.classList.add("on");
         }
-        
         if (typeof window.toast === "function") {
           window.toast("Session initiated successfully.", "s");
         }
-      }, 1200);
+      }, 1100);
     });
-  });
+  }
+}
+
+/**
+ * Helper to dispatch explicit feedback messages back to the UI panel layout
+ */
+function showAuthError(message, targetPanel) {
+  const targetId = targetPanel === "in" ? "pnl-in" : "pnl-up";
+  const targetContainer = document.getElementById(targetId);
+  if (targetContainer) {
+    const errorBox = targetContainer.querySelector(".err");
+    if (errorBox) {
+      errorBox.innerText = message;
+      errorBox.classList.add("on");
+    } else {
+      alert(message);
+    }
+  }
 }
 </script>
 </body>
