@@ -353,17 +353,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="panel on" id="panel-login">
         <div class="auth-title">Welcome back</div>
         <div class="auth-sub">Sign in to your landlord portal</div>
-        <div class="fg"><label>Phone Number</label><input id="li-phone" type="tel" placeholder="07XX XXX XXX" inputmode="numeric"/></div>
+        <div class="fg"><label>Email</label><input id="li-email" type="email" placeholder="you@email.com"/></div>
         <div class="fg"><label>Password</label><input id="li-pass" type="password" placeholder="Your password"/></div>
         <div style="text-align:right;margin-bottom:18px"><a href="#" style="font-size:12px;color:var(--teal);text-decoration:none;font-weight:600">Forgot password?</a></div>
         <button class="btn btn-teal btn-full" id="login-btn" onclick="doLogin()">Sign In to Portal →</button>
         <div class="demo-chips">
           <div class="demo-lbl">Demo accounts — tap to open portal instantly</div>
-          <div class="demo-chip" onclick="demoLogin('J. Mutua','Greenview Apartments','premium','0700000001')">
+          <div class="demo-chip" onclick="demoLogin('demo.greenview@nyumbalink.app')">
             <div class="demo-chip-ico">👔</div>
             <div class="demo-chip-info"><strong>J. Mutua · Premium Plan</strong><span>Greenview Apartments · Langata · 15 units</span></div>
           </div>
-          <div class="demo-chip" onclick="demoLogin('Kariuki Homes','Kariuki Gardens','standard','0711222333')">
+          <div class="demo-chip" onclick="demoLogin('demo.kariuki@nyumbalink.app')">
             <div class="demo-chip-ico">🏢</div>
             <div class="demo-chip-info"><strong>Kariuki Homes · Standard Plan</strong><span>Kariuki Gardens · Ruaka, Kiambu · 8 units</span></div>
           </div>
@@ -387,11 +387,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
         </div>
         <div class="sp" id="sp2">
           <button class="back-btn" onclick="goStep(1)">← Back</button>
-          <div class="sp-title">Verify identity</div><div class="sp-sub">6-digit codes confirm you are real.</div>
-          <div class="fg"><label>Phone OTP</label><div class="otp-row"><input id="otp-p" placeholder="──────" maxlength="6" inputmode="numeric"/><button class="otp-send" onclick="sendOTP('phone')">Send SMS</button></div><div class="hint">Code to: <span id="otp-pv" style="color:var(--teal);font-weight:700"></span></div></div>
-          <div class="fg"><label>Email OTP</label><div class="otp-row"><input id="otp-e" placeholder="──────" maxlength="6" inputmode="numeric"/><button class="otp-send" onclick="sendOTP('email')">Send Email</button></div><div class="hint">Code to: <span id="otp-ev" style="color:var(--teal);font-weight:700"></span></div></div>
-          <div style="background:var(--teal-g);border:1px solid var(--teal-b);border-radius:var(--r-sm);padding:10px 13px;font-size:11px;color:var(--teal);margin-bottom:14px">🔒 Demo: enter <strong>123456</strong> for both codes to continue.</div>
-          <button class="btn btn-teal btn-full" onclick="verifyOTP()">Verify &amp; Continue →</button>
+          <div class="sp-title">Confirm your details</div><div class="sp-sub">We'll create your account once you finish setup — next, tell us about your property.</div>
+          <div id="verify-box" style="background:var(--teal-g);border:1px solid var(--teal-b);border-radius:var(--r-sm);padding:14px;font-size:13px;color:var(--text);margin-bottom:14px"></div>
+          <button class="btn btn-teal btn-full" onclick="goStep(3)">Continue →</button>
         </div>
         <div class="sp" id="sp3">
           <button class="back-btn" onclick="goStep(2)">← Back</button>
@@ -441,8 +439,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="sb-grp">Main</div>
       <div class="sni on" onclick="nav('dashboard')" id="sni-dashboard"><span class="ico">📊</span>Dashboard</div>
       <div class="sni" onclick="nav('units')" id="sni-units"><span class="ico">🏠</span>Units &amp; Tenants</div>
-      <div class="sni" onclick="nav('payments')" id="sni-payments"><span class="ico">💳</span>Payments <span class="nb">3</span></div>
-      <div class="sni" onclick="nav('repairs')" id="sni-repairs"><span class="ico">🔧</span>Repairs <span class="nb">4</span></div>
+      <div class="sni" onclick="nav('payments')" id="sni-payments"><span class="ico">💳</span>Payments <span class="nb" id="nb-payments">–</span></div>
+      <div class="sni" onclick="nav('repairs')" id="sni-repairs"><span class="ico">🔧</span>Repairs <span class="nb" id="nb-repairs">–</span></div>
       <div class="sni" onclick="nav('ai')" id="sni-ai"><span class="ico">🤖</span>AI Insights</div>
       <div class="sb-grp">Billing</div>
       <div class="sni" onclick="nav('water')" id="sni-water"><span class="ico">💧</span>Water Readings</div>
@@ -480,27 +478,18 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     <div class="content">
       <!-- DASHBOARD -->
       <div class="tab-page on" id="tp-dashboard">
-        <div class="metrics">
-          <div class="metric m-t"><div class="mico">🏠</div><div class="mlbl">Total Units</div><div class="mval">15</div><div class="msub">Across 3 blocks</div></div>
-          <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Occupied</div><div class="mval">12</div><div class="msub">80% occupancy</div></div>
-          <div class="metric m-gd"><div class="mico">💰</div><div class="mlbl">Collected MTD</div><div class="mval">165K</div><div class="msub">of KES 220,000 due</div></div>
-          <div class="metric m-r"><div class="mico">🔧</div><div class="mlbl">Open Repairs</div><div class="mval">4</div><div class="msub">1 marked urgent</div></div>
+        <div class="metrics" id="dash-metrics">
+          <div class="metric m-t"><div class="mico">🏠</div><div class="mlbl">Total Units</div><div class="mval">–</div><div class="msub">Loading…</div></div>
         </div>
         <div class="g2">
           <div class="card">
-            <div class="card-hdr"><span class="card-title">Recent Activity</span><span class="live-dot"></span></div>
-            <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody"><strong>Faith Wanjiru</strong> paid KES 12,000 rent for unit A1</div><div class="atime">2h ago</div></div>
-            <div class="act"><div class="adot" style="background:var(--amber)"></div><div class="abody">Repair reported: <strong>electrical socket sparking</strong> — unit A3</div><div class="atime">4h ago</div></div>
-            <div class="act"><div class="adot" style="background:var(--red)"></div><div class="abody"><strong>Daniel Kiptoo</strong> (B2) rent now 3 days overdue</div><div class="atime">6h ago</div></div>
-            <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody"><strong>Lucy Atieno</strong> paid KES 25,000 rent for unit C5</div><div class="atime">Yesterday</div></div>
-            <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody">New tenant inquiry received for vacant unit A5</div><div class="atime">Yesterday</div></div>
+            <div class="card-hdr"><span class="card-title">Recent Payments</span><span class="live-dot"></span></div>
+            <div id="dash-activity"><div class="act"><div class="abody">Loading…</div></div></div>
           </div>
           <div class="card">
-            <div class="card-hdr"><span class="card-title">Overdue Tenants</span><span class="badge br">3 overdue</span></div>
-            <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Amount</th><th>Days Late</th></tr></thead><tbody>
-              <tr><td>Mary Achieng</td><td>A3</td><td>KES 12,000</td><td><span class="badge br">5 days</span></td></tr>
-              <tr><td>Daniel Kiptoo</td><td>B2</td><td>KES 18,000</td><td><span class="badge br">3 days</span></td></tr>
-              <tr><td>Moses Kimani</td><td>C3</td><td>KES 25,000</td><td><span class="badge br">8 days</span></td></tr>
+            <div class="card-hdr"><span class="card-title">Overdue Tenants</span><span class="badge br" id="dash-overdue-count">–</span></div>
+            <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Amount</th></tr></thead><tbody id="dash-overdue-body">
+              <tr><td colspan="3">Loading…</td></tr>
             </tbody></table></div>
             <button class="btn btn-ghost btn-sm btn-full" style="margin-top:14px" onclick="sendReminders()">📲 Send Payment Reminders</button>
           </div>
@@ -510,100 +499,52 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <!-- UNITS & TENANTS -->
       <div class="tab-page" id="tp-units">
         <div class="card" style="margin-bottom:18px">
-          <div class="card-hdr"><span class="card-title">All Units (15)</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-unit')">+ Add Unit</button></div>
-          <div class="unit-grid">
-            <div class="uc occ" onclick="toast('Opening unit A1…','i')"><div class="uc-num">A1</div><div class="uc-name">Faith Wanjiru</div><div class="uc-rent">KES 12,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc occ" onclick="toast('Opening unit A2…','i')"><div class="uc-num">A2</div><div class="uc-name">Brian Otieno</div><div class="uc-rent">KES 12,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc ovd" onclick="toast('Opening unit A3…','i')"><div class="uc-num">A3</div><div class="uc-name">Mary Achieng</div><div class="uc-rent">KES 12,000</div><span class="badge br">Overdue</span></div>
-            <div class="uc occ" onclick="toast('Opening unit A4…','i')"><div class="uc-num">A4</div><div class="uc-name">Kevin Mwangi</div><div class="uc-rent">KES 12,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc vac" onclick="openMo('mo-tenant')"><div class="uc-num">A5</div><div class="uc-name">Vacant</div><div class="uc-rent">KES 12,000</div><span class="badge bm">List vacant</span></div>
-            <div class="uc occ" onclick="toast('Opening unit B1…','i')"><div class="uc-num">B1</div><div class="uc-name">Susan Njeri</div><div class="uc-rent">KES 18,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc ovd" onclick="toast('Opening unit B2…','i')"><div class="uc-num">B2</div><div class="uc-name">Daniel Kiptoo</div><div class="uc-rent">KES 18,000</div><span class="badge br">Overdue</span></div>
-            <div class="uc occ" onclick="toast('Opening unit B3…','i')"><div class="uc-num">B3</div><div class="uc-name">Grace Wambui</div><div class="uc-rent">KES 18,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc occ" onclick="toast('Opening unit B4…','i')"><div class="uc-num">B4</div><div class="uc-name">Peter Omondi</div><div class="uc-rent">KES 18,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc vac" onclick="openMo('mo-tenant')"><div class="uc-num">B5</div><div class="uc-name">Vacant</div><div class="uc-rent">KES 18,000</div><span class="badge bm">List vacant</span></div>
-            <div class="uc occ" onclick="toast('Opening unit C1…','i')"><div class="uc-num">C1</div><div class="uc-name">James Karanja</div><div class="uc-rent">KES 25,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc occ" onclick="toast('Opening unit C2…','i')"><div class="uc-num">C2</div><div class="uc-name">Alice Chebet</div><div class="uc-rent">KES 25,000</div><span class="badge bg">Paid</span></div>
-            <div class="uc ovd" onclick="toast('Opening unit C3…','i')"><div class="uc-num">C3</div><div class="uc-name">Moses Kimani</div><div class="uc-rent">KES 25,000</div><span class="badge br">Overdue</span></div>
-            <div class="uc vac" onclick="openMo('mo-tenant')"><div class="uc-num">C4</div><div class="uc-name">Vacant</div><div class="uc-rent">KES 25,000</div><span class="badge bm">List vacant</span></div>
-            <div class="uc occ" onclick="toast('Opening unit C5…','i')"><div class="uc-num">C5</div><div class="uc-name">Lucy Atieno</div><div class="uc-rent">KES 25,000</div><span class="badge bg">Paid</span></div>
-          </div>
+          <div class="card-hdr"><span class="card-title" id="units-count-title">Units</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-unit')">+ Add Unit</button></div>
+          <div class="unit-grid" id="units-grid"><div class="msub">Loading…</div></div>
         </div>
         <div class="card">
           <div class="card-hdr"><span class="card-title">Tenant Directory</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-tenant')">+ Add Tenant</button></div>
-          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Phone</th><th>Rent</th><th>Lease Ends</th><th>Status</th></tr></thead><tbody>
-            <tr><td>Faith Wanjiru</td><td>A1</td><td>0701 234 567</td><td>KES 12,000</td><td>Dec 2026</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Mary Achieng</td><td>A3</td><td>0702 345 678</td><td>KES 12,000</td><td>Mar 2027</td><td><span class="badge br">Overdue</span></td></tr>
-            <tr><td>Susan Njeri</td><td>B1</td><td>0703 456 789</td><td>KES 18,000</td><td>Aug 2026</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Daniel Kiptoo</td><td>B2</td><td>0704 567 890</td><td>KES 18,000</td><td>Jan 2027</td><td><span class="badge br">Overdue</span></td></tr>
-            <tr><td>James Karanja</td><td>C1</td><td>0705 678 901</td><td>KES 25,000</td><td>Oct 2026</td><td><span class="badge bg">Active</span></td></tr>
+          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Phone</th><th>Rent</th><th>Move-in</th><th>Status</th></tr></thead><tbody id="tenants-body">
+            <tr><td colspan="6">Loading…</td></tr>
           </tbody></table></div>
         </div>
       </div>
 
       <!-- PAYMENTS -->
       <div class="tab-page" id="tp-payments">
-        <div class="metrics">
-          <div class="metric m-g"><div class="mico">💰</div><div class="mlbl">Collected MTD</div><div class="mval">165K</div><div class="msub">8 of 12 tenants paid</div></div>
-          <div class="metric m-r"><div class="mico">⚠️</div><div class="mlbl">Overdue</div><div class="mval">55K</div><div class="msub">3 tenants, avg 5 days late</div></div>
-          <div class="metric m-t"><div class="mico">📊</div><div class="mlbl">Collection Rate</div><div class="mval">75%</div><div class="msub">vs 82% last month</div></div>
-          <div class="metric m-b"><div class="mico">🏦</div><div class="mlbl">Via M-Pesa</div><div class="mval">91%</div><div class="msub">rest by bank transfer</div></div>
+        <div class="metrics" id="payments-metrics">
+          <div class="metric m-g"><div class="mico">💰</div><div class="mlbl">Collected MTD</div><div class="mval">–</div><div class="msub">Loading…</div></div>
         </div>
         <div class="card">
           <div class="card-hdr"><span class="card-title">Payment Records</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-pay')">💳 Record Payment</button></div>
-          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead><tbody>
-            <tr><td>Faith Wanjiru</td><td>A1</td><td>KES 12,000</td><td>M-Pesa</td><td>Jun 3</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Brian Otieno</td><td>A2</td><td>KES 12,000</td><td>M-Pesa</td><td>Jun 2</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Susan Njeri</td><td>B1</td><td>KES 18,000</td><td>M-Pesa</td><td>Jun 1</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Grace Wambui</td><td>B3</td><td>KES 18,000</td><td>M-Pesa</td><td>Jun 4</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Peter Omondi</td><td>B4</td><td>KES 18,000</td><td>Bank Transfer</td><td>Jun 5</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>James Karanja</td><td>C1</td><td>KES 25,000</td><td>M-Pesa</td><td>Jun 1</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Alice Chebet</td><td>C2</td><td>KES 25,000</td><td>M-Pesa</td><td>Jun 3</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Lucy Atieno</td><td>C5</td><td>KES 25,000</td><td>M-Pesa</td><td>Jun 6</td><td><span class="badge bg">Paid</span></td></tr>
-            <tr><td>Mary Achieng</td><td>A3</td><td>KES 12,000</td><td>—</td><td>—</td><td><span class="badge br">Overdue · 5d</span></td></tr>
-            <tr><td>Daniel Kiptoo</td><td>B2</td><td>KES 18,000</td><td>—</td><td>—</td><td><span class="badge br">Overdue · 3d</span></td></tr>
-            <tr><td>Moses Kimani</td><td>C3</td><td>KES 25,000</td><td>—</td><td>—</td><td><span class="badge br">Overdue · 8d</span></td></tr>
+          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Type</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead><tbody id="payments-body">
+            <tr><td colspan="7">Loading…</td></tr>
           </tbody></table></div>
         </div>
       </div>
 
       <!-- REPAIRS -->
       <div class="tab-page" id="tp-repairs">
-        <div class="metrics">
-          <div class="metric m-r"><div class="mico">🔧</div><div class="mlbl">Open Tickets</div><div class="mval">4</div><div class="msub">1 urgent</div></div>
-          <div class="metric m-gd"><div class="mico">⏳</div><div class="mlbl">In Progress</div><div class="mval">1</div><div class="msub">Plumbing — unit B2</div></div>
-          <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Resolved This Month</div><div class="mval">7</div><div class="msub">avg 1.8 days to fix</div></div>
-          <div class="metric m-b"><div class="mico">💵</div><div class="mlbl">Repair Spend MTD</div><div class="mval">9.4K</div><div class="msub">across 3 vendors</div></div>
+        <div class="metrics" id="repairs-metrics">
+          <div class="metric m-r"><div class="mico">🔧</div><div class="mlbl">Open Tickets</div><div class="mval">–</div><div class="msub">Loading…</div></div>
         </div>
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Open Repair Tickets</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-repair')">+ Log Repair</button></div>
-          <div class="tbl"><table><thead><tr><th>Unit</th><th>Tenant</th><th>Issue</th><th>Category</th><th>Priority</th><th>Status</th></tr></thead><tbody>
-            <tr><td>A3</td><td>Mary Achieng</td><td>Electrical socket sparking</td><td>Electrical</td><td><span class="badge br">High</span></td><td><span class="badge ba">Pending</span></td></tr>
-            <tr><td>B2</td><td>Daniel Kiptoo</td><td>Leaking kitchen tap</td><td>Plumbing</td><td><span class="badge ba">Medium</span></td><td><span class="badge bt">In Progress</span></td></tr>
-            <tr><td>C1</td><td>James Karanja</td><td>Bathroom door hinge broken</td><td>Carpentry</td><td><span class="badge bm">Low</span></td><td><span class="badge ba">Pending</span></td></tr>
-            <tr><td>C4 (vacant)</td><td>Caretaker</td><td>Broken window latch</td><td>General</td><td><span class="badge bm">Low</span></td><td><span class="badge ba">Pending</span></td></tr>
+          <div class="card-hdr"><span class="card-title">Repair Tickets</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-repair')">+ Log Repair</button></div>
+          <div class="tbl"><table><thead><tr><th>Unit</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody id="repairs-body">
+            <tr><td colspan="6">Loading…</td></tr>
           </tbody></table></div>
-        </div>
-        <div class="card" style="margin-top:18px">
-          <div class="card-hdr"><span class="card-title">Recently Resolved</span></div>
-          <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody">Geyser replaced — unit B4, by Otieno Plumbing Services</div><div class="atime">2 days ago</div></div>
-          <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody">Gate padlock replaced — main entrance</div><div class="atime">5 days ago</div></div>
-          <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody">Repainted hallway — Block C</div><div class="atime">1 week ago</div></div>
         </div>
       </div>
 
       <!-- AI INSIGHTS -->
       <div class="tab-page" id="tp-ai">
         <div class="ai-wrap">
-          <div class="ai-hdr"><div class="ai-ico">🤖</div><div class="ai-title">AI Property Insights</div><span class="ai-badge">PREMIUM</span></div>
-          <div class="ai-ins"><div class="ai-ins-ico">⚠️</div><div><div class="ai-ins-t">Payment risk rising — Moses Kimani (C3)</div><div class="ai-ins-d">8 days overdue with 2 late payments in the last 90 days. Historically, tenants matching this pattern default 40% of the time. Consider a direct call before escalating.</div><span class="ai-ins-tag tag-warn">Action recommended</span></div></div>
-          <div class="ai-ins"><div class="ai-ins-ico">💡</div><div><div class="ai-ins-t">Unit A5 has been vacant 18 days</div><div class="ai-ins-d">Similar bedsitters in Langata lease within 12 days on average. Listing price of KES 12,000 is in line with the market — consider featuring it in your next broadcast SMS.</div><span class="ai-ins-tag tag-info">Suggestion</span></div></div>
-          <div class="ai-ins"><div class="ai-ins-ico">📈</div><div><div class="ai-ins-t">Rent Score™ improved for Block B</div><div class="ai-ins-d">On-time payment rate for Block B tenants rose from 71% to 89% this quarter following SMS reminders 3 days before due date.</div><span class="ai-ins-tag tag-ok">Trending up</span></div></div>
-          <div class="ai-ins"><div class="ai-ins-ico">🔧</div><div><div class="ai-ins-t">Recurring plumbing issues — Block B</div><div class="ai-ins-d">3 plumbing tickets in Block B over 60 days, all related to kitchen taps. May indicate a shared supply line issue worth inspecting before it becomes costly.</div><span class="ai-ins-tag tag-warn">Action recommended</span></div></div>
+          <div class="ai-hdr"><div class="ai-ico">🤖</div><div class="ai-title">Property Insights</div><span class="ai-badge">PREMIUM</span></div>
+          <div id="ai-insights-body"><div class="msub" style="padding:16px">Loading…</div></div>
         </div>
         <div class="card">
           <div class="card-hdr"><span class="card-title">Ask the AI Assistant</span></div>
-          <div class="msub" style="margin-bottom:14px">Try the chat bubble in the bottom-right corner — ask things like "which tenants are overdue" or "list vacant units" and the portal updates as you type.</div>
+          <div class="msub" style="margin-bottom:14px">Try the chat bubble in the bottom-right corner — ask things like "which tenants are overdue" or "list vacant units".</div>
           <button class="btn btn-teal btn-sm" onclick="toggleChat()">🤖 Open AI Chat</button>
         </div>
       </div>
@@ -611,29 +552,20 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <!-- WATER READINGS -->
       <div class="tab-page" id="tp-water">
         <div class="meter-wrap">
-          <div class="card-hdr"><span class="card-title">June Water Meter Readings</span><span class="badge bt">KES 150 / unit</span></div>
+          <div class="card-hdr"><span class="card-title">Water Meter Readings</span><span class="badge bt" id="water-rate-badge">KES – / m³</span></div>
           <div class="mr-hdr"><span>Unit</span><span>Tenant</span><span>Previous</span><span>Current</span><span>Amount</span></div>
-          <div class="mr"><span class="mr-unit">A1</span><span class="mr-ten">Faith Wanjiru</span><span class="mr-prev">112</span><input class="mr-inp" value="119" oninput="calcWater(this)"/><span class="mr-calc">KES 1,050</span></div>
-          <div class="mr"><span class="mr-unit">A2</span><span class="mr-ten">Brian Otieno</span><span class="mr-prev">88</span><input class="mr-inp" value="95" oninput="calcWater(this)"/><span class="mr-calc">KES 1,050</span></div>
-          <div class="mr"><span class="mr-unit">B1</span><span class="mr-ten">Susan Njeri</span><span class="mr-prev">204</span><input class="mr-inp" value="214" oninput="calcWater(this)"/><span class="mr-calc">KES 1,500</span></div>
-          <div class="mr"><span class="mr-unit">B3</span><span class="mr-ten">Grace Wambui</span><span class="mr-prev">156</span><input class="mr-inp" value="163" oninput="calcWater(this)"/><span class="mr-calc">KES 1,050</span></div>
-          <div class="mr"><span class="mr-unit">C1</span><span class="mr-ten">James Karanja</span><span class="mr-prev">301</span><input class="mr-inp" value="312" oninput="calcWater(this)"/><span class="mr-calc">KES 1,650</span></div>
-          <div class="wcbar"><span class="wcbar-l">Total to bill this cycle (12 units)</span><span class="wcbar-v">KES 16,950</span></div>
-          <button class="btn btn-teal btn-full" style="margin-top:16px" onclick="toast('Water bills sent to all tenants ✅','s')">📤 Send Bills to Tenants</button>
+          <div id="water-rows"><div class="msub">Loading…</div></div>
+          <div class="wcbar"><span class="wcbar-l">Total billed this cycle</span><span class="wcbar-v" id="water-total">KES 0</span></div>
         </div>
       </div>
 
       <!-- ELECTRICITY -->
       <div class="tab-page" id="tp-electricity">
         <div class="meter-wrap">
-          <div class="card-hdr"><span class="card-title">June Electricity (Sub-metered Units)</span><span class="badge bgd">KES 22 / unit (kWh)</span></div>
+          <div class="card-hdr"><span class="card-title">Electricity Meter Readings</span><span class="badge bgd" id="elec-rate-badge">KES – / kWh</span></div>
           <div class="mr-hdr"><span>Unit</span><span>Tenant</span><span>Previous</span><span>Current</span><span>Amount</span></div>
-          <div class="mr"><span class="mr-unit">A1</span><span class="mr-ten">Faith Wanjiru</span><span class="mr-prev">540</span><input class="mr-inp" value="567" oninput="calcWater(this)"/><span class="mr-calc">KES 594</span></div>
-          <div class="mr"><span class="mr-unit">B1</span><span class="mr-ten">Susan Njeri</span><span class="mr-prev">812</span><input class="mr-inp" value="850" oninput="calcWater(this)"/><span class="mr-calc">KES 836</span></div>
-          <div class="mr"><span class="mr-unit">B4</span><span class="mr-ten">Peter Omondi</span><span class="mr-prev">690</span><input class="mr-inp" value="725" oninput="calcWater(this)"/><span class="mr-calc">KES 770</span></div>
-          <div class="mr"><span class="mr-unit">C2</span><span class="mr-ten">Alice Chebet</span><span class="mr-prev">1020</span><input class="mr-inp" value="1066" oninput="calcWater(this)"/><span class="mr-calc">KES 1,012</span></div>
-          <div class="wcbar"><span class="wcbar-l">Total to bill this cycle</span><span class="wcbar-v">KES 3,212</span></div>
-          <button class="btn btn-teal btn-full" style="margin-top:16px" onclick="toast('Electricity bills sent to all tenants ✅','s')">📤 Send Bills to Tenants</button>
+          <div id="elec-rows"><div class="msub">Loading…</div></div>
+          <div class="wcbar"><span class="wcbar-l">Total billed this cycle</span><span class="wcbar-v" id="elec-total">KES 0</span></div>
         </div>
       </div>
 
@@ -641,14 +573,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="tab-page" id="tp-garbage">
         <div class="card">
           <div class="card-hdr"><span class="card-title">Garbage Collection Billing</span><span class="badge bm">Flat fee</span></div>
-          <div class="g3" style="margin-bottom:18px">
-            <div class="metric m-t"><div class="mico">🗑️</div><div class="mlbl">Fee per unit</div><div class="mval">300</div><div class="msub">KES / month</div></div>
-            <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Collected MTD</div><div class="mval">3.6K</div><div class="msub">12 of 12 occupied units</div></div>
-            <div class="metric m-b"><div class="mico">🚛</div><div class="mlbl">Collection Day</div><div class="mval">Tue</div><div class="msub">& Friday, 7:00 AM</div></div>
+          <div class="g3" style="margin-bottom:18px" id="garbage-metrics">
+            <div class="metric m-t"><div class="mico">🗑️</div><div class="mlbl">Fee per unit</div><div class="mval">–</div><div class="msub">Loading…</div></div>
           </div>
-          <div class="tbl"><table><thead><tr><th>Vendor</th><th>Frequency</th><th>Monthly Cost</th><th>Status</th></tr></thead><tbody>
-            <tr><td>Greenline Waste Services</td><td>2x weekly</td><td>KES 4,500</td><td><span class="badge bg">Active contract</span></td></tr>
-          </tbody></table></div>
+          <div class="fg"><label>Monthly fee per unit (KES)</label><input id="garbage-fee-inp" type="number"/></div>
+          <button class="btn btn-teal btn-sm" onclick="saveGarbageFee()">Save Fee</button>
         </div>
       </div>
 
@@ -657,16 +586,16 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
         <div class="acc">
           <div class="acc-hdr" onclick="toggleAcc(this)"><div class="acc-l"><div class="acc-ico" style="background:var(--teal-g)">🏠</div><div><div class="acc-title">General Information</div><div class="acc-desc">Property name, address, units</div></div></div><span class="acc-chev">▾</span></div>
           <div class="acc-body open">
-            <div class="row2"><div class="fg"><label>Apartment Name</label><input id="set-name" value="Greenview Apartments"/></div><div class="fg"><label>Number of Units</label><input id="set-units" type="number" value="15"/></div></div>
-            <div class="row2"><div class="fg"><label>Town</label><input id="set-town" value="Langata"/></div><div class="fg"><label>County</label><select><option selected>Nairobi</option><option>Mombasa</option><option>Kisumu</option></select></div></div>
-            <button class="btn btn-teal btn-sm" onclick="toast('Property details saved ✅','s')">Save Changes</button>
+            <div class="row2"><div class="fg"><label>Apartment Name</label><input id="set-name"/></div><div class="fg"><label>Number of Units</label><input id="set-units" type="number"/></div></div>
+            <div class="row2"><div class="fg"><label>Town</label><input id="set-town"/></div><div class="fg"><label>County</label><select id="set-county"><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option><option>Kiambu</option><option>Other</option></select></div></div>
+            <button class="btn btn-teal btn-sm" onclick="saveGeneralSettings()">Save Changes</button>
           </div>
         </div>
         <div class="acc">
           <div class="acc-hdr" onclick="toggleAcc(this)"><div class="acc-l"><div class="acc-ico" style="background:var(--gold-g)">💳</div><div><div class="acc-title">Payment Settings</div><div class="acc-desc">M-Pesa paybill & reconciliation</div></div></div><span class="acc-chev">▾</span></div>
           <div class="acc-body">
-            <div class="row2"><div class="fg"><label>M-Pesa Paybill</label><input value="400200"/></div><div class="fg"><label>Account Format</label><select><option>Unit Number</option><option>Tenant Phone</option></select></div></div>
-            <div class="tog-row"><div><div class="tog-l">Auto-reconcile M-Pesa payments</div><div class="tog-h">Match incoming STK/Paybill payments to tenants automatically</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
+            <div class="row2"><div class="fg"><label>M-Pesa Paybill</label><input id="set-paybill"/></div><div class="fg"><label>Bank Name</label><input id="set-bank"/></div></div>
+            <button class="btn btn-teal btn-sm" onclick="savePaymentSettings()">Save Changes</button>
           </div>
         </div>
         <div class="acc">
@@ -682,15 +611,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <!-- FEES & CHARGES -->
       <div class="tab-page" id="tp-charges">
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Recurring Charges</span><button class="btn btn-teal btn-sm" onclick="toast('Charge added ✅','s')">+ Add Charge</button></div>
-          <div class="tbl"><table><thead><tr><th>Charge</th><th>Type</th><th>Amount</th><th>Applies To</th><th></th></tr></thead><tbody>
-            <tr><td>Water</td><td>Metered</td><td>KES 150/unit</td><td>All occupied units</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Electricity</td><td>Sub-metered</td><td>KES 22/kWh</td><td>Units A &amp; B blocks</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Garbage</td><td>Flat fee</td><td>KES 300/unit</td><td>All occupied units</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Parking</td><td>Flat fee</td><td>KES 500/unit</td><td>Optional add-on</td><td><span class="badge bm">Opt-in</span></td></tr>
-            <tr><td>Security Deposit</td><td>One-time</td><td>1 month's rent</td><td>New tenants</td><td><span class="badge bg">Active</span></td></tr>
-            <tr><td>Late Payment Penalty</td><td>Flat fee</td><td>KES 1,000</td><td>After 5 days overdue</td><td><span class="badge bg">Active</span></td></tr>
-          </tbody></table></div>
+          <div class="card-hdr"><span class="card-title">Recurring Charges</span></div>
+          <div class="msub" style="margin-bottom:14px">These rates are used automatically when you log meter readings or generate bills.</div>
+          <div class="row2"><div class="fg"><label>Water rate (KES / m³)</label><input id="charge-water-rate" type="number"/></div><div class="fg"><label>Electricity rate (KES / kWh)</label><input id="charge-elec-rate" type="number"/></div></div>
+          <div class="row2"><div class="fg"><label>Garbage fee (KES / unit / month)</label><input id="charge-garbage-fee" type="number"/></div><div class="fg"><label>Late penalty (KES / day)</label><input id="charge-penalty" type="number"/></div></div>
+          <button class="btn btn-teal btn-sm" onclick="saveCharges()">Save Charges</button>
         </div>
       </div>
 
@@ -698,42 +623,33 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="tab-page" id="tp-schedules">
         <div class="card" style="margin-bottom:18px">
           <div class="card-hdr"><span class="card-title">Rent Due Date</span></div>
-          <div class="msub" style="margin-bottom:10px">Rent is due on the <strong>5th</strong> of every month. Reminders go out automatically.</div>
-          <input type="number" class="mr-inp" style="width:80px;display:inline-block" value="5" min="1" max="28"/>
-        </div>
-        <div class="card" style="margin-bottom:18px">
-          <div class="card-hdr"><span class="card-title">Meter Reading Day</span></div>
-          <div class="day-picker">
-            <div class="dp">Mon</div><div class="dp on">Tue</div><div class="dp">Wed</div><div class="dp">Thu</div><div class="dp">Fri</div><div class="dp">Sat</div><div class="dp">Sun</div>
-          </div>
-          <div class="msub">Click a day to set it as the monthly water &amp; electricity reading day.</div>
+          <div class="msub" style="margin-bottom:10px">Day of the month rent is due. Reminders go out automatically.</div>
+          <input type="number" class="mr-inp" id="sched-rent-day" style="width:80px;display:inline-block" min="1" max="28"/>
+          <button class="btn btn-ghost btn-sm" onclick="saveSchedules()" style="margin-left:10px">Save</button>
         </div>
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Garbage Collection Days</span></div>
-          <div class="day-picker">
-            <div class="dp">Mon</div><div class="dp">Tue</div><div class="dp on">Wed</div><div class="dp">Thu</div><div class="dp on">Fri</div><div class="dp">Sat</div><div class="dp">Sun</div>
+          <div class="card-hdr"><span class="card-title">Garbage Collection Day</span></div>
+          <div class="day-picker" id="garbage-day-picker">
+            <div class="dp" data-day="1">Mon</div><div class="dp" data-day="2">Tue</div><div class="dp" data-day="3">Wed</div><div class="dp" data-day="4">Thu</div><div class="dp" data-day="5">Fri</div><div class="dp" data-day="6">Sat</div><div class="dp" data-day="0">Sun</div>
           </div>
+          <div class="msub">Click a day, then Save.</div>
+          <button class="btn btn-ghost btn-sm" onclick="saveSchedules()" style="margin-top:10px">Save</button>
         </div>
       </div>
 
       <!-- USSD SETUP -->
       <div class="tab-page" id="tp-ussd">
         <div class="card">
-          <div class="card-hdr"><span class="card-title">USSD Access for Tenants</span><span class="badge bg">Active</span></div>
-          <div class="mpb"><div class="mpb-head">Your Property USSD Code</div><div class="mpb-num">*483*72#</div><div class="mpb-steps">Tenants without smartphones dial this code to check balance, view last payment, and get the paybill number — no app or internet required.</div></div>
-          <div class="tog-row"><div><div class="tog-l">Allow balance checks via USSD</div><div class="tog-h">Tenants can dial in anytime</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
-          <div class="tog-row"><div><div class="tog-l">Allow repair reporting via USSD</div><div class="tog-h">Menu option 3 logs a repair ticket</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
+          <div class="card-hdr"><span class="card-title">USSD Access for Tenants</span><span class="badge ba">Not yet connected</span></div>
+          <div class="msub">USSD requires an Africa's Talking account and a Supabase Edge Function to handle the session — share those API credentials and I'll wire this up to go live.</div>
         </div>
       </div>
 
       <!-- WHATSAPP BOT -->
       <div class="tab-page" id="tp-whatsapp">
         <div class="card">
-          <div class="card-hdr"><span class="card-title">WhatsApp Bot</span><span class="badge bg">Connected</span></div>
-          <div class="msub" style="margin-bottom:14px">Tenants can message <strong>+254 700 400 200</strong> on WhatsApp to pay rent, report repairs, or ask questions — answered instantly by the bot.</div>
-          <div class="tog-row"><div><div class="tog-l">Auto-reply to tenant messages</div><div class="tog-h">Bot handles common questions 24/7</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
-          <div class="tog-row"><div><div class="tog-l">Escalate to me when unsure</div><div class="tog-h">Forwards complex queries via SMS</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
-          <div class="tog-row"><div><div class="tog-l">Send rent receipts on WhatsApp</div><div class="tog-h">Auto-sent after payment confirmation</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
+          <div class="card-hdr"><span class="card-title">WhatsApp Bot</span><span class="badge ba">Not yet connected</span></div>
+          <div class="msub">A live WhatsApp bot needs a WhatsApp Cloud API token + phone number ID and a Supabase Edge Function as the webhook — share those credentials and I'll wire this up to go live.</div>
         </div>
       </div>
 
@@ -741,20 +657,18 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="tab-page" id="tp-swahili">
         <div class="card">
           <div class="card-hdr"><span class="card-title">Kiswahili Language Settings</span></div>
-          <div class="tog-row"><div><div class="tog-l">Send tenant SMS in Kiswahili</div><div class="tog-h">Reminders, receipts &amp; alerts</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
-          <div class="tog-row"><div><div class="tog-l">Bilingual WhatsApp bot replies</div><div class="tog-h">Auto-detects tenant's language</div></div><label class="tog"><input type="checkbox" checked/><span class="tog-sl"></span></label></div>
-          <div class="msub" style="margin-top:14px;margin-bottom:8px;font-weight:700;color:var(--text)">Sample reminder message:</div>
-          <div class="mpb-row" style="background:var(--bg);border:1px solid var(--border)"><span style="color:var(--muted)">Kiswahili</span><b style="font-size:12px;color:var(--text);font-weight:600">"Kodi yako ya Juni KES 18,000 inadaiwa. Lipa kupitia Paybill 400200."</b></div>
+          <div class="tog-row"><div><div class="tog-l">Send tenant SMS in Kiswahili</div><div class="tog-h">Sets the default language for this property</div></div><label class="tog"><input type="checkbox" id="lang-toggle" onchange="saveLanguage()"/><span class="tog-sl"></span></label></div>
+          <div class="msub" style="margin-top:14px">Actual SMS sending in Kiswahili needs an SMS provider (Africa's Talking) connected via Edge Function — this toggle saves your preference for when that's wired up.</div>
         </div>
       </div>
 
       <!-- COMMUNITY -->
       <div class="tab-page" id="tp-community">
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Community Board</span><button class="btn btn-teal btn-sm" onclick="toast('Post published to all tenants ✅','s')">+ New Post</button></div>
-          <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody"><strong>Management:</strong> Water will be off Saturday 8AM–12PM for tank cleaning.</div><div class="atime">Today</div></div>
-          <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody"><strong>James Karanja (C1):</strong> Anyone selling a study desk? Moving in this week.</div><div class="atime">Yesterday</div></div>
-          <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody"><strong>Management:</strong> Compound gate now closes at 10PM — please use the side door after hours.</div><div class="atime">3 days ago</div></div>
+          <div class="card-hdr"><span class="card-title">Community Board</span></div>
+          <div class="fg"><textarea id="community-new-post" rows="2" placeholder="Write an announcement for your tenants…"></textarea></div>
+          <button class="btn btn-teal btn-sm" onclick="postCommunity()" style="margin-bottom:16px">+ Post Announcement</button>
+          <div id="community-feed"><div class="msub">Loading…</div></div>
         </div>
       </div>
 
@@ -762,16 +676,14 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="tab-page" id="tp-broadcast">
         <div class="card" style="margin-bottom:18px">
           <div class="card-hdr"><span class="card-title">Send Broadcast SMS</span></div>
-          <div class="fg"><label>Recipients</label><select><option>All tenants (12)</option><option>Overdue tenants (3)</option><option>Block A (4)</option><option>Block B (4)</option><option>Block C (4)</option></select></div>
-          <div class="fg"><label>Message</label><textarea rows="3" placeholder="Type your message…">Reminder: water tank cleaning this Saturday 8AM-12PM, water will be off.</textarea></div>
-          <button class="btn btn-teal btn-full" onclick="toast('SMS broadcast sent to 12 tenants ✅','s')">📤 Send Broadcast</button>
+          <div class="msub" style="margin-bottom:10px">Actual SMS delivery needs Africa's Talking API credentials wired via an Edge Function — for now this logs the message to your history below.</div>
+          <div class="fg"><label>Message</label><textarea id="broadcast-msg" rows="3" placeholder="Type your message…"></textarea></div>
+          <button class="btn btn-teal btn-full" onclick="sendBroadcast()">📤 Log Broadcast to All Tenants</button>
         </div>
         <div class="card">
           <div class="card-hdr"><span class="card-title">Sent History</span></div>
-          <div class="tbl"><table><thead><tr><th>Message</th><th>Recipients</th><th>Sent</th></tr></thead><tbody>
-            <tr><td>Gate closing time change to 10PM</td><td>12 tenants</td><td>3 days ago</td></tr>
-            <tr><td>Rent reminder — due in 3 days</td><td>Overdue (3)</td><td>5 days ago</td></tr>
-            <tr><td>Garbage collection moved to Wed/Fri</td><td>12 tenants</td><td>2 weeks ago</td></tr>
+          <div class="tbl"><table><thead><tr><th>Message</th><th>Recipients</th><th>Sent</th></tr></thead><tbody id="broadcast-history-body">
+            <tr><td colspan="3">Loading…</td></tr>
           </tbody></table></div>
         </div>
       </div>
@@ -779,20 +691,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <!-- KRA REPORTS -->
       <div class="tab-page" id="tp-kra">
         <div class="card" style="margin-bottom:18px">
-          <div class="card-hdr"><span class="card-title">Rental Income Tax Summary</span><span class="badge bgd">PREMIUM</span></div>
-          <div class="g3">
-            <div class="metric m-t"><div class="mico">📋</div><div class="mlbl">Gross Income YTD</div><div class="mval">990K</div><div class="msub">Jan – Jun 2026</div></div>
-            <div class="metric m-g"><div class="mico">💵</div><div class="mlbl">Tax Due (7.5%)</div><div class="mval">74.3K</div><div class="msub">Monthly Rental Income tax</div></div>
-            <div class="metric m-b"><div class="mico">📅</div><div class="mlbl">Next Filing</div><div class="mval">20th</div><div class="msub">of next month, via iTax</div></div>
+          <div class="card-hdr"><span class="card-title">Rental Income Summary</span><span class="badge bgd">PREMIUM</span></div>
+          <div class="g3" id="kra-metrics">
+            <div class="metric m-t"><div class="mico">📋</div><div class="mlbl">Gross Income YTD</div><div class="mval">–</div><div class="msub">Loading…</div></div>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><span class="card-title">Downloadable Reports</span></div>
-          <div class="tbl"><table><thead><tr><th>Report</th><th>Period</th><th></th></tr></thead><tbody>
-            <tr><td>Rental Income Statement</td><td>May 2026</td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading PDF…','i')">⬇ Download</button></td></tr>
-            <tr><td>Rental Income Statement</td><td>April 2026</td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading PDF…','i')">⬇ Download</button></td></tr>
-            <tr><td>Annual Summary</td><td>2025</td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading PDF…','i')">⬇ Download</button></td></tr>
-          </tbody></table></div>
+          <div class="msub" style="margin-top:14px">Calculated live from your recorded rent payments this calendar year. KRA filing (iTax) integration and PDF export aren't wired up yet — let me know if you'd like those added.</div>
         </div>
       </div>
 
@@ -800,15 +703,14 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="tab-page" id="tp-crb">
         <div class="card" style="margin-bottom:18px">
           <div class="card-hdr"><span class="card-title">Screen a Prospective Tenant</span><span class="badge bgd">PREMIUM</span></div>
-          <div class="row2"><div class="fg"><label>Full Name</label><input placeholder="e.g. John Mwangi"/></div><div class="fg"><label>National ID Number</label><input placeholder="12345678" inputmode="numeric"/></div></div>
-          <button class="btn btn-teal btn-full" onclick="toast('CRB report requested — results in ~2 minutes','i')">🔍 Run CRB Check</button>
+          <div class="msub" style="margin-bottom:10px">Saves the applicant to your records. A live CRB Africa lookup needs that provider's API credentials wired via an Edge Function — share those if you'd like real scores instead of manual entry.</div>
+          <div class="row2"><div class="fg"><label>Full Name</label><input id="crb-name" placeholder="e.g. John Mwangi"/></div><div class="fg"><label>Phone</label><input id="crb-phone" placeholder="07XX XXX XXX"/></div></div>
+          <button class="btn btn-teal btn-full" onclick="addApplication()">+ Save Applicant</button>
         </div>
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Recent Screenings</span></div>
-          <div class="tbl"><table><thead><tr><th>Applicant</th><th>For Unit</th><th>CRB Status</th><th>Score</th></tr></thead><tbody>
-            <tr><td>Esther Njoki</td><td>A5</td><td><span class="badge bg">Clear</span></td><td>742</td></tr>
-            <tr><td>Tom Wekesa</td><td>B5</td><td><span class="badge ba">Listed (minor)</span></td><td>588</td></tr>
-            <tr><td>Faith Wanjiru</td><td>A1</td><td><span class="badge bg">Clear</span></td><td>701</td></tr>
+          <div class="card-hdr"><span class="card-title">Recent Applicants</span></div>
+          <div class="tbl"><table><thead><tr><th>Applicant</th><th>Phone</th><th>Status</th></tr></thead><tbody id="crb-body">
+            <tr><td colspan="3">Loading…</td></tr>
           </tbody></table></div>
         </div>
       </div>
@@ -816,13 +718,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <!-- AMENITY BOOKING -->
       <div class="tab-page" id="tp-amenity">
         <div class="card">
-          <div class="card-hdr"><span class="card-title">Shared Amenities</span><button class="btn btn-teal btn-sm" onclick="toast('Amenity added ✅','s')">+ Add Amenity</button></div>
-          <div class="tbl"><table><thead><tr><th>Amenity</th><th>Booking Fee</th><th>Today's Bookings</th><th>Status</th></tr></thead><tbody>
-            <tr><td>🏊 Swimming Pool</td><td>Free for tenants</td><td>2 slots booked</td><td><span class="badge bg">Open</span></td></tr>
-            <tr><td>🏢 Community Hall</td><td>KES 3,000 / event</td><td>1 booking (Sat)</td><td><span class="badge bg">Open</span></td></tr>
-            <tr><td>🏋️ Gym</td><td>Free for tenants</td><td>5 check-ins</td><td><span class="badge bg">Open</span></td></tr>
-            <tr><td>🅿️ Visitor Parking</td><td>KES 100 / day</td><td>3 of 6 bays used</td><td><span class="badge bg">Open</span></td></tr>
-          </tbody></table></div>
+          <div class="card-hdr"><span class="card-title">Shared Amenities</span></div>
+          <div class="msub">There's no amenities table in your database yet, so this page is still a mockup. Want me to add one (with a bookings table too) and wire this page up for real?</div>
         </div>
       </div>
 
@@ -855,7 +752,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
   <div class="mo-overlay" id="mo-unit">
     <div class="modal">
       <button class="mc" onclick="closeMo('mo-unit')">✕</button>
-      <h3>Add Unit</h3><div class="msub">Add a new unit to Greenview Apartments.</div>
+      <h3>Add Unit</h3><div class="msub" id="mo-unit-sub">Add a new unit.</div>
       <div class="row2"><div class="fg"><label>Unit Number</label><input id="un-num" placeholder="e.g. D1"/></div><div class="fg"><label>Unit Type</label><select id="un-type"><option>Bedsitter</option><option>1 Bedroom</option><option>2 Bedroom</option><option>3 Bedroom</option></select></div></div>
       <div class="fg"><label>Monthly Rent (KES)</label><input id="un-rent" type="number" placeholder="12000" inputmode="numeric"/></div>
       <button class="btn btn-teal btn-full" onclick="addUnit()">Add Unit</button>
@@ -866,7 +763,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <button class="mc" onclick="closeMo('mo-tenant')">✕</button>
       <h3>Add Tenant</h3><div class="msub">Move a tenant into a vacant unit.</div>
       <div class="row2"><div class="fg"><label>Full Name</label><input id="tn-name" placeholder="e.g. Esther Njoki"/></div><div class="fg"><label>Phone</label><input id="tn-phone" type="tel" placeholder="07XX XXX XXX" inputmode="numeric"/></div></div>
-      <div class="row2"><div class="fg"><label>Assign Unit</label><select id="tn-unit"><option>A5 — KES 12,000</option><option>B5 — KES 18,000</option><option>C4 — KES 25,000</option></select></div><div class="fg"><label>Lease Start</label><input type="date"/></div></div>
+      <div class="row2"><div class="fg"><label>Assign Unit</label><select id="tn-unit"><option value="">Loading vacant units…</option></select></div><div class="fg"><label>Move-in Date</label><input id="tn-movein" type="date"/></div></div>
       <button class="btn btn-teal btn-full" onclick="addTenant()">Add Tenant</button>
     </div>
   </div>
@@ -874,8 +771,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     <div class="modal">
       <button class="mc" onclick="closeMo('mo-pay')">✕</button>
       <h3>Record Payment</h3><div class="msub">Manually log a payment received outside M-Pesa STK.</div>
-      <div class="row2"><div class="fg"><label>Tenant</label><select id="pay-tenant"><option>Mary Achieng — A3</option><option>Daniel Kiptoo — B2</option><option>Moses Kimani — C3</option></select></div><div class="fg"><label>Amount (KES)</label><input id="pay-amount" type="number" placeholder="12000" inputmode="numeric"/></div></div>
-      <div class="fg"><label>Method</label><select id="pay-method"><option>M-Pesa</option><option>Bank Transfer</option><option>Cash</option></select></div>
+      <div class="row2"><div class="fg"><label>Tenant</label><select id="pay-tenant"><option value="">Loading tenants…</option></select></div><div class="fg"><label>Amount (KES)</label><input id="pay-amount" type="number" placeholder="12000" inputmode="numeric"/></div></div>
+      <div class="row2"><div class="fg"><label>Payment For</label><select id="pay-type"><option value="rent">Rent</option><option value="water">Water</option><option value="electricity">Electricity</option><option value="garbage">Garbage</option><option value="deposit">Deposit</option><option value="penalty">Penalty</option><option value="other">Other</option></select></div><div class="fg"><label>Method</label><select id="pay-method"><option value="mpesa">M-Pesa</option><option value="bank">Bank Transfer</option><option value="cash">Cash</option><option value="other">Other</option></select></div></div>
       <button class="btn btn-teal btn-full" onclick="recordPayment()">Record Payment</button>
     </div>
   </div>
@@ -883,9 +780,10 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     <div class="modal">
       <button class="mc" onclick="closeMo('mo-repair')">✕</button>
       <h3>Log Repair</h3><div class="msub">Create a new repair ticket.</div>
-      <div class="row2"><div class="fg"><label>Unit</label><input id="rp-unit" placeholder="e.g. A1"/></div><div class="fg"><label>Category</label><select id="rp-cat"><option>Plumbing</option><option>Electrical</option><option>Carpentry</option><option>General</option></select></div></div>
-      <div class="fg"><label>Issue Description</label><textarea id="rp-desc" rows="3" placeholder="Describe the issue…"></textarea></div>
-      <div class="fg"><label>Priority</label><select id="rp-priority"><option>Low</option><option>Medium</option><option>High</option></select></div>
+      <div class="row2"><div class="fg"><label>Unit</label><select id="rp-unit"><option value="">Loading units…</option></select></div><div class="fg"><label>Category</label><select id="rp-cat"><option value="plumbing">Plumbing</option><option value="electrical">Electrical</option><option value="masonry">Masonry</option><option value="wifi">WiFi</option><option value="security">Security</option><option value="cleaning">Cleaning</option><option value="hvac">HVAC</option><option value="appliance">Appliance</option><option value="other">Other</option></select></div></div>
+      <div class="fg"><label>Title</label><input id="rp-title" placeholder="e.g. Leaking kitchen tap"/></div>
+      <div class="fg"><label>Description</label><textarea id="rp-desc" rows="3" placeholder="Describe the issue…"></textarea></div>
+      <div class="fg"><label>Priority</label><select id="rp-priority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
       <button class="btn btn-teal btn-full" onclick="addRepair()">Create Ticket</button>
     </div>
   </div>
@@ -893,11 +791,55 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
   <div class="toast" id="toast"></div>
 
 <script>
+/* ============ SUPABASE CLIENT ============ */
+const SUPABASE_URL = 'https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_bYCBupOquxymPjm_007iKg_B-qXkivU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 /* ============ STATE ============ */
-let STATE = { name:'Landlord', apt:'My Property', plan:'standard', phone:'' };
+let STATE = { name:'Landlord', plan:'standard', phone:'', email:'' };
 let chosenPlan = { id:'basic', monthly:0, annual:0 };
 let billingAnnual = false;
 let stkConfirmed = false;
+let supaUser = null;
+let currentPropertyId = null;
+let propertyData = null;
+let unitsCache = [];
+let tenantsCache = [];
+let repairsCache = [];
+let paymentsCache = [];
+
+function money(n){ return 'KES ' + Math.round(n||0).toLocaleString(); }
+function shortMoney(n){
+  n = n || 0;
+  if(n >= 1000) return (n/1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'K';
+  return String(Math.round(n));
+}
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('en-KE', {day:'numeric', month:'short', year:'numeric'});
+}
+function timeAgo(d){
+  if(!d) return '—';
+  const diff = Date.now() - new Date(d).getTime();
+  const mins = Math.floor(diff/60000);
+  if(mins < 1) return 'just now';
+  if(mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs/24);
+  if(days === 1) return 'Yesterday';
+  if(days < 7) return days + 'd ago';
+  return fmtDate(d);
+}
+function currentPeriod(){
+  const now = new Date();
+  return { month: now.getMonth()+1, year: now.getFullYear() };
+}
+function esc(s){
+  if(s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 /* ============ TOAST ============ */
 function toast(msg, type){
@@ -924,52 +866,91 @@ function showAuthErr(msg){
 }
 
 /* ============ LOGIN ============ */
-function doLogin(){
-  const phone = document.getElementById('li-phone').value.trim();
-  const pass = document.getElementById('li-pass').value.trim();
-  if(!phone || !pass){ showAuthErr('Please enter your phone number and password.'); return; }
+async function doLogin(){
+  const email = document.getElementById('li-email').value.trim();
+  const pass = document.getElementById('li-pass').value;
+  if(!email || !pass){ showAuthErr('Please enter your email and password.'); return; }
   document.getElementById('auth-err').classList.remove('on');
-  openPortal('Landlord', 'My Property', 'standard', phone);
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Sign In to Portal →';
+  if(error){ showAuthErr(error.message); return; }
+  await loadPortalForUser(data.user);
 }
 
-function demoLogin(name, apt, plan, phone){
-  openPortal(name, apt, plan, phone);
+async function demoLogin(email){
+  document.getElementById('auth-err').classList.remove('on');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
+  if(error){ showAuthErr('Demo login failed: ' + error.message); return; }
+  await loadPortalForUser(data.user);
 }
 
-function openPortal(name, apt, plan, phone){
-  STATE = { name, apt, plan, phone };
-  document.getElementById('sb-name').textContent = name;
-  document.getElementById('sb-phone').textContent = phone;
-  document.getElementById('sb-apt').textContent = apt;
-  document.getElementById('sb-plan-txt').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-  document.getElementById('sb-av').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+async function loadPortalForUser(user){
+  supaUser = user;
+  const { data: landlord, error: lErr } = await sb.from('landlords').select('*').eq('id', user.id).single();
+  if(lErr || !landlord){
+    showAuthErr('Could not load your landlord profile.');
+    await sb.auth.signOut();
+    return;
+  }
+  STATE = { name: landlord.name, plan: landlord.plan || 'basic', phone: landlord.phone, email: landlord.email };
+
+  let { data: props } = await sb.from('properties').select('*').eq('landlord_id', user.id).order('created_at', { ascending:true });
+  if(!props || props.length === 0){
+    const { data: newProp } = await sb.from('properties').insert({
+      landlord_id: user.id, name: STATE.name + "'s Property", total_units: 0
+    }).select().single();
+    props = newProp ? [newProp] : [];
+    toast('New property created — fill in details under Property Settings', 'i');
+  }
+  propertyData = props[0];
+  currentPropertyId = propertyData ? propertyData.id : null;
+
+  document.getElementById('sb-name').textContent = STATE.name;
+  document.getElementById('sb-phone').textContent = STATE.phone || '';
+  document.getElementById('sb-apt').textContent = propertyData ? propertyData.name : 'My Property';
+  document.getElementById('sb-plan-txt').textContent = STATE.plan.charAt(0).toUpperCase() + STATE.plan.slice(1);
+  document.getElementById('sb-av').textContent = STATE.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('auth').style.display = 'none';
   document.getElementById('portal').classList.add('on');
   nav('dashboard');
-  toast('Welcome back, ' + name.split(' ')[0] + '! 🎉', 's');
+  toast('Welcome back, ' + STATE.name.split(' ')[0] + '! 🎉', 's');
 }
 
-function logout(){
+async function logout(){
+  await sb.auth.signOut();
+  supaUser = null; currentPropertyId = null; propertyData = null;
+  unitsCache = []; tenantsCache = []; repairsCache = []; paymentsCache = [];
   document.getElementById('portal').classList.remove('on');
   document.getElementById('auth').style.display = 'flex';
   swTab('login');
 }
+
+/* restore session on page load */
+(async function initSession(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){ await loadPortalForUser(session.user); }
+})();
 
 /* ============ SIGNUP WIZARD ============ */
 function goStep(n){
   if(n === 2){
     const name = document.getElementById('s1-name').value.trim();
     const phone = document.getElementById('s1-phone').value.trim();
+    const email = document.getElementById('s1-email').value.trim();
     const pass = document.getElementById('s1-pass').value;
     const pass2 = document.getElementById('s1-pass2').value;
     const terms = document.getElementById('ag-terms').checked;
     if(!name || !phone){ showAuthErr('Please enter your name and phone number.'); return; }
+    if(!email){ showAuthErr('Please enter an email — it will be your login.'); return; }
     if(pass.length < 8){ showAuthErr('Password must be at least 8 characters.'); return; }
     if(pass !== pass2){ showAuthErr('Passwords do not match.'); return; }
     if(!terms){ showAuthErr('Please agree to the Terms & Privacy Policy.'); return; }
     document.getElementById('auth-err').classList.remove('on');
-    document.getElementById('otp-pv').textContent = phone;
-    document.getElementById('otp-ev').textContent = document.getElementById('s1-email').value.trim() || '—';
+    document.getElementById('verify-box').innerHTML =
+      '<b>' + esc(name) + '</b><br>' + esc(phone) + ' · ' + esc(email) +
+      '<br><span style="color:var(--muted)">This email and password will become your portal login once you finish setup.</span>';
   }
   setWizStep(n);
 }
@@ -986,27 +967,6 @@ function setWizStep(n){
   for(let i=1;i<=5;i++){
     document.getElementById('sp'+i).classList.toggle('on', i === n);
   }
-}
-
-function sendOTP(type){
-  const btn = event.target;
-  const phone = document.getElementById('s1-phone').value.trim() || 'your phone';
-  const email = document.getElementById('s1-email').value.trim() || 'your email';
-  btn.textContent = 'Sent ✓';
-  btn.disabled = true;
-  toast((type === 'phone' ? 'SMS' : 'Email') + ' code sent to ' + (type === 'phone' ? phone : email) + ' (use 123456)', 'i');
-  setTimeout(()=>{ btn.textContent = type === 'phone' ? 'Resend SMS' : 'Resend Email'; btn.disabled = false; }, 8000);
-}
-
-function verifyOTP(){
-  const p = document.getElementById('otp-p').value.trim();
-  const e = document.getElementById('otp-e').value.trim();
-  if(p !== '123456' || e !== '123456'){
-    showAuthErr('Invalid code. Use 123456 for both fields in this demo.');
-    return;
-  }
-  document.getElementById('auth-err').classList.remove('on');
-  goStep(3);
 }
 
 function pickPlan(id, monthly, annual){
@@ -1053,29 +1013,66 @@ function triggerSTK(){
     status.style.color = 'var(--green)';
     btn.textContent = 'Payment Sent ✓';
     stkConfirmed = true;
-    toast('M-Pesa payment confirmed ✅', 's');
+    toast('M-Pesa payment confirmed ✅ (simulated — live STK needs your Daraja API keys)', 's');
   }, 2200);
 }
 
-function doSignup(){
+async function doSignup(){
   const isFree = chosenPlan.id === 'basic';
   const agree = document.getElementById('ag-bill');
   if(!isFree){
     const code = document.getElementById('mpesa-code').value.trim();
-    if(!stkConfirmed && !code){
-      showAuthErr('Please complete payment via STK Push or enter your M-Pesa confirmation code.');
-      return;
-    }
-    if(agree && !agree.checked){
-      showAuthErr('Please agree to the subscription terms.');
-      return;
-    }
+    if(!stkConfirmed && !code){ showAuthErr('Please complete payment via STK Push or enter your M-Pesa confirmation code.'); return; }
+    if(agree && !agree.checked){ showAuthErr('Please agree to the subscription terms.'); return; }
   }
   document.getElementById('auth-err').classList.remove('on');
-  const name = document.getElementById('s1-name').value.trim() || 'Landlord';
-  const phone = document.getElementById('s1-phone').value.trim() || '0700 000 000';
-  const apt = document.getElementById('s3-name').value.trim() || 'My Property';
-  openPortal(name, apt, chosenPlan.id, phone);
+
+  const name = document.getElementById('s1-name').value.trim();
+  const phone = document.getElementById('s1-phone').value.trim();
+  const email = document.getElementById('s1-email').value.trim();
+  const password = document.getElementById('s1-pass').value;
+  const aptName = document.getElementById('s3-name').value.trim() || (name + "'s Property");
+  const town = document.getElementById('s3-town').value.trim();
+  const county = document.getElementById('s3-county').value;
+  const units = parseInt(document.getElementById('s3-units').value, 10) || 0;
+  const paybill = document.getElementById('s3-paybill').value.trim();
+
+  const btn = document.getElementById('activate-btn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { name, phone, role: 'landlord', plan: chosenPlan.id } }
+  });
+
+  btn.disabled = false; btn.textContent = '🚀 Activate My Portal';
+
+  if(error){ showAuthErr(error.message); return; }
+
+  if(!data.session){
+    toast('Account created! Check ' + email + ' to confirm, then sign in.', 's');
+    swTab('login');
+    document.getElementById('li-email').value = email;
+    return;
+  }
+
+  await sb.from('properties').insert({
+    landlord_id: data.user.id, name: aptName, town, county,
+    total_units: units, mpesa_paybill: paybill
+  });
+
+  if(!isFree){
+    const price = billingAnnual ? chosenPlan.annual : chosenPlan.monthly;
+    const period = currentPeriod();
+    await sb.from('subscriptions').insert({
+      landlord_id: data.user.id, plan: chosenPlan.id, amount: price,
+      period_month: period.month, period_year: period.year,
+      status: 'paid', payment_method: 'mpesa',
+      mpesa_reference: document.getElementById('mpesa-code').value.trim() || 'STK-CONFIRMED'
+    });
+  }
+
+  await loadPortalForUser(data.user);
 }
 
 /* ============ PORTAL NAV ============ */
@@ -1087,14 +1084,23 @@ const PAGE_TITLES = {
   kra:'KRA Reports', crb:'CRB Screening', amenity:'Amenity Booking'
 };
 
+const PAGE_LOADERS = {
+  dashboard: loadDashboard, units: loadUnits, payments: loadPayments, repairs: loadRepairs,
+  ai: loadAI, water: loadWater, electricity: loadElectricity, garbage: loadGarbage,
+  settings: loadSettings, charges: loadCharges, schedules: loadSchedules, swahili: loadSwahili,
+  community: loadCommunity, broadcast: loadBroadcast, kra: loadKRA, crb: loadCRB
+};
+
 function nav(page){
   document.querySelectorAll('.sni').forEach(s => s.classList.remove('on'));
-  document.getElementById('sni-' + page).classList.add('on');
+  const sni = document.getElementById('sni-' + page);
+  if(sni) sni.classList.add('on');
   document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('on'));
   document.getElementById('tp-' + page).classList.add('on');
   document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
   closeSB();
   window.scrollTo(0,0);
+  if(currentPropertyId && PAGE_LOADERS[page]) PAGE_LOADERS[page]();
 }
 
 function toggleSB(){
@@ -1106,48 +1112,541 @@ function closeSB(){
   document.getElementById('sb-ov').classList.remove('on');
 }
 
-/* ============ MODALS ============ */
-function openMo(id){ document.getElementById(id).classList.add('open'); }
-function closeMo(id){ document.getElementById(id).classList.remove('open'); }
+/* ============ DASHBOARD ============ */
+async function loadDashboard(){
+  const period = currentPeriod();
+  const [unitsRes, tenantsRes, paymentsRes, repairsRes, recentPayRes] = await Promise.all([
+    sb.from('units').select('*').eq('property_id', currentPropertyId),
+    sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
+    sb.from('payments').select('*').eq('property_id', currentPropertyId).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year),
+    sb.from('repairs').select('*').eq('property_id', currentPropertyId).in('status', ['open','assigned','in_progress']),
+    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(5)
+  ]);
 
-function addUnit(){
-  const num = document.getElementById('un-num').value.trim();
-  if(!num){ toast('Please enter a unit number', 'e'); return; }
-  toast('Unit ' + num + ' added ✅', 's');
-  closeMo('mo-unit');
-}
-function addTenant(){
-  const name = document.getElementById('tn-name').value.trim();
-  if(!name){ toast("Please enter the tenant's name", 'e'); return; }
-  toast(name + ' added as a tenant ✅', 's');
-  closeMo('mo-tenant');
-}
-function recordPayment(){
-  const amt = document.getElementById('pay-amount').value.trim();
-  if(!amt){ toast('Please enter an amount', 'e'); return; }
-  toast('Payment of KES ' + Number(amt).toLocaleString() + ' recorded ✅', 's');
-  closeMo('mo-pay');
-}
-function addRepair(){
-  const unit = document.getElementById('rp-unit').value.trim();
-  const desc = document.getElementById('rp-desc').value.trim();
-  if(!unit || !desc){ toast('Please fill in unit and issue description', 'e'); return; }
-  toast('Repair ticket created for unit ' + unit + ' ✅', 's');
-  closeMo('mo-repair');
-}
-function sendReminders(){
-  toast('Payment reminder SMS sent to 3 overdue tenants 📲', 's');
+  const units = unitsRes.data || [];
+  const tenants = tenantsRes.data || [];
+  const monthPayments = paymentsRes.data || [];
+  const openRepairs = repairsRes.data || [];
+  const recentPayments = recentPayRes.data || [];
+
+  unitsCache = units; tenantsCache = tenants; repairsCache = openRepairs; paymentsCache = monthPayments;
+
+  const occupied = units.filter(u => u.status === 'occupied').length;
+  const collectedMTD = monthPayments.reduce((s,p) => s + Number(p.amount||0), 0);
+  const paidTenantIds = new Set(monthPayments.filter(p=>p.payment_type==='rent').map(p=>p.tenant_id));
+  const overdueTenants = tenants.filter(t => t.unit_id && !paidTenantIds.has(t.id));
+
+  document.getElementById('dash-metrics').innerHTML = `
+    <div class="metric m-t"><div class="mico">🏠</div><div class="mlbl">Total Units</div><div class="mval">${units.length}</div><div class="msub">${occupied} occupied</div></div>
+    <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Occupancy</div><div class="mval">${units.length ? Math.round(occupied/units.length*100) : 0}%</div><div class="msub">${units.length-occupied} vacant</div></div>
+    <div class="metric m-gd"><div class="mico">💰</div><div class="mlbl">Collected MTD</div><div class="mval">${shortMoney(collectedMTD)}</div><div class="msub">${monthPayments.length} payments this month</div></div>
+    <div class="metric m-r"><div class="mico">🔧</div><div class="mlbl">Open Repairs</div><div class="mval">${openRepairs.length}</div><div class="msub">${openRepairs.filter(r=>r.priority==='urgent').length} urgent</div></div>
+  `;
+
+  document.getElementById('dash-activity').innerHTML = recentPayments.length ? recentPayments.map(p => `
+    <div class="act"><div class="adot" style="background:var(--green)"></div><div class="abody"><strong>${esc(p.tenants?.name || 'Tenant')}</strong> paid ${money(p.amount)} ${esc(p.payment_type)} for unit ${esc(p.units?.unit_number || '—')}</div><div class="atime">${timeAgo(p.created_at)}</div></div>
+  `).join('') : '<div class="msub" style="padding:10px">No payments recorded yet.</div>';
+
+  document.getElementById('dash-overdue-count').textContent = overdueTenants.length + ' overdue';
+  document.getElementById('dash-overdue-body').innerHTML = overdueTenants.length ? overdueTenants.map(t => {
+    const unit = units.find(u => u.id === t.unit_id);
+    return `<tr><td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${money(unit?.monthly_rent)}</td></tr>`;
+  }).join('') : '<tr><td colspan="3">No overdue tenants this month 🎉</td></tr>';
 }
 
-/* ============ METER CALC (demo) ============ */
-function calcWater(input){
+async function sendReminders(){
+  if(!tenantsCache.length){ toast('Load the dashboard first', 'e'); return; }
+  const period = currentPeriod();
+  const { data: payments } = await sb.from('payments').select('tenant_id').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
+  const paidIds = new Set((payments||[]).map(p=>p.tenant_id));
+  const overdue = tenantsCache.filter(t => t.unit_id && !paidIds.has(t.id));
+  if(!overdue.length){ toast('No overdue tenants to remind 🎉', 'i'); return; }
+  const rows = overdue.map(t => ({
+    recipient_phone: t.phone, recipient_name: t.name, tenant_id: t.id, property_id: currentPropertyId,
+    message_type: 'rent_reminder', message_body: 'Reminder: your rent payment is overdue. Please pay via Paybill ' + (propertyData?.mpesa_paybill || ''), status: 'logged'
+  }));
+  await sb.from('sms_logs').insert(rows);
+  toast('Reminder logged for ' + overdue.length + ' tenant(s) — connect Africa\'s Talking via Edge Function to actually send SMS', 's');
+}
+
+/* ============ UNITS & TENANTS ============ */
+async function loadUnits(){
+  const [unitsRes, tenantsRes] = await Promise.all([
+    sb.from('units').select('*').eq('property_id', currentPropertyId).order('unit_number'),
+    sb.from('tenants').select('*').eq('property_id', currentPropertyId).order('name')
+  ]);
+  const units = unitsRes.data || [];
+  const tenants = tenantsRes.data || [];
+  unitsCache = units; tenantsCache = tenants;
+
+  document.getElementById('units-count-title').textContent = 'Units (' + units.length + ')';
+  document.getElementById('units-grid').innerHTML = units.length ? units.map(u => {
+    const tenant = tenants.find(t => t.id === u.current_tenant_id) || tenants.find(t => t.unit_id === u.id && t.status === 'active');
+    const cls = u.status === 'occupied' ? 'occ' : u.status === 'maintenance' ? 'ovd' : 'vac';
+    const badge = u.status === 'occupied' ? '<span class="badge bg">Occupied</span>' : u.status === 'maintenance' ? '<span class="badge br">Maintenance</span>' : '<span class="badge bm">Vacant</span>';
+    return `<div class="uc ${cls}"><div class="uc-num">${esc(u.unit_number)}</div><div class="uc-name">${esc(tenant ? tenant.name : 'Vacant')}</div><div class="uc-rent">${money(u.monthly_rent)}</div>${badge}</div>`;
+  }).join('') : '<div class="msub">No units yet — click "+ Add Unit" to create one.</div>';
+
+  document.getElementById('tenants-body').innerHTML = tenants.length ? tenants.map(t => {
+    const unit = units.find(u => u.id === t.unit_id);
+    const statusBadge = t.status === 'active' ? '<span class="badge bg">Active</span>' : t.status === 'blacklisted' ? '<span class="badge br">Blacklisted</span>' : '<span class="badge bm">Inactive</span>';
+    return `<tr><td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${esc(t.phone)}</td><td>${money(unit?.monthly_rent)}</td><td>${fmtDate(t.move_in_date)}</td><td>${statusBadge}</td></tr>`;
+  }).join('') : '<tr><td colspan="6">No tenants yet.</td></tr>';
+}
+
+/* ============ PAYMENTS ============ */
+async function loadPayments(){
+  const period = currentPeriod();
+  const [payRes, monthRes] = await Promise.all([
+    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(50),
+    sb.from('payments').select('amount').eq('property_id', currentPropertyId).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year)
+  ]);
+  const payments = payRes.data || [];
+  paymentsCache = payments;
+  const collectedMTD = (monthRes.data||[]).reduce((s,p)=>s+Number(p.amount||0),0);
+
+  document.getElementById('payments-metrics').innerHTML = `
+    <div class="metric m-g"><div class="mico">💰</div><div class="mlbl">Collected MTD</div><div class="mval">${shortMoney(collectedMTD)}</div><div class="msub">${(monthRes.data||[]).length} payments this month</div></div>
+    <div class="metric m-t"><div class="mico">📋</div><div class="mlbl">All-time Records</div><div class="mval">${payments.length}</div><div class="msub">most recent 50 shown</div></div>
+  `;
+
+  const statusBadge = s => s==='confirmed' ? '<span class="badge bg">Confirmed</span>' : s==='pending' ? '<span class="badge ba">Pending</span>' : s==='failed' ? '<span class="badge br">Failed</span>' : '<span class="badge bm">Reversed</span>';
+
+  document.getElementById('payments-body').innerHTML = payments.length ? payments.map(p => `
+    <tr><td>${esc(p.tenants?.name||'—')}</td><td>${esc(p.units?.unit_number||'—')}</td><td>${esc(p.payment_type)}</td><td>${money(p.amount)}</td><td>${esc(p.payment_method||'—')}</td><td>${fmtDate(p.created_at)}</td><td>${statusBadge(p.status)}</td></tr>
+  `).join('') : '<tr><td colspan="7">No payments recorded yet.</td></tr>';
+}
+
+/* ============ REPAIRS ============ */
+async function loadRepairs(){
+  const { data: repairs } = await sb.from('repairs').select('*, units(unit_number)').eq('property_id', currentPropertyId).order('submitted_at', {ascending:false});
+  const list = repairs || [];
+  repairsCache = list.filter(r => ['open','assigned','in_progress'].includes(r.status));
+
+  document.getElementById('repairs-metrics').innerHTML = `
+    <div class="metric m-r"><div class="mico">🔧</div><div class="mlbl">Open Tickets</div><div class="mval">${repairsCache.length}</div><div class="msub">${repairsCache.filter(r=>r.priority==='urgent').length} urgent</div></div>
+    <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Completed</div><div class="mval">${list.filter(r=>r.status==='completed').length}</div><div class="msub">all-time</div></div>
+  `;
+
+  const prBadge = p => p==='urgent' ? '<span class="badge br">Urgent</span>' : p==='high' ? '<span class="badge ba">High</span>' : '<span class="badge bm">Normal</span>';
+  const stBadge = s => ({open:'<span class="badge ba">Open</span>',assigned:'<span class="badge bt">Assigned</span>',in_progress:'<span class="badge bt">In Progress</span>',completed:'<span class="badge bg">Completed</span>',cancelled:'<span class="badge bm">Cancelled</span>'}[s] || s);
+
+  document.getElementById('repairs-body').innerHTML = list.length ? list.map(r => `
+    <tr><td>${esc(r.units?.unit_number||'—')}</td><td>${esc(r.title)}</td><td>${esc(r.category)}</td><td>${prBadge(r.priority)}</td><td>${stBadge(r.status)}</td>
+    <td>${r.status!=='completed' && r.status!=='cancelled' ? `<button class="btn btn-ghost btn-sm" onclick="markRepairComplete('${r.id}')">Mark Done</button>` : ''}</td></tr>
+  `).join('') : '<tr><td colspan="6">No repair tickets yet.</td></tr>';
+}
+
+async function markRepairComplete(id){
+  const { error } = await sb.from('repairs').update({ status:'completed', completed_at: new Date().toISOString() }).eq('id', id);
+  if(error){ toast('Could not update ticket: ' + error.message, 'e'); return; }
+  toast('Repair marked complete ✅', 's');
+  loadRepairs();
+}
+
+/* ============ AI INSIGHTS (computed from real data) ============ */
+async function loadAI(){
+  const body = document.getElementById('ai-insights-body');
+  if(STATE.plan !== 'premium'){
+    body.innerHTML = '<div class="msub" style="padding:16px">AI Insights is a Premium feature. Upgrade your plan in Settings to unlock it.</div>';
+    return;
+  }
+  const period = currentPeriod();
+  const [unitsRes, tenantsRes, paymentsRes, repairsRes] = await Promise.all([
+    sb.from('units').select('*').eq('property_id', currentPropertyId),
+    sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
+    sb.from('payments').select('*').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('period_month',period.month).eq('period_year',period.year),
+    sb.from('repairs').select('*').eq('property_id', currentPropertyId)
+  ]);
+  const units = unitsRes.data || [];
+  const tenants = tenantsRes.data || [];
+  const paidIds = new Set((paymentsRes.data||[]).map(p=>p.tenant_id));
+  const overdue = tenants.filter(t => t.unit_id && !paidIds.has(t.id));
+  const vacant = units.filter(u => u.status === 'vacant');
+  const repairs = repairsRes.data || [];
+
+  const cats = {};
+  repairs.forEach(r => { cats[r.category] = (cats[r.category]||0)+1; });
+  const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+
+  let insights = [];
+  if(overdue.length){
+    const worst = overdue.sort((a,b)=>(b.rent_score||500)-(a.rent_score||500))[0];
+    insights.push(`<div class="ai-ins"><div class="ai-ins-ico">⚠️</div><div><div class="ai-ins-t">${overdue.length} tenant(s) overdue this month</div><div class="ai-ins-d">Including ${esc(worst.name)} — consider sending a reminder from the Dashboard.</div><span class="ai-ins-tag tag-warn">Action recommended</span></div></div>`);
+  }
+  if(vacant.length){
+    insights.push(`<div class="ai-ins"><div class="ai-ins-ico">💡</div><div><div class="ai-ins-t">${vacant.length} unit(s) sitting vacant</div><div class="ai-ins-d">${vacant.map(u=>u.unit_number).join(', ')} — list them via Broadcast SMS to your tenant network.</div><span class="ai-ins-tag tag-info">Suggestion</span></div></div>`);
+  }
+  if(topCat && topCat[1] >= 2){
+    insights.push(`<div class="ai-ins"><div class="ai-ins-ico">🔧</div><div><div class="ai-ins-t">Recurring ${esc(topCat[0])} issues</div><div class="ai-ins-d">${topCat[1]} ${esc(topCat[0])} tickets logged — may be worth a proactive inspection.</div><span class="ai-ins-tag tag-warn">Action recommended</span></div></div>`);
+  }
+  if(!overdue.length && !vacant.length){
+    insights.push(`<div class="ai-ins"><div class="ai-ins-ico">📈</div><div><div class="ai-ins-t">Fully occupied, fully paid</div><div class="ai-ins-d">Every active tenant has paid this month and there are no vacant units. Nice work.</div><span class="ai-ins-tag tag-ok">On track</span></div></div>`);
+  }
+  body.innerHTML = insights.join('') || '<div class="msub" style="padding:16px">Not enough data yet to generate insights.</div>';
+}
+
+/* ============ WATER / ELECTRICITY READINGS ============ */
+async function loadMeterReadings(kind){
+  const isWater = kind === 'water';
+  const table = isWater ? 'water_readings' : 'electricity_readings';
+  const rateField = isWater ? 'water_rate_per_m3' : 'electricity_rate_per_unit';
+  const rate = Number(propertyData?.[rateField] || (isWater ? 85 : 25));
+
+  document.getElementById(isWater ? 'water-rate-badge' : 'elec-rate-badge').textContent = 'KES ' + rate + (isWater ? ' / m³' : ' / kWh');
+
+  const [unitsRes, tenantsRes, readingsRes] = await Promise.all([
+    sb.from('units').select('*').eq('property_id', currentPropertyId).eq('status','occupied').order('unit_number'),
+    sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
+    sb.from(table).select('*').eq('property_id', currentPropertyId).order('reading_date', {ascending:false})
+  ]);
+  const units = unitsRes.data || [];
+  const tenants = tenantsRes.data || [];
+  const readings = readingsRes.data || [];
+
+  const latestByUnit = {};
+  readings.forEach(r => { if(!latestByUnit[r.unit_id]) latestByUnit[r.unit_id] = r; });
+
+  let total = 0;
+  const rowsHtml = units.length ? units.map(u => {
+    const tenant = tenants.find(t => t.unit_id === u.id);
+    const last = latestByUnit[u.id];
+    const prev = last ? Number(last.current_reading) : 0;
+    return `<div class="mr" data-unit="${u.id}" data-tenant="${tenant?tenant.id:''}" data-prev="${prev}">
+      <span class="mr-unit">${esc(u.unit_number)}</span><span class="mr-ten">${esc(tenant?tenant.name:'—')}</span>
+      <span class="mr-prev">${prev}</span>
+      <input class="mr-inp" type="number" value="${prev}" oninput="calcMeter(this,${rate})"/>
+      <span class="mr-calc">${money(0)}</span></div>`;
+  }).join('') : '<div class="msub">No occupied units to read.</div>';
+
+  const containerId = isWater ? 'water-rows' : 'elec-rows';
+  document.getElementById(containerId).innerHTML = rowsHtml + (units.length ? `<button class="btn btn-teal btn-full" style="margin-top:16px" onclick="saveMeterReadings('${kind}')">💾 Save This Cycle's Readings</button>` : '');
+
+  document.getElementById(isWater ? 'water-total' : 'elec-total').textContent = money(total);
+}
+function loadWater(){ return loadMeterReadings('water'); }
+function loadElectricity(){ return loadMeterReadings('electricity'); }
+
+function calcMeter(input, rate){
   const row = input.closest('.mr');
-  const calc = row.querySelector('.mr-calc');
-  const prev = parseFloat(row.querySelector('.mr-prev').textContent) || 0;
+  const prev = parseFloat(row.dataset.prev) || 0;
   const curr = parseFloat(input.value) || 0;
   const units = Math.max(curr - prev, 0);
-  const rate = 150;
-  calc.textContent = 'KES ' + (units * rate).toLocaleString();
+  row.querySelector('.mr-calc').textContent = money(units * rate);
+  const containerId = input.closest('#water-rows') ? 'water-total' : 'elec-total';
+  let total = 0;
+  document.querySelectorAll('#' + containerId.replace('-total','-rows') + ' .mr').forEach(r => {
+    const p = parseFloat(r.dataset.prev) || 0;
+    const c = parseFloat(r.querySelector('.mr-inp').value) || 0;
+    total += Math.max(c-p,0) * rate;
+  });
+  document.getElementById(containerId).textContent = money(total);
+}
+
+async function saveMeterReadings(kind){
+  const isWater = kind === 'water';
+  const table = isWater ? 'water_readings' : 'electricity_readings';
+  const rateField = isWater ? 'water_rate_per_m3' : 'electricity_rate_per_unit';
+  const rateKey = isWater ? 'rate_per_m3' : 'rate_per_unit';
+  const rate = Number(propertyData?.[rateField] || (isWater ? 85 : 25));
+  const period = currentPeriod();
+  const today = new Date().toISOString().slice(0,10);
+  const containerId = isWater ? 'water-rows' : 'elec-rows';
+
+  const rows = [];
+  document.querySelectorAll('#' + containerId + ' .mr').forEach(row => {
+    const prev = parseFloat(row.dataset.prev) || 0;
+    const curr = parseFloat(row.querySelector('.mr-inp').value);
+    if(isNaN(curr) || curr <= prev) return;
+    rows.push({
+      unit_id: row.dataset.unit, property_id: currentPropertyId, tenant_id: row.dataset.tenant || null,
+      previous_reading: prev, current_reading: curr, [rateKey]: rate,
+      reading_date: today, period_month: period.month, period_year: period.year
+    });
+  });
+
+  if(!rows.length){ toast('No new readings entered', 'e'); return; }
+  const { error } = await sb.from(table).insert(rows);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  toast(rows.length + ' meter reading(s) saved and billed ✅', 's');
+  loadMeterReadings(kind);
+}
+
+/* ============ GARBAGE ============ */
+async function loadGarbage(){
+  const { data: units } = await sb.from('units').select('status').eq('property_id', currentPropertyId);
+  const occupied = (units||[]).filter(u=>u.status==='occupied').length;
+  const fee = Number(propertyData?.garbage_fee || 0);
+  document.getElementById('garbage-metrics').innerHTML = `
+    <div class="metric m-t"><div class="mico">🗑️</div><div class="mlbl">Fee per unit</div><div class="mval">${Math.round(fee)}</div><div class="msub">KES / month</div></div>
+    <div class="metric m-g"><div class="mico">✅</div><div class="mlbl">Expected MTD</div><div class="mval">${shortMoney(fee*occupied)}</div><div class="msub">${occupied} occupied units</div></div>
+  `;
+  document.getElementById('garbage-fee-inp').value = fee;
+}
+async function saveGarbageFee(){
+  const fee = parseFloat(document.getElementById('garbage-fee-inp').value) || 0;
+  const { error } = await sb.from('properties').update({ garbage_fee: fee }).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  propertyData.garbage_fee = fee;
+  toast('Garbage fee updated ✅', 's');
+  loadGarbage();
+}
+
+/* ============ SETTINGS ============ */
+function loadSettings(){
+  document.getElementById('set-name').value = propertyData?.name || '';
+  document.getElementById('set-units').value = propertyData?.total_units || '';
+  document.getElementById('set-town').value = propertyData?.town || '';
+  if(propertyData?.county) document.getElementById('set-county').value = propertyData.county;
+  document.getElementById('set-paybill').value = propertyData?.mpesa_paybill || '';
+  document.getElementById('set-bank').value = propertyData?.bank_name || '';
+}
+async function saveGeneralSettings(){
+  const updates = {
+    name: document.getElementById('set-name').value.trim(),
+    total_units: parseInt(document.getElementById('set-units').value,10) || 0,
+    town: document.getElementById('set-town').value.trim(),
+    county: document.getElementById('set-county').value
+  };
+  const { error } = await sb.from('properties').update(updates).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  Object.assign(propertyData, updates);
+  document.getElementById('sb-apt').textContent = updates.name;
+  toast('Property details saved ✅', 's');
+}
+async function savePaymentSettings(){
+  const updates = {
+    mpesa_paybill: document.getElementById('set-paybill').value.trim(),
+    bank_name: document.getElementById('set-bank').value.trim()
+  };
+  const { error } = await sb.from('properties').update(updates).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  Object.assign(propertyData, updates);
+  toast('Payment settings saved ✅', 's');
+}
+
+/* ============ CHARGES ============ */
+function loadCharges(){
+  document.getElementById('charge-water-rate').value = propertyData?.water_rate_per_m3 ?? 85;
+  document.getElementById('charge-elec-rate').value = propertyData?.electricity_rate_per_unit ?? 25;
+  document.getElementById('charge-garbage-fee').value = propertyData?.garbage_fee ?? 500;
+  document.getElementById('charge-penalty').value = propertyData?.late_penalty_per_day ?? 20;
+}
+async function saveCharges(){
+  const updates = {
+    water_rate_per_m3: parseFloat(document.getElementById('charge-water-rate').value) || 0,
+    electricity_rate_per_unit: parseFloat(document.getElementById('charge-elec-rate').value) || 0,
+    garbage_fee: parseFloat(document.getElementById('charge-garbage-fee').value) || 0,
+    late_penalty_per_day: parseFloat(document.getElementById('charge-penalty').value) || 0
+  };
+  const { error } = await sb.from('properties').update(updates).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  Object.assign(propertyData, updates);
+  toast('Charges saved ✅', 's');
+}
+
+/* ============ SCHEDULES ============ */
+function loadSchedules(){
+  document.getElementById('sched-rent-day').value = propertyData?.rent_due_day || 10;
+  const day = propertyData?.garbage_collection_day ?? 3;
+  document.querySelectorAll('#garbage-day-picker .dp').forEach(dp => {
+    dp.classList.toggle('on', parseInt(dp.dataset.day,10) === day);
+  });
+}
+async function saveSchedules(){
+  const rentDay = parseInt(document.getElementById('sched-rent-day').value,10) || 10;
+  const selectedDp = document.querySelector('#garbage-day-picker .dp.on');
+  const garbageDay = selectedDp ? parseInt(selectedDp.dataset.day,10) : (propertyData?.garbage_collection_day ?? 3);
+  const { error } = await sb.from('properties').update({ rent_due_day: rentDay, garbage_collection_day: garbageDay }).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  propertyData.rent_due_day = rentDay; propertyData.garbage_collection_day = garbageDay;
+  toast('Schedule saved ✅', 's');
+}
+
+/* ============ KISWAHILI ============ */
+function loadSwahili(){
+  document.getElementById('lang-toggle').checked = propertyData?.language === 'sw';
+}
+async function saveLanguage(){
+  const lang = document.getElementById('lang-toggle').checked ? 'sw' : 'en';
+  const { error } = await sb.from('properties').update({ language: lang }).eq('id', currentPropertyId);
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  propertyData.language = lang;
+  toast('Language preference saved ✅', 's');
+}
+
+/* ============ COMMUNITY ============ */
+async function loadCommunity(){
+  const { data: posts } = await sb.from('community_posts').select('*').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(20);
+  const list = posts || [];
+  document.getElementById('community-feed').innerHTML = list.length ? list.map(p => `
+    <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody"><strong>${p.is_landlord_post?'Management':'Tenant'}:</strong> ${esc(p.body)}</div><div class="atime">${timeAgo(p.created_at)}</div></div>
+  `).join('') : '<div class="msub" style="padding:10px">No posts yet — write the first announcement above.</div>';
+}
+async function postCommunity(){
+  const body = document.getElementById('community-new-post').value.trim();
+  if(!body){ toast('Write something first', 'e'); return; }
+  const { error } = await sb.from('community_posts').insert({
+    property_id: currentPropertyId, posted_by_landlord: supaUser.id, body, is_landlord_post: true, category: 'announcement'
+  });
+  if(error){ toast('Failed to post: ' + error.message, 'e'); return; }
+  document.getElementById('community-new-post').value = '';
+  toast('Posted to community board ✅', 's');
+  loadCommunity();
+}
+
+/* ============ BROADCAST SMS ============ */
+async function loadBroadcast(){
+  const { data: logs } = await sb.from('sms_logs').select('*').eq('property_id', currentPropertyId).order('sent_at', {ascending:false}).limit(20);
+  const list = logs || [];
+  document.getElementById('broadcast-history-body').innerHTML = list.length ? list.map(l => `
+    <tr><td>${esc(l.message_body)}</td><td>${esc(l.recipient_name || l.recipient_phone)}</td><td>${timeAgo(l.sent_at)}</td></tr>
+  `).join('') : '<tr><td colspan="3">No broadcasts sent yet.</td></tr>';
+}
+async function sendBroadcast(){
+  const msg = document.getElementById('broadcast-msg').value.trim();
+  if(!msg){ toast('Write a message first', 'e'); return; }
+  const { data: tenants } = await sb.from('tenants').select('id,name,phone').eq('property_id', currentPropertyId).eq('status','active');
+  const list = tenants || [];
+  if(!list.length){ toast('No active tenants to message', 'e'); return; }
+  const rows = list.map(t => ({ recipient_phone: t.phone, recipient_name: t.name, tenant_id: t.id, property_id: currentPropertyId, message_type: 'broadcast', message_body: msg, status: 'logged' }));
+  const { error } = await sb.from('sms_logs').insert(rows);
+  if(error){ toast('Failed to log: ' + error.message, 'e'); return; }
+  document.getElementById('broadcast-msg').value = '';
+  toast('Logged for ' + list.length + ' tenant(s) — connect Africa\'s Talking via Edge Function to actually send', 's');
+  loadBroadcast();
+}
+
+/* ============ KRA ============ */
+async function loadKRA(){
+  const body = document.getElementById('kra-metrics');
+  if(STATE.plan !== 'premium'){
+    body.innerHTML = '<div class="msub" style="padding:10px;grid-column:1/-1">KRA Reports is a Premium feature. Upgrade your plan in Settings to unlock it.</div>';
+    return;
+  }
+  const year = new Date().getFullYear();
+  const { data: payments } = await sb.from('payments').select('amount').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_year', year);
+  const gross = (payments||[]).reduce((s,p)=>s+Number(p.amount||0),0);
+  const tax = gross * 0.075;
+  body.innerHTML = `
+    <div class="metric m-t"><div class="mico">📋</div><div class="mlbl">Gross Rental Income YTD</div><div class="mval">${shortMoney(gross)}</div><div class="msub">Jan–Dec ${year}</div></div>
+    <div class="metric m-g"><div class="mico">💵</div><div class="mlbl">Est. Tax (7.5%)</div><div class="mval">${shortMoney(tax)}</div><div class="msub">Monthly Rental Income tax</div></div>
+  `;
+}
+
+/* ============ CRB ============ */
+async function loadCRB(){
+  const { data: apps } = await sb.from('applications').select('*').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(20);
+  const list = apps || [];
+  document.getElementById('crb-body').innerHTML = list.length ? list.map(a => `
+    <tr><td>${esc(a.applicant_name)}</td><td>${esc(a.applicant_phone)}</td><td><span class="badge bm">${esc(a.status||'pending')}</span></td></tr>
+  `).join('') : '<tr><td colspan="3">No applicants saved yet.</td></tr>';
+}
+async function addApplication(){
+  const name = document.getElementById('crb-name').value.trim();
+  const phone = document.getElementById('crb-phone').value.trim();
+  if(!name || !phone){ toast('Please fill in name and phone', 'e'); return; }
+  const { error } = await sb.from('applications').insert({
+    landlord_id: supaUser.id, property_id: currentPropertyId, applicant_name: name, applicant_phone: phone, status: 'pending'
+  });
+  if(error){ toast('Failed to save: ' + error.message, 'e'); return; }
+  document.getElementById('crb-name').value = ''; document.getElementById('crb-phone').value = '';
+  toast('Applicant saved ✅', 's');
+  loadCRB();
+}
+
+/* ============ MODALS ============ */
+async function openMo(id){
+  if(id === 'mo-tenant'){
+    const vacant = unitsCache.length ? unitsCache.filter(u=>u.status==='vacant') : (await sb.from('units').select('*').eq('property_id', currentPropertyId).eq('status','vacant')).data || [];
+    const sel = document.getElementById('tn-unit');
+    sel.innerHTML = vacant.length ? vacant.map(u => `<option value="${u.id}">${esc(u.unit_number)} — ${money(u.monthly_rent)}</option>`).join('') : '<option value="">No vacant units</option>';
+  }
+  if(id === 'mo-pay'){
+    const tenants = tenantsCache.length ? tenantsCache : (await sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active')).data || [];
+    const sel = document.getElementById('pay-tenant');
+    sel.innerHTML = tenants.length ? tenants.map(t => `<option value="${t.id}" data-unit="${t.unit_id||''}">${esc(t.name)}</option>`).join('') : '<option value="">No tenants yet</option>';
+  }
+  if(id === 'mo-repair'){
+    const units = unitsCache.length ? unitsCache : (await sb.from('units').select('*').eq('property_id', currentPropertyId)).data || [];
+    const sel = document.getElementById('rp-unit');
+    sel.innerHTML = units.length ? units.map(u => `<option value="${u.id}">${esc(u.unit_number)}</option>`).join('') : '<option value="">No units yet</option>';
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeMo(id){ document.getElementById(id).classList.remove('open'); }
+
+async function addUnit(){
+  const num = document.getElementById('un-num').value.trim();
+  const rent = parseFloat(document.getElementById('un-rent').value);
+  const type = document.getElementById('un-type').value;
+  if(!num || !rent){ toast('Please enter a unit number and rent amount', 'e'); return; }
+  const { error } = await sb.from('units').insert({ property_id: currentPropertyId, unit_number: num, unit_type: type, monthly_rent: rent, status: 'vacant' });
+  if(error){ toast('Failed to add unit: ' + error.message, 'e'); return; }
+  toast('Unit ' + num + ' added ✅', 's');
+  closeMo('mo-unit');
+  document.getElementById('un-num').value=''; document.getElementById('un-rent').value='';
+  if(document.getElementById('tp-units').classList.contains('on')) loadUnits();
+  if(document.getElementById('tp-dashboard').classList.contains('on')) loadDashboard();
+}
+
+async function addTenant(){
+  const name = document.getElementById('tn-name').value.trim();
+  const phone = document.getElementById('tn-phone').value.trim();
+  const unitId = document.getElementById('tn-unit').value;
+  const movein = document.getElementById('tn-movein').value || null;
+  if(!name || !phone || !unitId){ toast("Please fill in name, phone, and unit", 'e'); return; }
+  const { data: tenant, error } = await sb.from('tenants').insert({
+    property_id: currentPropertyId, unit_id: unitId, name, phone, move_in_date: movein, status:'active'
+  }).select().single();
+  if(error){ toast('Failed to add tenant: ' + error.message, 'e'); return; }
+  await sb.from('units').update({ status:'occupied', current_tenant_id: tenant.id }).eq('id', unitId);
+  toast(name + ' added as a tenant ✅', 's');
+  closeMo('mo-tenant');
+  document.getElementById('tn-name').value=''; document.getElementById('tn-phone').value=''; document.getElementById('tn-movein').value='';
+  if(document.getElementById('tp-units').classList.contains('on')) loadUnits();
+  if(document.getElementById('tp-dashboard').classList.contains('on')) loadDashboard();
+}
+
+async function recordPayment(){
+  const tenantSel = document.getElementById('pay-tenant');
+  const tenantId = tenantSel.value;
+  const unitId = tenantSel.selectedOptions[0]?.dataset.unit || null;
+  const amt = parseFloat(document.getElementById('pay-amount').value);
+  const type = document.getElementById('pay-type').value;
+  const method = document.getElementById('pay-method').value;
+  if(!tenantId || !amt){ toast('Please select a tenant and enter an amount', 'e'); return; }
+  const period = currentPeriod();
+  const { error } = await sb.from('payments').insert({
+    tenant_id: tenantId, unit_id: unitId, property_id: currentPropertyId, landlord_id: supaUser.id,
+    amount: amt, payment_type: type, payment_method: method, status: 'confirmed',
+    period_month: period.month, period_year: period.year, recorded_by: 'landlord'
+  });
+  if(error){ toast('Failed to record payment: ' + error.message, 'e'); return; }
+  toast('Payment of ' + money(amt) + ' recorded ✅', 's');
+  closeMo('mo-pay');
+  document.getElementById('pay-amount').value='';
+  if(document.getElementById('tp-payments').classList.contains('on')) loadPayments();
+  if(document.getElementById('tp-dashboard').classList.contains('on')) loadDashboard();
+}
+
+async function addRepair(){
+  const unitId = document.getElementById('rp-unit').value;
+  const category = document.getElementById('rp-cat').value;
+  const title = document.getElementById('rp-title').value.trim();
+  const desc = document.getElementById('rp-desc').value.trim();
+  const priority = document.getElementById('rp-priority').value;
+  if(!unitId || !title){ toast('Please select a unit and enter a title', 'e'); return; }
+  const { error } = await sb.from('repairs').insert({
+    unit_id: unitId, property_id: currentPropertyId, landlord_id: supaUser.id,
+    category, title, description: desc, priority, status: 'open'
+  });
+  if(error){ toast('Failed to create ticket: ' + error.message, 'e'); return; }
+  toast('Repair ticket created ✅', 's');
+  closeMo('mo-repair');
+  document.getElementById('rp-title').value=''; document.getElementById('rp-desc').value='';
+  if(document.getElementById('tp-repairs').classList.contains('on')) loadRepairs();
+  if(document.getElementById('tp-dashboard').classList.contains('on')) loadDashboard();
 }
 
 /* ============ ACCORDION ============ */
@@ -1156,46 +1655,26 @@ function toggleAcc(hdr){
   const chev = hdr.querySelector('.acc-chev');
   body.classList.toggle('open');
   chev.classList.toggle('open');
+  if(body.classList.contains('open') && hdr.closest('#tp-settings')) loadSettings();
 }
+
+/* ============ DAY PICKER (single-select) ============ */
+document.addEventListener('click', function(e){
+  if(e.target.classList.contains('dp')){
+    const group = e.target.closest('.day-picker');
+    group.querySelectorAll('.dp').forEach(d => d.classList.remove('on'));
+    e.target.classList.add('on');
+  }
+});
 
 /* ============ AI CHAT ============ */
 function toggleChat(){
   document.getElementById('chat-panel').classList.toggle('open');
 }
-
 function chatQuick(text){
   document.getElementById('chat-inp').value = text;
   chatSend();
 }
-
-const CHAT_RESPONSES = {
-  overdue: 'Three tenants are currently overdue: Mary Achieng (A3, KES 12,000, 5 days), Daniel Kiptoo (B2, KES 18,000, 3 days), and Moses Kimani (C3, KES 25,000, 8 days). Want me to send them a reminder SMS?',
-  vacant: 'You have 3 vacant units: A5 (KES 12,000), B5 (KES 18,000), and C4 (KES 25,000). A5 has been vacant the longest at 18 days.',
-  repair: 'There are 4 open repair tickets — the most urgent is an electrical socket sparking in unit A3 (High priority, reported today). One ticket is already in progress: a leaking tap in B2.',
-  default: 'I can help with tenants, payments, repairs, or property settings. Try asking "who is overdue" or "list vacant units".'
-};
-
-function chatSend(){
-  const inp = document.getElementById('chat-inp');
-  const text = inp.value.trim();
-  if(!text) return;
-  addChatMsg(text, 'user');
-  inp.value = '';
-  const typing = document.getElementById('chat-typing');
-  typing.style.display = 'block';
-  const msgs = document.getElementById('chat-msgs');
-  msgs.scrollTop = msgs.scrollHeight + 60;
-  setTimeout(()=>{
-    typing.style.display = 'none';
-    const lower = text.toLowerCase();
-    let reply = CHAT_RESPONSES.default;
-    if(lower.includes('overdue') || lower.includes('late')) reply = CHAT_RESPONSES.overdue;
-    else if(lower.includes('vacant') || lower.includes('empty')) reply = CHAT_RESPONSES.vacant;
-    else if(lower.includes('repair') || lower.includes('fix') || lower.includes('maintenance')) reply = CHAT_RESPONSES.repair;
-    addChatMsg(reply, 'bot');
-  }, 1100);
-}
-
 function addChatMsg(text, who){
   const msgs = document.getElementById('chat-msgs');
   const div = document.createElement('div');
@@ -1206,13 +1685,42 @@ function addChatMsg(text, who){
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
+async function chatSend(){
+  const inp = document.getElementById('chat-inp');
+  const text = inp.value.trim();
+  if(!text) return;
+  addChatMsg(text, 'user');
+  inp.value = '';
+  const typing = document.getElementById('chat-typing');
+  typing.style.display = 'block';
+  const msgs = document.getElementById('chat-msgs');
+  msgs.scrollTop = msgs.scrollHeight + 60;
 
-/* ============ DAY PICKER (schedules) ============ */
-document.addEventListener('click', function(e){
-  if(e.target.classList.contains('dp')){
-    e.target.classList.toggle('on');
+  const lower = text.toLowerCase();
+  let reply;
+  if(lower.includes('overdue') || lower.includes('late')){
+    const period = currentPeriod();
+    const { data: payments } = await sb.from('payments').select('tenant_id').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
+    const paidIds = new Set((payments||[]).map(p=>p.tenant_id));
+    const { data: tenants } = await sb.from('tenants').select('name,unit_id').eq('property_id', currentPropertyId).eq('status','active');
+    const overdue = (tenants||[]).filter(t=>t.unit_id && !paidIds.has(t.id));
+    reply = overdue.length ? `${overdue.length} tenant(s) overdue this month: ${overdue.map(t=>t.name).join(', ')}.` : 'No one is overdue this month 🎉';
+  } else if(lower.includes('vacant') || lower.includes('empty')){
+    const { data: units } = await sb.from('units').select('unit_number,monthly_rent').eq('property_id', currentPropertyId).eq('status','vacant');
+    reply = units && units.length ? `${units.length} vacant unit(s): ${units.map(u=>u.unit_number+' ('+money(u.monthly_rent)+')').join(', ')}.` : 'No vacant units right now — fully occupied!';
+  } else if(lower.includes('repair') || lower.includes('fix') || lower.includes('maintenance')){
+    const { data: repairs } = await sb.from('repairs').select('title,priority,units(unit_number)').eq('property_id', currentPropertyId).in('status',['open','assigned','in_progress']);
+    reply = repairs && repairs.length ? `${repairs.length} open ticket(s): ${repairs.map(r=>`${r.title} (${r.units?.unit_number}, ${r.priority})`).join('; ')}.` : 'No open repair tickets right now.';
+  } else {
+    reply = 'I can help with tenants, payments, repairs, or property settings. Try asking "who is overdue" or "list vacant units".';
   }
-});
+
+  setTimeout(()=>{
+    typing.style.display = 'none';
+    addChatMsg(reply, 'bot');
+  }, 500);
+}
+
 </script>
 </body>
 </html>
