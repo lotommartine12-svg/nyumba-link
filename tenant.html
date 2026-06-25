@@ -1138,7 +1138,8 @@ async function initPortal(){
   if(!user){showLoginErr('Could not verify session.');return;}
   const {data:tenant,error:te}=await sb.from('tenants')
     .select('*, units(*), properties(*)')
-    .eq('id',user.id).single();
+    .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
+    .single();
   if(te||!tenant){showLoginErr('Tenant profile not found for this account.');return;}
   tenantProfile=tenant;
   unitData=tenant.units||{};
