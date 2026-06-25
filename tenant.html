@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>NyumbaLink – Tenant Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -383,19 +384,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="lf-inner">
       <h2>Welcome back</h2>
       <p>Sign in to your tenant account to manage your home.</p>
-      <div class="fg"><label>Phone Number or Email</label><input id="login-id" type="text" placeholder="e.g. 0712 345 678"/></div>
+      <div id="login-err" style="display:none;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;"></div>
+      <div class="fg"><label>Email Address</label><input id="login-id" type="email" placeholder="e.g. faith.wanjiru@tenant.nyumbalink.app"/></div>
       <div class="fg"><label>Password</label><input id="login-pass" type="password" placeholder="Enter your password"/></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;"><input type="checkbox" style="width:auto;border-radius:4px;"/> Remember me</label>
         <a href="#" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
       </div>
-      <button class="btn-login" onclick="doLogin()">Sign In to My Portal →</button>
+      <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
       <div class="demo-row">
         <p>🎯 Demo — click to sign in instantly</p>
         <div class="demo-chips">
-          <div class="demo-chip" onclick="quickLogin('Grace Njeri','A3','0734 567 890')">👤 Grace Njeri — Unit A3 · Greenview Apartments</div>
-          <div class="demo-chip" onclick="quickLogin('Mary Wambua','A1','0712 345 678')">👤 Mary Wambua — Unit A1 · Greenview Apartments</div>
-          <div class="demo-chip" onclick="quickLogin('David Mwangi','B1','0745 678 901')">👤 David Mwangi — Unit B1 (has overdue rent)</div>
+          <div class="demo-chip" onclick="quickLogin('faith.wanjiru@tenant.nyumbalink.app')">👤 Faith Wanjiru — Unit A1 · Greenview (paid ✅)</div>
+          <div class="demo-chip" onclick="quickLogin('mary.achieng@tenant.nyumbalink.app')">👤 Mary Achieng — Unit A3 · Greenview (overdue ⚠️)</div>
+          <div class="demo-chip" onclick="quickLogin('daniel.kiptoo@tenant.nyumbalink.app')">👤 Daniel Kiptoo — Unit B2 · Greenview (overdue ⚠️)</div>
         </div>
       </div>
     </div>
@@ -487,10 +489,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
         <!-- Stats -->
         <div class="stat-grid">
-          <div class="stat teal"><span class="stat-icon">💳</span><div class="stat-label">Rent – April</div><div class="stat-val">12,000</div><div class="stat-sub">✅ Paid April 1 · M-Pesa</div></div>
-          <div class="stat green"><span class="stat-icon">💰</span><div class="stat-label">Balance</div><div class="stat-val">KES 0</div><div class="stat-sub">All clear · No arrears</div></div>
-          <div class="stat gold"><span class="stat-icon">💧</span><div class="stat-label">Water Bill</div><div class="stat-val">1,105</div><div class="stat-sub">⏳ Due Apr 20 · 13 m³</div></div>
-          <div class="stat red"><span class="stat-icon">🗑️</span><div class="stat-label">Garbage Fee</div><div class="stat-val">500</div><div class="stat-sub">⏳ Due April 30</div></div>
+          <div class="stat teal" id="stat-rent"><span class="stat-icon">💳</span><div class="stat-label">Rent This Month</div><div class="stat-val" id="stat-rent-val">…</div><div class="stat-sub" id="stat-rent-sub">Loading…</div></div>
+          <div class="stat green" id="stat-bal"><span class="stat-icon">💰</span><div class="stat-label">Balance</div><div class="stat-val" id="stat-bal-val">…</div><div class="stat-sub" id="stat-bal-sub">Loading…</div></div>
+          <div class="stat gold" id="stat-water"><span class="stat-icon">💧</span><div class="stat-label">Water Bill</div><div class="stat-val" id="stat-water-val">…</div><div class="stat-sub" id="stat-water-sub">Loading…</div></div>
+          <div class="stat red" id="stat-garbage"><span class="stat-icon">🗑️</span><div class="stat-label">Garbage Fee</div><div class="stat-val" id="stat-garbage-val">…</div><div class="stat-sub" id="stat-garbage-sub">Loading…</div></div>
         </div>
 
         <!-- Main grid -->
@@ -516,18 +518,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
 
-        <!-- Active repair summary -->
+        <!-- Recent activity feed -->
         <div class="card">
-          <div class="card-hdr"><span class="card-title">🔧 Active Repairs</span><button class="btn btn-ghost btn-sm" onclick="openTab('repairs')">View All →</button></div>
-          <div style="display:flex;gap:14px;align-items:center;padding:12px;background:var(--amber-light);border-radius:12px;border-left:3px solid var(--amber);">
-            <span style="font-size:24px;">🚿</span>
-            <div style="flex:1;"><strong style="font-size:13px;display:block;">Low water pressure – Bathroom</strong><span style="font-size:12px;color:var(--muted);">Brian Mwenda assigned · Visit Apr 21 at 10am</span></div>
-            <span class="badge ba">In Progress</span>
-          </div>
-          <div style="display:flex;gap:14px;align-items:center;padding:12px;background:var(--red-light);border-radius:12px;border-left:3px solid var(--red);margin-top:8px;">
-            <span style="font-size:24px;">⚡</span>
-            <div style="flex:1;"><strong style="font-size:13px;display:block;">Sparking socket – Bedroom</strong><span style="font-size:12px;color:var(--muted);">Awaiting technician assignment</span></div>
-            <span class="badge br">Urgent</span>
+          <div class="card-hdr"><span class="card-title">💳 Recent Payments</span><button class="btn btn-ghost btn-sm" onclick="openTab('payments')">View All →</button></div>
+          <div class="ledger" style="border:none;box-shadow:none;" id="activity-feed">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">Loading…</div>
           </div>
         </div>
       </div>
@@ -548,19 +543,18 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
         </div>
 
-        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
-          <div class="stat teal"><span class="stat-icon">💰</span><div class="stat-label">Total Paid (All Time)</div><div class="stat-val">144K</div><div class="stat-sub">KES · Since Jan 2024</div></div>
-          <div class="stat green"><span class="stat-icon">✅</span><div class="stat-label">This Month</div><div class="stat-val">13,605</div><div class="stat-sub">Rent + Water + Garbage</div></div>
-          <div class="stat amber"><span class="stat-icon">⚠️</span><div class="stat-label">Penalties Paid</div><div class="stat-val">KES 60</div><div class="stat-sub">Jan 2026 · 3 days late</div></div>
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px;">
+          <div class="stat teal"><span class="stat-icon">💰</span><div class="stat-label">Total Paid (All Time)</div><div class="stat-val" id="pay-total-paid">…</div><div class="stat-sub" id="pay-count">Loading…</div></div>
+          <div class="stat green"><span class="stat-icon">✅</span><div class="stat-label">Payment Deadline</div><div class="stat-val" id="pay-due-day">—</div><div class="stat-sub">of every month</div></div>
         </div>
 
         <!-- M-Pesa Instructions -->
         <div class="mpesa-box" style="margin-bottom:16px;">
           <div class="mpesa-title">Pay via M-Pesa Paybill</div>
-          <div class="paybill">522 522</div>
+          <div class="paybill"><span id="pay-modal-paybill">…</span></div>
           <div class="mpesa-step"><div class="mpesa-step-num">1</div>Go to M-Pesa → Lipa na M-Pesa → Pay Bill</div>
-          <div class="mpesa-step"><div class="mpesa-step-num">2</div>Business No: <strong style="color:white;">522 522</strong> (NyumbaLink)</div>
-          <div class="mpesa-step"><div class="mpesa-step-num">3</div>Account No: <strong style="color:white;">A3</strong> (your unit number)</div>
+          <div class="mpesa-step"><div class="mpesa-step-num">2</div>Business No: <strong style="color:white;" id="pay-modal-paybill2">—</strong> (NyumbaLink)</div>
+          <div class="mpesa-step"><div class="mpesa-step-num">3</div>Account No: <strong style="color:white;" id="pay-modal-account">—</strong> (your unit number)</div>
           <div class="mpesa-step"><div class="mpesa-step-num">4</div>Enter amount → Confirm with your PIN</div>
           <div style="margin-top:12px;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
             ✅ Receipt auto-generated within 5 seconds of payment and sent to your phone via SMS
@@ -569,15 +563,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
         <!-- Ledger -->
         <div class="ledger">
-          <div class="ledger-hdr"><strong style="font-size:14px;">Full Transaction Ledger</strong><span class="badge bt">Since Move-In Jan 2024</span></div>
-          <div class="li"><div class="li-ico" style="background:var(--green-light);">💳</div><div class="li-desc"><strong>Rent – April 2026</strong><span>M-Pesa · Ref: QHJ9823ABZ · Apr 1, 2026 · 9:41 AM</span></div><div class="li-amount"><div class="amt cr">+KES 12,000</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--blue-light);">💧</div><div class="li-desc"><strong>Water Bill – March 2026</strong><span>M-Pesa · Ref: QKL8812 · Mar 30, 2026</span></div><div class="li-amount"><div class="amt cr">+KES 935</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--teal-g);">🗑️</div><div class="li-desc"><strong>Garbage Fee – March 2026</strong><span>M-Pesa · Mar 30, 2026</span></div><div class="li-amount"><div class="amt cr">+KES 500</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--green-light);">💳</div><div class="li-desc"><strong>Rent – March 2026</strong><span>M-Pesa · Ref: QHJ5421XYZ · Mar 2, 2026</span></div><div class="li-amount"><div class="amt cr">+KES 12,000</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--green-light);">💳</div><div class="li-desc"><strong>Rent – February 2026</strong><span>Bank Transfer · Equity · Feb 3, 2026</span></div><div class="li-amount"><div class="amt cr">+KES 12,000</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li" style="background:#fffbf0;"><div class="li-ico" style="background:var(--amber-light);">⚠️</div><div class="li-desc"><strong>Late Penalty – January 2026</strong><span>3 days × KES 20 · Auto-applied Jan 13</span></div><div class="li-amount"><div class="amt pe">+KES 60</div><div class="bal" style="color:var(--red);">Penalty charge</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--green-light);">💳</div><div class="li-desc"><strong>Rent – January 2026</strong><span>M-Pesa · Jan 13, 2026 (3 days late)</span></div><div class="li-amount"><div class="amt cr">+KES 12,000</div><div class="bal">Balance: KES 0</div></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--teal-g);">🏠</div><div class="li-desc"><strong>Security Deposit – Move-In</strong><span>Bank Transfer · Jan 15, 2024 · 2 months deposit</span></div><div class="li-amount"><div class="amt cr">+KES 24,000</div><div class="bal">Refundable on exit</div></div></div>
+          <div class="ledger-hdr"><strong style="font-size:14px;">Full Transaction Ledger</strong><span class="badge bt" id="pay-count-badge">Loading…</span></div>
+          <div id="payments-list"><div style="padding:24px;text-align:center;color:var(--muted)">Loading payments…</div></div>
         </div>
 
         <!-- Rules -->
@@ -588,7 +575,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="sched-row"><span>Reminders sent</span><span>31st, 5th and 9th of month</span></div>
           <div class="sched-row"><span>Water bill due</span><span>20th of month</span></div>
           <div class="sched-row"><span>Garbage fee due</span><span>30th of month</span></div>
-          <div class="sched-row"><span>M-Pesa Paybill</span><span style="color:var(--teal);font-weight:700;font-size:16px;">522 522</span></div>
+          <div class="sched-row"><span>M-Pesa Paybill</span><span style="color:var(--teal);font-weight:700;font-size:16px;" id="pay-rules-paybill">—</span></div>
           <div class="sched-row"><span>Account number</span><span style="color:var(--teal);font-weight:700;">Your unit (e.g. A3)</span></div>
         </div>
       </div>
@@ -596,13 +583,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <!-- ════ WATER ════ -->
       <div class="pg" id="pg-water">
         <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">💧 Water Consumption</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Unit A3 · Billed at KES 85 per m³</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Unit <span id="water-unit-label">—</span> · Billed at <span id="water-rate">—</span> per m³</div>
 
         <div class="stat-grid">
-          <div class="stat teal"><span class="stat-icon">📊</span><div class="stat-label">This Month</div><div class="stat-val">13 m³</div><div class="stat-sub">April 2026</div></div>
-          <div class="stat gold"><span class="stat-icon">💰</span><div class="stat-label">Bill Amount</div><div class="stat-val">1,105</div><div class="stat-sub">KES · Due Apr 20</div></div>
-          <div class="stat blue"><span class="stat-icon">📉</span><div class="stat-label">6-Month Avg</div><div class="stat-val">11.4 m³</div><div class="stat-sub">Oct–Mar average</div></div>
-          <div class="stat red"><span class="stat-icon">🔺</span><div class="stat-label">Highest Month</div><div class="stat-val">15 m³</div><div class="stat-sub">January 2026</div></div>
+          <div class="stat teal"><span class="stat-icon">📊</span><div class="stat-label">Latest Reading</div><div class="stat-val" id="water-units">—</div><div class="stat-sub">m³ consumed</div></div>
+          <div class="stat gold"><span class="stat-icon">💰</span><div class="stat-label">Bill Amount</div><div class="stat-val" id="water-current-bill">—</div><div class="stat-sub" id="water-status">—</div></div>
+          <div class="stat blue"><span class="stat-icon">💧</span><div class="stat-label">Rate</div><div class="stat-val" id="water-rate-stat">—</div><div class="stat-sub">per m³</div></div>
+          <div class="stat teal"><span class="stat-icon">📋</span><div class="stat-label">History</div><div class="stat-val" id="water-reading-count">—</div><div class="stat-sub">months on record</div></div>
         </div>
 
         <div class="two-col" style="margin-bottom:16px;">
@@ -616,12 +603,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           </div>
           <div>
             <div class="card" style="margin-bottom:14px;">
-              <div class="card-title">April 2026 Meter Readings</div>
-              <div class="sched-row"><span>Previous Reading (Mar 1)</span><span>77 m³</span></div>
-              <div class="sched-row"><span>Current Reading (Apr 1)</span><span style="color:var(--teal);font-weight:700;">90 m³</span></div>
-              <div class="sched-row"><span>Units Used</span><span style="color:var(--blue);font-weight:700;">13 m³</span></div>
-              <div class="sched-row"><span>Rate</span><span>KES 85 per m³</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1.5px solid var(--border);margin-top:6px;"><strong>Total Bill</strong><span style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--teal);">KES 1,105</span></div>
+              <div class="card-title">Latest Meter Reading</div>
+              <div class="sched-row"><span>Units Consumed</span><span style="color:var(--blue);font-weight:700;" id="water-units-reading">—</span></div>
+              <div class="sched-row"><span>Bill Amount</span><span style="color:var(--teal);font-weight:700;" id="water-bill-reading">—</span></div>
+              <div class="sched-row"><span>Status</span><span id="water-status-reading">—</span></div>
             </div>
             <div class="card">
               <div class="card-title">💡 Conservation Tips</div>
@@ -630,7 +615,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
                 <div>🪣 Collect shower warm-up water for plants</div>
                 <div>👗 Wash clothes in full loads only</div>
                 <div>🌙 Water garden at night — less evaporation</div>
-                <div style="color:var(--amber);font-weight:600;">📊 Your usage is 14% above average this month</div>
               </div>
             </div>
           </div>
@@ -639,67 +623,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <!-- Water Bill History -->
         <div class="ledger">
           <div class="ledger-hdr"><strong>Water Bill History</strong></div>
-          <div class="li"><div class="li-ico" style="background:var(--blue-light);">💧</div><div class="li-desc"><strong>April 2026</strong><span>13 m³ · Prev: 77 → Curr: 90 · Rate: KES 85</span></div><div class="li-amount"><div class="amt" style="color:var(--blue);">KES 1,105</div><span class="badge ba">Pending</span></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--blue-light);">💧</div><div class="li-desc"><strong>March 2026</strong><span>11 m³ · Prev: 66 → Curr: 77</span></div><div class="li-amount"><div class="amt" style="color:var(--blue);">KES 935</div><span class="badge bg">Paid</span></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--blue-light);">💧</div><div class="li-desc"><strong>February 2026</strong><span>10 m³ · Prev: 56 → Curr: 66</span></div><div class="li-amount"><div class="amt" style="color:var(--blue);">KES 850</div><span class="badge bg">Paid</span></div></div>
-          <div class="li"><div class="li-ico" style="background:rgba(220,38,38,0.08);">💧</div><div class="li-desc"><strong>January 2026</strong><span>15 m³ · Highest usage · Prev: 41 → Curr: 56</span></div><div class="li-amount"><div class="amt" style="color:var(--blue);">KES 1,275</div><span class="badge bg">Paid</span></div></div>
-          <div class="li"><div class="li-ico" style="background:var(--blue-light);">💧</div><div class="li-desc"><strong>December 2025</strong><span>12 m³ · Prev: 29 → Curr: 41</span></div><div class="li-amount"><div class="amt" style="color:var(--blue);">KES 1,020</div><span class="badge bg">Paid</span></div></div>
+          <div id="water-history"><div style="padding:24px;text-align:center;color:var(--muted)">Loading water history…</div></div>
         </div>
       </div>
 
       <!-- ════ REPAIRS ════ -->
       <div class="pg" id="pg-repairs">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🔧 Repair Requests</div><div style="font-size:13px;color:var(--muted);">Submit issues · Track status · Contact technician directly</div></div>
+          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🔧 Repair Requests</div><div style="font-size:13px;color:var(--muted);">Submit and track maintenance issues</div></div>
           <button class="btn btn-teal" onclick="showModal('modal-new-repair')">+ New Request</button>
         </div>
-
-        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-          <div class="stat red"><div class="stat-label">Open</div><div class="stat-val">1</div></div>
-          <div class="stat amber"><div class="stat-label">In Progress</div><div class="stat-val">1</div></div>
-          <div class="stat green"><div class="stat-label">Resolved (All)</div><div class="stat-val">5</div></div>
-          <div class="stat teal"><div class="stat-label">Avg Resolution</div><div class="stat-val">2.1d</div></div>
-        </div>
-
-        <!-- Active repairs -->
-        <div class="repair-card progress">
-          <div class="rc-head"><span style="font-size:20px;">🚿</span><div class="rc-title">Low water pressure in bathroom</div><span class="badge ba">⚙️ In Progress</span></div>
-          <div class="rc-desc">Water pressure drops completely every morning between 6–8am. Makes showering very difficult before work. Started about 2 weeks ago.</div>
-          <div class="rc-tech">
-            <div class="rc-tech-av">BM</div>
-            <div class="rc-tech-info"><strong>Brian Mwenda · Plumber</strong><span>Assigned Apr 16 · Visit scheduled: Apr 21 at 10:00 AM</span></div>
-            <button class="rc-tech-call" onclick="showToast('Calling Brian Mwenda… 📞','info')">📞 Call</button>
-          </div>
-          <div class="rc-timeline">
-            <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot" style="background:var(--green);"></div><div class="tl-line"></div></div><div class="tl-content"><strong>Submitted</strong><span>Apr 15, 9:02 AM · by you · Priority: High</span></div></div>
-            <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot" style="background:var(--amber);"></div><div class="tl-line"></div></div><div class="tl-content"><strong>Acknowledged by Landlord</strong><span>Apr 15, 11:00 AM · J. Mutua reviewed</span></div></div>
-            <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot" style="background:var(--amber);"></div><div class="tl-line"></div></div><div class="tl-content"><strong>Technician Assigned</strong><span>Apr 16, 11:30 AM · Brian Mwenda (Plumber)</span></div></div>
-            <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot" style="background:var(--border);"></div></div><div class="tl-content"><strong style="color:var(--muted);">Resolution pending</strong><span>Scheduled visit: Apr 21, 10:00 AM</span></div></div>
-          </div>
-        </div>
-
-        <div class="repair-card open">
-          <div class="rc-head"><span style="font-size:20px;">⚡</span><div class="rc-title">Bedroom light socket sparking</div><span class="badge br">🔴 Open · Urgent</span></div>
-          <div class="rc-desc">The socket near the bed sparks dangerously when chargers or appliances are plugged in. Very risky. Needs urgent attention. Submitted April 18.</div>
-          <div class="rc-pending">⏳ Awaiting technician assignment. Landlord has been notified. Expected response within 24 hours.</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px;">Submitted: Apr 18, 2026 · Ref: REP-2026-0042</div>
-        </div>
-
-        <!-- Resolved repairs -->
-        <div style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 12px;">Resolved History</div>
-        <div class="repair-card done" style="opacity:0.75;">
-          <div class="rc-head"><span style="font-size:20px;">🔒</span><div class="rc-title">Bedroom door lock stiff</div><span class="badge bg">✅ Resolved</span></div>
-          <div class="rc-desc">Lock replaced and working smoothly.</div>
-          <div style="font-size:12px;color:var(--muted);">Resolved Apr 12 · Samuel Njau (Locksmith) · ⭐⭐⭐⭐⭐ Rated 5 stars</div>
-        </div>
-        <div class="repair-card done" style="opacity:0.75;">
-          <div class="rc-head"><span style="font-size:20px;">💧</span><div class="rc-title">Kitchen tap leaking</div><span class="badge bg">✅ Resolved</span></div>
-          <div class="rc-desc">Tap washer replaced. No more dripping.</div>
-          <div style="font-size:12px;color:var(--muted);">Resolved Mar 28 · Brian Mwenda (Plumber) · ⭐⭐⭐⭐⭐</div>
-        </div>
+        <div id="repairs-list"><div style="padding:32px;text-align:center;color:var(--muted)">Loading repairs…</div></div>
       </div>
 
-      <!-- ════ GARBAGE ════ -->
+            <!-- ════ GARBAGE ════ -->
       <div class="pg" id="pg-garbage">
         <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">🗑️ Garbage Collection</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Greenview Apartments · Weekly Wednesday schedule</div>
@@ -741,75 +678,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <!-- ════ COMMUNITY ════ -->
       <div class="pg" id="pg-community">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🏘️ Community Board</div><div style="font-size:13px;color:var(--muted);">Greenview Apartments private resident network</div></div>
+          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🏘️ Community Board</div><div style="font-size:13px;color:var(--muted);" id="comm-subtitle">Loading…</div></div>
           <button class="btn btn-teal" onclick="showModal('modal-new-post')">✏️ Post Something</button>
         </div>
-
-        <div class="two-col" style="margin-bottom:16px;">
-          <div>
-            <!-- Events Calendar -->
-            <div class="card" style="margin-bottom:14px;">
-              <div class="card-hdr"><span class="card-title">📅 Events This Month</span></div>
-              <div style="display:flex;flex-direction:column;gap:8px;">
-                <div style="display:flex;gap:12px;align-items:center;"><span style="background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">Apr 24</span><div><strong style="font-size:13px;display:block;">Water Off 8am–12pm</strong><span style="font-size:12px;color:var(--muted);">Pipe maintenance. Store water in advance.</span></div></div>
-                <div style="display:flex;gap:12px;align-items:center;"><span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">Apr 27</span><div><strong style="font-size:13px;display:block;">Residents Meeting · 3PM</strong><span style="font-size:12px;color:var(--muted);">Ground floor lounge. All residents welcome.</span></div></div>
-                <div style="display:flex;gap:12px;align-items:center;"><span style="background:var(--amber-light);color:var(--amber);font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">Apr 30</span><div><strong style="font-size:13px;display:block;">Garbage Fee Due</strong><span style="font-size:12px;color:var(--muted);">KES 500 · Pay via M-Pesa Paybill 522522</span></div></div>
-                <div style="display:flex;gap:12px;align-items:center;"><span style="background:var(--teal-g);color:var(--teal);font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">May 10</span><div><strong style="font-size:13px;display:block;">Rent Deadline</strong><span style="font-size:12px;color:var(--muted);">KES 12,000 · Late penalty applies from 11th</span></div></div>
-              </div>
-            </div>
-
-            <!-- Lost & Found quick box -->
-            <div class="card">
-              <div class="card-hdr"><span class="card-title">🔍 Lost & Found</span><button class="btn btn-ghost btn-sm" onclick="showModal('modal-new-post')">Post Item</button></div>
-              <div style="font-size:13px;color:var(--muted);line-height:2;">
-                <div style="padding:8px;background:var(--bg);border-radius:8px;margin-bottom:6px;">🔑 <strong style="color:var(--text);">Keys found</strong> – near B block stairs · Apr 20 · Contact Unit B3</div>
-                <div style="padding:8px;background:var(--bg);border-radius:8px;">👒 <strong style="color:var(--text);">Black cap lost</strong> – near parking · Apr 18 · Unit D1</div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="card">
-              <div class="card-hdr"><span class="card-title">Community Stats</span></div>
-              <div class="sched-row"><span>Active residents</span><span>13</span></div>
-              <div class="sched-row"><span>Posts this month</span><span>7</span></div>
-              <div class="sched-row"><span>Events upcoming</span><span>2</span></div>
-              <div class="sched-row"><span>Resources shared</span><span>3 items</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Posts Feed -->
-        <div class="post">
-          <div class="post-hdr">
-            <div class="post-av" style="background:linear-gradient(135deg,var(--teal),#065F46);color:white;">JM</div>
-            <div class="post-author"><strong>J. Mutua (Management)</strong><span>📌 Pinned · Apr 20</span></div>
-            <span class="badge bt" style="margin-left:auto;">📌 Pinned</span>
-          </div>
-          <div class="post-body">Important notice: Water will be off this Thursday April 24 from 8am to 12pm for scheduled pipe maintenance in the estate. Please store sufficient water in advance. We apologise for any inconvenience. Notify management if you have any concerns. — Management 🙏</div>
-          <div class="post-actions"><button class="pa" onclick="showToast('👍 Reaction added!','success')">👍 12 Likes</button><button class="pa">💬 3 Comments</button><button class="pa">📤 Share</button></div>
-        </div>
-
-        <div class="post">
-          <div class="post-hdr">
-            <div class="post-av" style="background:linear-gradient(135deg,var(--blue),#1E3A8A);color:white;">GN</div>
-            <div class="post-author"><strong>Grace Njeri</strong><span>Unit A3 · Apr 18</span></div>
-          </div>
-          <div class="post-body">Hello neighbours! Does anyone have a spare iron box I can borrow for just a couple of days? Mine broke down this morning and I have an important meeting tomorrow. I will return it by Thursday evening. Thank you so much 🙏</div>
-          <div class="post-actions"><button class="pa">❤️ 4 Likes</button><button class="pa">💬 2 Comments</button><button class="pa">📤 Share</button></div>
-        </div>
-
-        <div class="post">
-          <div class="post-hdr">
-            <div class="post-av" style="background:linear-gradient(135deg,#7C3AED,#4C1D95);color:white;">PK</div>
-            <div class="post-author"><strong>Peter Kamau</strong><span>Unit A2 · Apr 16</span></div>
-          </div>
-          <div class="post-body">Guys the estate parking in the evening has been getting congested. Can we all make sure we park within our allocated spots? There are marked numbers on the ground. Let's be considerate to each other. Thanks 🚗</div>
-          <div class="post-actions"><button class="pa">👍 8 Likes</button><button class="pa">💬 5 Comments</button></div>
-        </div>
+        <div id="community-feed"><div style="padding:32px;text-align:center;color:var(--muted)">Loading posts…</div></div>
       </div>
 
-      <!-- ════ RENT SCORE ════ -->
+            <!-- ════ RENT SCORE ════ -->
       <div class="pg" id="pg-rentscore">
         <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">⭐ My Rent Score™</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Your verified rental credit score — built from your payment history on NyumbaLink</div>
@@ -974,23 +849,14 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
       <!-- ════ NOTIFICATIONS ════ -->
       <div class="pg" id="pg-notifications">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-          <div style="font-family:'Instrument Serif',serif;font-size:26px;">🔔 Notifications & Alerts</div>
-          <button class="btn btn-ghost btn-sm" onclick="showToast('All marked as read','success')">Mark All Read</button>
-        </div>
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">🔔 Notifications</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Your alerts, reminders and updates</div>
         <div class="card">
-          <div class="notif-item"><div class="ni-dot" style="background:var(--red);"></div><div class="ni-body"><strong>⚡ Urgent – Electrician needed!</strong><p>Your sparking socket complaint (REP-2026-0042) has been escalated. Landlord is actively finding an electrician. Expected assignment within 2 hours.</p></div><div class="ni-time">Today 9am</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--teal);"></div><div class="ni-body"><strong>🗑️ Garbage collection tomorrow!</strong><p>Truck arrives Wednesday 6:00 AM. Please have bins outside Unit A3 door by 10pm tonight.</p></div><div class="ni-time">Today 6pm</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--amber);"></div><div class="ni-body"><strong>💳 Rent Reminder – Due in 5 days</strong><p>April rent of KES 12,000 is due by April 10. Pay via M-Pesa Paybill 522522, Account: A3. Late penalty of KES 20/day applies from 11th.</p></div><div class="ni-time">Apr 5, 8am</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--green);"></div><div class="ni-body"><strong>🔧 Technician Assigned – Plumbing</strong><p>Brian Mwenda (Plumber) has been assigned to fix water pressure in Unit A3. He will visit on April 21 at 10:00 AM. His number: 0712 999 111.</p></div><div class="ni-time">Apr 16, 11:30am</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--green);"></div><div class="ni-body"><strong>✅ Payment Confirmed – April Rent</strong><p>KES 12,000 received for rent. M-Pesa Ref: QHJ9823ABZ. Receipt ready in Documents tab.</p></div><div class="ni-time">Apr 1, 9:41am</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--blue);"></div><div class="ni-body"><strong>💧 Water Bill Ready – April 2026</strong><p>Your water bill: KES 1,105 (13 m³). Due April 20. Pay via M-Pesa Paybill 522522, Account: A3.</p></div><div class="ni-time">Apr 1, 7am</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--purple);"></div><div class="ni-body"><strong>📋 Lease Expiry Reminder</strong><p>Your lease for Unit A3 expires in 39 days (May 31, 2026). Your landlord will send a renewal offer soon. Contact management if you need to discuss.</p></div><div class="ni-time">Mar 25</div></div>
-          <div class="notif-item"><div class="ni-dot" style="background:var(--green);"></div><div class="ni-body"><strong>⭐ Rent Score Updated</strong><p>Your NyumbaLink Rent Score™ has improved to 745 — up from 720 last month. Keep paying on time to reach 800!</p></div><div class="ni-time">Apr 1</div></div>
+          <div id="notifs-list"><div style="padding:32px;text-align:center;color:var(--muted)">Loading notifications…</div></div>
         </div>
       </div>
 
-      <!-- ════ SETTINGS ════ -->
+            <!-- ════ SETTINGS ════ -->
       <div class="pg" id="pg-settings">
         <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:20px;">⚙️ Account Settings</div>
         <div class="two-col">
@@ -1102,7 +968,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="prio-b" onclick="selPrio(this,'u')">🔴 Urgent</div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-teal" style="flex:1;" onclick="submitRepair()">📤 Submit Request</button>
+      <button class="btn btn-teal" style="flex:1;" id="submit-repair-btn" onclick="submitRepair()">📤 Submit Request</button>
       <button class="btn btn-ghost" onclick="closeModal('modal-new-repair')">Cancel</button>
     </div>
   </div>
@@ -1231,46 +1097,313 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <div class="toast" id="toast-el"></div>
 
 <script>
-/* ═══ STATE ═══ */
-let tenant={name:'Grace Njeri',unit:'A3',apt:'Greenview Apartments',initials:'GN'};
-let selectedCat='',selectedPrio='';
-let currentTab='home';
+/* ═══ INIT ═══ */
+const SUPABASE_URL='https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+let currentTab='home',selectedCat='',selectedPrio='';
+let tenantProfile={},unitData={},propertyData={};
 
-/* ═══ LOGIN ═══ */
-function quickLogin(name,unit,phone){
-  document.getElementById('login-id').value=phone;
-  document.getElementById('login-pass').value='tenant123';
-  tenant={name,unit,apt:'Greenview Apartments',initials:name.split(' ').map(w=>w[0]).join('')};
-  doLogin();
+/* ═══ AUTH ═══ */
+async function doLogin(){
+  const email=document.getElementById('login-id').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showLoginErr('Please enter your email and password.');return;}
+  setLoginLoading(true);
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  setLoginLoading(false);
+  if(error){showLoginErr(error.message);return;}
+  await initPortal();
 }
-function doLogin(){
-  const id=document.getElementById('login-id').value.trim();
-  const pw=document.getElementById('login-pass').value.trim();
-  if(!id||!pw){showToast('Please enter your phone and password','warn');return;}
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  setUser();
-  checkPenalty();
-  startCountdown();
-  buildWaterChart();
+
+async function quickLogin(email){
+  setLoginLoading(true);
+  const {error}=await sb.auth.signInWithPassword({email,password:'Demo@2026'});
+  setLoginLoading(false);
+  if(error){showLoginErr('Demo login failed: '+error.message);return;}
+  await initPortal();
 }
-function setUser(){
+
+function setLoginLoading(on){
+  const btn=document.getElementById('login-btn');
+  if(btn){btn.textContent=on?'Signing in…':'Sign In to My Portal →';btn.disabled=on;}
+}
+function showLoginErr(msg){
+  const e=document.getElementById('login-err');
+  if(e){e.textContent=msg;e.style.display='block';}
+}
+
+async function initPortal(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){showLoginErr('Could not verify session.');return;}
+  const {data:tenant,error:te}=await sb.from('tenants')
+    .select('*, units(*), properties(*)')
+    .eq('id',user.id).single();
+  if(te||!tenant){showLoginErr('Tenant profile not found for this account.');return;}
+  tenantProfile=tenant;
+  unitData=tenant.units||{};
+  propertyData=tenant.properties||{};
+  const firstName=tenant.name.split(' ')[0];
+  const initials=tenant.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const hr=new Date().getHours();
   const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
-  document.getElementById('tb-greeting').textContent=`${greet}, ${tenant.name.split(' ')[0]} 👋`;
-  document.getElementById('tb-apt').textContent=`${tenant.apt} · Unit ${tenant.unit} · Langata`;
-  document.getElementById('sb-initials').textContent=tenant.initials;
+  document.getElementById('tb-greeting').textContent=`${greet}, ${firstName} 👋`;
+  document.getElementById('tb-apt').textContent=`${propertyData.name||'Your Property'} · Unit ${unitData.unit_number||'—'} · ${propertyData.town||''}`;
+  document.getElementById('sb-initials').textContent=initials;
   document.getElementById('sb-name').textContent=tenant.name;
-  document.getElementById('sb-unit').textContent=`Unit ${tenant.unit}`;
-  const els=['lease-tenant','receipt-tenant'];
-  els.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=tenant.name;});
-  if(document.getElementById('unit-display'))document.getElementById('unit-display').textContent=tenant.unit;
+  document.getElementById('sb-unit').textContent=`Unit ${unitData.unit_number||'—'}`;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  await Promise.all([loadHomeStats(),loadPayments(),loadWater(),loadRepairs(),loadCommunity(),loadNotifications()]);
+  openTab('home');
+  startCountdown();
 }
-function logout(){
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) await initPortal();
+});
+
+async function logout(){
+  await sb.auth.signOut();
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='grid';
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
+  document.getElementById('login-err').style.display='none';
+}
+
+/* ═══ HOME STATS ═══ */
+async function loadHomeStats(){
+  const now=new Date();
+  const month=now.getMonth()+1;
+  const year=now.getFullYear();
+  const {data:payments}=await sb.from('payments').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const {data:water}=await sb.from('water_readings').select('*')
+    .eq('tenant_id',tenantProfile.id)
+    .order('period_year',{ascending:false}).order('period_month',{ascending:false}).limit(1);
+  const rentPayments=(payments||[]).filter(p=>p.payment_type==='rent');
+  const thisMonthRent=rentPayments.find(p=>p.period_month===month&&p.period_year===year);
+  const balance=Number(unitData.monthly_rent||0)-(thisMonthRent&&thisMonthRent.status==='completed'?Number(unitData.monthly_rent||0):0);
+  const waterBill=water&&water[0];
+  setText('stat-rent-val',Number(unitData.monthly_rent||0).toLocaleString());
+  if(thisMonthRent&&thisMonthRent.status==='completed'){
+    setText('stat-rent-sub',`✅ Paid ${fmtDate(thisMonthRent.created_at)} · ${thisMonthRent.payment_method||'M-Pesa'}`);
+    setStatColor('stat-rent','teal');
+  } else {
+    setText('stat-rent-sub',`⏳ Due ${propertyData.rent_due_day||5}th this month`);
+    setStatColor('stat-rent','red');
+  }
+  setText('stat-bal-val',`KES ${balance>0?balance.toLocaleString():0}`);
+  setText('stat-bal-sub',balance>0?`⚠️ KES ${balance.toLocaleString()} outstanding`:'✅ All clear · No arrears');
+  setStatColor('stat-bal',balance>0?'red':'green');
+  if(waterBill){
+    setText('stat-water-val',Number(waterBill.bill_amount||0).toLocaleString());
+    setText('stat-water-sub',`${waterBill.status==='paid'?'✅ Paid':'⏳ Due'} · ${waterBill.units_consumed||0} m³`);
+    setStatColor('stat-water',waterBill.status==='paid'?'teal':'gold');
+  } else {
+    setText('stat-water-val','—');
+    setText('stat-water-sub','No reading yet this month');
+  }
+  const garbageFee=Number(propertyData.garbage_fee||500);
+  setText('stat-garbage-val',garbageFee.toLocaleString());
+  setText('stat-garbage-sub',`Monthly · KES ${garbageFee.toLocaleString()}/mo`);
+  buildActivityFeed(payments||[]);
+  checkPenalty(balance);
+  setText('pay-modal-unit',unitData.unit_number||'');
+  setText('pay-modal-paybill',propertyData.mpesa_paybill||'—');
+  setText('pay-modal-account',unitData.unit_number||'');
+  setText('pay-modal-amount',`KES ${Number(unitData.monthly_rent||0).toLocaleString()}`);
+}
+
+function buildActivityFeed(payments){
+  const el=document.getElementById('activity-feed');
+  if(!el)return;
+  if(!payments.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:8px 0">No payment history yet.</p>';return;}
+  el.innerHTML=payments.slice(0,5).map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${p.status==='completed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='completed'?'var(--green)':'var(--amber)'}">${p.status==='completed'?'✅':'⏳'}</div>
+      <div class="li-desc">
+        <strong>${p.payment_type==='rent'?'Rent Payment':capitalize(p.payment_type||'Payment')}</strong>
+        <span>${p.payment_method||'M-Pesa'} · ${p.mpesa_reference||p.receipt_number||'—'} · ${fmtDate(p.created_at)}</span>
+      </div>
+      <div class="li-amount">
+        <div class="amt ${p.status==='completed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div>
+        <div class="bal">${p.status==='completed'?'Confirmed':'Pending'}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══ PAYMENTS ═══ */
+async function loadPayments(){
+  const {data:payments}=await sb.from('payments').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const el=document.getElementById('payments-list');
+  if(!el)return;
+  if(!payments||!payments.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</div>';return;}
+  el.innerHTML=payments.map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${p.status==='completed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='completed'?'var(--green)':'var(--amber)'}">${p.status==='completed'?'✅':'⏳'}</div>
+      <div class="li-desc">
+        <strong>${capitalize(p.payment_type||'Payment')} — ${monthName(p.period_month)} ${p.period_year||''}</strong>
+        <span>${p.payment_method||'M-Pesa'} · ${p.mpesa_reference||p.receipt_number||'—'} · ${fmtDate(p.created_at)}</span>
+      </div>
+      <div class="li-amount">
+        <div class="amt ${p.status==='completed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div>
+        <div class="bal"><span class="badge ${p.status==='completed'?'bg':'ba'}">${p.status}</span></div>
+      </div>
+    </div>`).join('');
+  const paid=(payments||[]).filter(p=>p.status==='completed');
+  const totalPaid=paid.reduce((s,p)=>s+Number(p.amount),0);
+  setText('pay-total-paid',`KES ${totalPaid.toLocaleString()}`);
+  setText('pay-count',`${paid.length} payments`);
+}
+
+/* ═══ WATER ═══ */
+async function loadWater(){
+  const {data:readings}=await sb.from('water_readings').select('*')
+    .eq('tenant_id',tenantProfile.id)
+    .order('period_year',{ascending:false}).order('period_month',{ascending:false});
+  const el=document.getElementById('water-history');
+  if(!el)return;
+  if(!readings||!readings.length){
+    el.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No water readings yet.</div>';
+    buildWaterChart([]);return;
+  }
+  el.innerHTML=readings.map(r=>`
+    <div class="li">
+      <div class="li-ico" style="background:var(--blue-light);color:var(--blue)">💧</div>
+      <div class="li-desc">
+        <strong>${monthName(r.period_month)} ${r.period_year}</strong>
+        <span>Prev: ${r.previous_reading||0}m³ → Current: ${r.current_reading||0}m³ · Used: ${r.units_consumed||0}m³</span>
+      </div>
+      <div class="li-amount">
+        <div class="amt" style="color:var(--blue)">KES ${Number(r.bill_amount||0).toLocaleString()}</div>
+        <div class="bal"><span class="badge ${r.status==='paid'?'bg':'ba'}">${r.status||'pending'}</span></div>
+      </div>
+    </div>`).join('');
+  buildWaterChart([...readings].slice(0,7).reverse());
+  const latest=readings[0];
+  if(latest){
+    setText('water-current-bill',`KES ${Number(latest.bill_amount||0).toLocaleString()}`);
+    setText('water-units',`${latest.units_consumed||0} m³`);
+    setText('water-rate',`KES ${Number(latest.rate_per_m3||propertyData.water_rate_per_m3||150).toLocaleString()}/m³`);
+    setText('water-status',latest.status==='paid'?'✅ Paid':'⏳ Unpaid');
+    setText('water-units-reading',`${latest.units_consumed||0} m³`);
+    setText('water-bill-reading',`KES ${Number(latest.bill_amount||0).toLocaleString()}`);
+    setText('water-status-reading',latest.status==='paid'?'✅ Paid':'⏳ Unpaid');
+    setText('water-unit-label', unitData.unit_number||'—');
+    setText('water-reading-count', `${readings.length}`);
+  }
+}
+
+/* ═══ REPAIRS ═══ */
+async function loadRepairs(){
+  const {data:repairs}=await sb.from('repairs').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const el=document.getElementById('repairs-list');
+  if(!el)return;
+  const openCount=(repairs||[]).filter(r=>r.status==='open'||r.status==='assigned').length;
+  const tabR=document.getElementById('tab-repairs');
+  if(tabR) tabR.innerHTML=`🔧 Repairs${openCount?` <span class="tbadge">${openCount}</span>`:''}`;
+  if(!repairs||!repairs.length){
+    el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🔧</div><div>No repair tickets yet.</div></div>';return;
+  }
+  const statusColor={open:'r',assigned:'a',in_progress:'a',completed:'g',closed:'g'};
+  const statusLabel={open:'Open',assigned:'Assigned',in_progress:'In Progress',completed:'Completed',closed:'Closed'};
+  const prioColor={low:'bt',normal:'bt',medium:'ba',high:'br',urgent:'br'};
+  el.innerHTML=repairs.map(r=>`
+    <div class="repair-card ${r.status==='completed'||r.status==='closed'?'done':r.status==='in_progress'||r.status==='assigned'?'progress':'open'}">
+      <div class="rc-head">
+        <span style="font-size:20px">${catIcon(r.category)}</span>
+        <div class="rc-title">${r.title||'Repair Request'}</div>
+        <span class="badge b${statusColor[r.status]||'m'}">${statusLabel[r.status]||r.status}</span>
+        <span class="badge ${prioColor[r.priority]||'bt'}">${capitalize(r.priority)||'Normal'}</span>
+      </div>
+      <div class="rc-desc">${r.description||''}</div>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">
+        <span>📋 ${r.ref_number||'—'}</span><span>📅 ${fmtDate(r.created_at)}</span><span>🏷️ ${capitalize(r.category)||'General'}</span>
+      </div>
+      ${r.status==='completed'&&r.completed_at?`<div class="rc-tech"><div class="rc-tech-av">✅</div><div class="rc-tech-info"><strong>Resolved</strong><span>Completed ${fmtDate(r.completed_at)}</span></div></div>`:''}
+    </div>`).join('');
+}
+
+/* ═══ COMMUNITY ═══ */
+async function loadCommunity(){
+  const {data:posts}=await sb.from('community_posts').select('*')
+    .eq('property_id',tenantProfile.property_id)
+    .order('created_at',{ascending:false}).limit(20);
+  const el=document.getElementById('community-feed');
+  if(!el)return;
+  if(!posts||!posts.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No community posts yet.</div>';return;}
+  el.innerHTML=posts.map(p=>{
+    const isM=p.author_type==='landlord'||p.author_type==='admin';
+    const avBg=isM?'linear-gradient(135deg,var(--teal),#0A6B62)':'linear-gradient(135deg,var(--gold),#9A6B00)';
+    const initials=(p.author_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="post">
+      <div class="post-hdr">
+        <div class="post-av" style="background:${avBg};color:white">${initials}</div>
+        <div class="post-author">
+          <strong>${p.author_name||'Unknown'}${isM?' <span style="font-size:10px;background:var(--teal-g);color:var(--teal);border-radius:4px;padding:1px 6px;margin-left:4px">Management</span>':''}</strong>
+          <span>${fmtDate(p.created_at)}</span>
+        </div>
+      </div>
+      <div class="post-body">${p.content||''}</div>
+      <div class="post-actions"><button class="pa">👍 Like</button><button class="pa">💬 Comment</button></div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══ NOTIFICATIONS ═══ */
+async function loadNotifications(){
+  const {data:notifs}=await sb.from('notifications').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false}).limit(30);
+  const el=document.getElementById('notifs-list');
+  if(!el)return;
+  const unread=(notifs||[]).filter(n=>!n.read_at).length;
+  document.querySelectorAll('.ndot').forEach(d=>{d.textContent=unread||'';d.style.display=unread?'flex':'none';});
+  const tabN=document.getElementById('tab-notifications');
+  if(tabN) tabN.innerHTML=`🔔 Alerts${unread?` <span class="tbadge">${unread}</span>`:''}`;
+  if(!notifs||!notifs.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No notifications yet.</div>';return;}
+  const typeColor={payment:'green',repair:'amber',announcement:'blue',overdue:'red',water:'blue'};
+  el.innerHTML=notifs.map(n=>`
+    <div class="notif-item" style="${!n.read_at?'background:var(--bg);border-radius:10px;padding:12px;margin-bottom:4px':''}">
+      <div class="ni-dot" style="background:var(--${typeColor[n.type]||'teal'})"></div>
+      <div class="ni-body"><strong>${n.title||'Notification'}</strong><p>${n.message||''}</p></div>
+      <div class="ni-time">${fmtDate(n.created_at)}</div>
+    </div>`).join('');
+}
+
+/* ═══ SUBMIT REPAIR ═══ */
+async function submitRepair(){
+  const title=document.getElementById('rep-title').value.trim();
+  const desc=document.getElementById('rep-desc').value.trim();
+  if(!title||!desc){showToast('Please fill in title and description','warn');return;}
+  if(!selectedCat){showToast('Please select a category','warn');return;}
+  if(!selectedPrio){showToast('Please select a priority level','warn');return;}
+  const btn=document.getElementById('submit-repair-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
+  const {error}=await sb.from('repairs').insert({
+    tenant_id:tenantProfile.id,unit_id:tenantProfile.unit_id,
+    property_id:tenantProfile.property_id,landlord_id:propertyData.landlord_id,
+    title,description:desc,category:selectedCat,
+    priority:selectedPrio==='n'?'normal':selectedPrio==='h'?'high':'urgent',
+    status:'open',submitted_at:new Date().toISOString()
+  });
+  if(btn){btn.disabled=false;btn.textContent='Submit Repair Request';}
+  if(error){showToast('Failed to submit: '+error.message,'error');return;}
+  const cats={electrical:'Electrical ⚡',plumbing:'Plumbing 🚿',masonry:'Masonry 🧱',wifi:'Wi-Fi 📶',security:'Security 🔐',other:'Other 📋'};
+  const prios={n:'Normal 🟢',h:'High 🟡',u:'Urgent 🔴'};
+  const catEl=document.getElementById('rc-cat'),prioEl=document.getElementById('rc-prio');
+  if(catEl)catEl.textContent=cats[selectedCat];
+  if(prioEl)prioEl.textContent=prios[selectedPrio];
+  closeModal('modal-new-repair');showModal('modal-repair-success');
+  document.getElementById('rep-title').value='';document.getElementById('rep-desc').value='';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});
+  selectedCat='';selectedPrio='';
+  await loadRepairs();
 }
 
 /* ═══ TAB NAVIGATION ═══ */
@@ -1294,10 +1427,8 @@ function startCountdown(){
     const day=now.getDay();
     const daysToWed=(3-day+7)%7||7;
     const nw=new Date(now);
-    nw.setDate(now.getDate()+daysToWed);
-    nw.setHours(6,0,0,0);
+    nw.setDate(now.getDate()+daysToWed);nw.setHours(6,0,0,0);
     const diff=nw-now;
-    if(diff<0){nw.setDate(nw.getDate()+7);}
     const h=Math.floor(diff/3600000);
     const m=Math.floor((diff%3600000)/60000);
     const s=Math.floor((diff%60000)/1000);
@@ -1315,66 +1446,64 @@ function startCountdown(){
 }
 
 /* ═══ WATER CHART ═══ */
-function buildWaterChart(){
-  const data=[{m:'Oct',v:10,c:false},{m:'Nov',v:9,c:false},{m:'Dec',v:12,c:false},{m:'Jan',v:15,c:false},{m:'Feb',v:10,c:false},{m:'Mar',v:11,c:false},{m:'Apr',v:13,c:true}];
-  const mx=Math.max(...data.map(d=>d.v));
+function buildWaterChart(readings){
   const el=document.getElementById('water-chart');
   if(!el)return;
-  el.innerHTML=data.map(d=>`
+  if(!readings||!readings.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">No data yet</p>';return;}
+  const mx=Math.max(...readings.map(r=>Number(r.units_consumed||0)),1);
+  el.innerHTML=readings.map((r,i)=>`
     <div class="wc-bar-wrap">
-      <div class="wc-val">${d.v}</div>
-      <div class="wc-bar ${d.c?'curr':'prev'}" style="height:${Math.round(d.v/mx*100)}%"></div>
-      <div class="wc-month">${d.m}</div>
+      <div class="wc-val">${r.units_consumed||0}</div>
+      <div class="wc-bar ${i===readings.length-1?'curr':'prev'}" style="height:${Math.round(Number(r.units_consumed||0)/mx*100)}%"></div>
+      <div class="wc-month">${monthName(r.period_month,'short')}</div>
     </div>`).join('');
 }
 
-/* ═══ PENALTY CHECK ═══ */
-function checkPenalty(){
-  const day=new Date().getDate();
-  const box=document.getElementById('penalty-alert');
-  if(!box)return;
-  if(day>10&&tenant.unit==='B1'){
-    const dl=day-10;
-    box.style.display='flex';
-    const pt=document.getElementById('penalty-text');
-    if(pt)pt.textContent=`Rent is ${dl} days late. KES 20/day penalty = KES ${dl*20} accumulated so far.`;
-  }else{box.style.display='none';}
+/* ═══ HELPERS ═══ */
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function setStatColor(id,color){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove('teal','green','red','gold','amber','blue');el.classList.add(color);
+}
+function fmtDate(d){
+  if(!d)return'—';
+  return new Date(d).toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'});
+}
+function monthName(m,fmt='long'){
+  if(!m)return'';
+  const s=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const l=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return fmt==='short'?s[(m-1)%12]:l[(m-1)%12];
+}
+function capitalize(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function catIcon(cat){
+  const icons={electrical:'⚡',plumbing:'🚿',masonry:'🧱',wifi:'📶',security:'🔐',carpentry:'🪚',other:'📋'};
+  return icons[cat]||'🔧';
+}
+function checkPenalty(balance){
+  const box=document.getElementById('penalty-alert');if(!box)return;
+  if(balance>0&&Number(propertyData.late_penalty_per_day||0)>0){
+    const days=Math.max(0,new Date().getDate()-(propertyData.rent_due_day||5));
+    if(days>0){
+      box.style.display='flex';
+      const pt=document.getElementById('penalty-text');
+      const pen=days*Number(propertyData.late_penalty_per_day||20);
+      if(pt)pt.textContent=`Rent is ${days} days late. KES ${propertyData.late_penalty_per_day||20}/day penalty = KES ${pen.toLocaleString()} accumulated.`;
+    } else box.style.display='none';
+  } else box.style.display='none';
 }
 
 /* ═══ REPAIR FORM ═══ */
-function selCat(el,cat){
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel');selectedCat=cat;
-}
-function selPrio(el,p){
-  document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});
-  el.classList.add('s'+p);selectedPrio=p;
-}
-function submitRepair(){
-  const t=document.getElementById('rep-title').value.trim();
-  const d=document.getElementById('rep-desc').value.trim();
-  if(!t||!d){showToast('Please fill in title and description','warn');return;}
-  if(!selectedCat){showToast('Please select a category','warn');return;}
-  if(!selectedPrio){showToast('Please select a priority level','warn');return;}
-  const cats={electrical:'Electrical ⚡',plumbing:'Plumbing 🚿',masonry:'Masonry 🧱',wifi:'Wi-Fi 📶',security:'Security 🔐',other:'Other 📋'};
-  const prios={n:'Normal 🟢',h:'High 🟡',u:'Urgent 🔴'};
-  const catEl=document.getElementById('rc-cat'),prioEl=document.getElementById('rc-prio');
-  if(catEl)catEl.textContent=cats[selectedCat];
-  if(prioEl)prioEl.textContent=prios[selectedPrio];
-  closeModal('modal-new-repair');
-  showModal('modal-repair-success');
-  document.getElementById('rep-title').value='';
-  document.getElementById('rep-desc').value='';
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
-  document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});
-  selectedCat='';selectedPrio='';
-}
+function selCat(el,cat){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selectedCat=cat;}
+function selPrio(el,p){document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});el.classList.add('s'+p);selectedPrio=p;}
 
 /* ═══ MODAL ═══ */
 function showModal(id){const el=document.getElementById(id);if(el)el.classList.add('open');}
 function closeModal(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+  });
 });
 
 /* ═══ TOAST ═══ */
@@ -1382,12 +1511,10 @@ let tt;
 function showToast(msg,type='success'){
   clearTimeout(tt);
   const el=document.getElementById('toast-el');
+  if(!el)return;
   el.textContent=msg;el.className=`toast ${type} show`;
   tt=setTimeout(()=>el.classList.remove('show'),3500);
 }
-const SUPA_URL = 'https://cqxeraovwxlmevvyjtng.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';
-const sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 </script>
 </body>
 </html>
