@@ -504,8 +504,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
         </div>
         <div class="card">
           <div class="card-hdr"><span class="card-title">Tenant Directory</span><button class="btn btn-teal btn-sm" onclick="openMo('mo-tenant')">+ Add Tenant</button></div>
-          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Phone</th><th>Rent</th><th>Move-in</th><th>Status</th></tr></thead><tbody id="tenants-body">
-            <tr><td colspan="6">Loading…</td></tr>
+          <div class="tbl"><table><thead><tr><th>Tenant</th><th>Unit</th><th>Phone</th><th>Rent</th><th>Move-in</th><th>Status</th><th>Portal Access</th></tr></thead><tbody id="tenants-body">
+            <tr><td colspan="7">Loading…</td></tr>
           </tbody></table></div>
         </div>
       </div>
@@ -785,6 +785,18 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="fg"><label>Description</label><textarea id="rp-desc" rows="3" placeholder="Describe the issue…"></textarea></div>
       <div class="fg"><label>Priority</label><select id="rp-priority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></div>
       <button class="btn btn-teal btn-full" onclick="addRepair()">Create Ticket</button>
+    </div>
+  </div>
+
+  <div class="mo-overlay" id="mo-invite">
+    <div class="modal">
+      <button class="mc" onclick="closeMo('mo-invite')">✕</button>
+      <h3>📧 Invite Tenant to Portal</h3>
+      <div class="msub">Send <strong id="invite-tenant-name">this tenant</strong> an email invite to set up their NyumbaLink tenant account.</div>
+      <input type="hidden" id="invite-tenant-id"/>
+      <div class="fg"><label>Tenant Email Address</label><input id="invite-email" type="email" placeholder="e.g. grace@email.com"/></div>
+      <div id="invite-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+      <button class="btn btn-teal btn-full" id="invite-btn" onclick="sendInvite()">📧 Send Invite Email</button>
     </div>
   </div>
 
@@ -1190,8 +1202,12 @@ async function loadUnits(){
   document.getElementById('tenants-body').innerHTML = tenants.length ? tenants.map(t => {
     const unit = units.find(u => u.id === t.unit_id);
     const statusBadge = t.status === 'active' ? '<span class="badge bg">Active</span>' : t.status === 'blacklisted' ? '<span class="badge br">Blacklisted</span>' : '<span class="badge bm">Inactive</span>';
-    return `<tr><td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${esc(t.phone)}</td><td>${money(unit?.monthly_rent)}</td><td>${fmtDate(t.move_in_date)}</td><td>${statusBadge}</td></tr>`;
-  }).join('') : '<tr><td colspan="6">No tenants yet.</td></tr>';
+    const hasPortal = t.auth_uid || t.email;
+    const portalCell = hasPortal
+      ? `<span class="badge bg">✅ Active</span>`
+      : `<button class="btn btn-ghost btn-sm" onclick="openInviteModal('${esc(t.id)}','${esc(t.name)}','${esc(t.email||'')}')">📧 Invite</button>`;
+    return `<tr><td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${esc(t.phone)}</td><td>${money(unit?.monthly_rent)}</td><td>${fmtDate(t.move_in_date)}</td><td>${statusBadge}</td><td>${portalCell}</td></tr>`;
+  }).join('') : '<tr><td colspan="7">No tenants yet.</td></tr>';
 }
 
 /* ============ PAYMENTS ============ */
@@ -1719,6 +1735,56 @@ async function chatSend(){
     typing.style.display = 'none';
     addChatMsg(reply, 'bot');
   }, 500);
+}
+/* ============ TENANT INVITE ============ */
+function openInviteModal(tenantId, tenantName, existingEmail){
+  document.getElementById('invite-tenant-id').value = tenantId;
+  document.getElementById('invite-tenant-name').textContent = tenantName;
+  document.getElementById('invite-email').value = existingEmail || '';
+  document.getElementById('invite-status').style.display = 'none';
+  document.getElementById('invite-btn').disabled = false;
+  document.getElementById('invite-btn').textContent = '📧 Send Invite Email';
+  openMo('mo-invite');
+}
+
+async function sendInvite(){
+  const tenantId = document.getElementById('invite-tenant-id').value;
+  const email = document.getElementById('invite-email').value.trim();
+  const statusEl = document.getElementById('invite-status');
+  const btn = document.getElementById('invite-btn');
+  if(!email){ toast('Please enter an email address','e'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  statusEl.style.display = 'none';
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    const res = await fetch('https://cqxeraovwxlmevvyjtng.supabase.co/functions/v1/invite-tenant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ tenant_id: tenantId, email })
+    });
+    const result = await res.json();
+    if(!res.ok || result.error){
+      statusEl.textContent = '❌ ' + (result.error || 'Failed to send invite');
+      statusEl.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:var(--red-light);color:var(--red)';
+      btn.disabled = false;
+      btn.textContent = '📧 Send Invite Email';
+    } else {
+      statusEl.textContent = '✅ ' + result.message;
+      statusEl.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:var(--green-light);color:var(--green)';
+      btn.textContent = 'Invite Sent ✓';
+      toast('Invite sent to ' + email + ' ✅', 's');
+      setTimeout(()=>{ closeMo('mo-invite'); loadUnits(); }, 2000);
+    }
+  } catch(e){
+    statusEl.textContent = '❌ Network error: ' + e.message;
+    statusEl.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:var(--red-light);color:var(--red)';
+    btn.disabled = false;
+    btn.textContent = '📧 Send Invite Email';
+  }
 }
 
 </script>
