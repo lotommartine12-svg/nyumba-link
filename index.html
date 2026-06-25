@@ -40,27 +40,68 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 56px;display:fl
 .mob-menu{display:none;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 9px;cursor:pointer;font-size:17px;color:var(--muted);}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 24px 80px;position:relative;z-index:1;}
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;padding:130px 56px 80px;position:relative;z-index:1;overflow:hidden;}
+.hero::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center right;z-index:-1;}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,rgba(7,10,14,0.97) 0%,rgba(7,10,14,0.9) 45%,rgba(7,10,14,0.55) 75%,rgba(7,10,14,0.4) 100%);z-index:-1;}
+.hero-left{display:flex;flex-direction:column;align-items:flex-start;}
 .hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(10,150,144,0.1);border:1px solid rgba(10,150,144,0.22);border-radius:999px;padding:6px 18px;font-size:11px;font-weight:700;color:var(--teal);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
 .pill-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease infinite;}
 @keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);}}
-.hero h1{font-family:"Instrument Serif",serif;font-size:clamp(44px,7vw,90px);line-height:1.04;letter-spacing:-2.5px;margin-bottom:22px;}
+.hero h1{font-family:"Instrument Serif",serif;font-size:clamp(40px,5.5vw,76px);line-height:1.04;letter-spacing:-2.5px;margin-bottom:22px;text-align:left;}
 .hero h1 em{color:var(--teal);font-style:italic;}
 .hero h1 .dim{color:rgba(238,242,248,0.22);}
-.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:44px;}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:64px;}
-.btn-hero{padding:16px 36px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:9px;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;}
+.hero-sub{font-size:clamp(15px,1.6vw,18px);color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:36px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px;}
+.btn-hero{padding:15px 32px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:9px;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;}
 .btn-primary{background:var(--teal);color:#fff;box-shadow:0 4px 20px rgba(10,150,144,0.3);}
 .btn-primary:hover{background:#088580;transform:translateY(-3px);box-shadow:0 14px 40px rgba(10,150,144,0.4);}
 .btn-secondary{background:rgba(255,255,255,0.06);color:var(--text);border:1.5px solid rgba(255,255,255,0.1);}
 .btn-secondary:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
 
 /* STATS BAR */
-.stats-bar{display:flex;gap:0;max-width:820px;width:100%;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);}
-.stat{flex:1;padding:22px 16px;text-align:center;border-right:1px solid var(--border);}
+.stats-bar{display:flex;gap:0;max-width:560px;width:100%;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:rgba(7,10,14,0.6);backdrop-filter:blur(16px);}
+.stat{flex:1;padding:18px 12px;text-align:center;border-right:1px solid var(--border);}
 .stat:last-child{border-right:none;}
-.stat-n{font-family:"Instrument Serif",serif;font-size:32px;color:var(--teal);}
-.stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;margin-top:4px;}
+.stat-n{font-family:"Instrument Serif",serif;font-size:28px;color:var(--teal);}
+.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;margin-top:4px;}
+
+/* HERO VISUAL */
+.hero-right{position:relative;display:flex;align-items:center;justify-content:center;}
+.hero-mockup{width:100%;max-width:460px;background:rgba(13,18,25,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:20px;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(10,150,144,0.1);animation:mockfloat 6s ease-in-out infinite;}
+@keyframes mockfloat{0%,100%{transform:translateY(0px);}50%{transform:translateY(-12px);}}
+.mock-hdr{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:16px;}
+.mock-dots{display:flex;gap:5px;}
+.mock-dot{width:10px;height:10px;border-radius:50%;}
+.mock-title{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px;}
+.mock-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.mock-card{border-radius:12px;padding:14px;position:relative;overflow:hidden;}
+.mock-card.teal{background:linear-gradient(135deg,rgba(10,150,144,0.2),rgba(10,150,144,0.08));border:1px solid rgba(10,150,144,0.2);}
+.mock-card.gold{background:linear-gradient(135deg,rgba(201,146,26,0.2),rgba(201,146,26,0.06));border:1px solid rgba(201,146,26,0.15);}
+.mock-card.green{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1px solid rgba(34,197,94,0.15);}
+.mock-card.red{background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.12);}
+.mc-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
+.mc-val{font-family:"Instrument Serif",serif;font-size:20px;color:#fff;line-height:1;}
+.mc-sub{font-size:9px;color:var(--muted);margin-top:3px;}
+.mock-list{background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden;}
+.ml-hdr{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.ml-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.ml-row:last-child{border-bottom:none;}
+.ml-av{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.ml-name{flex:1;font-size:11px;color:rgba(238,242,248,0.8);}
+.ml-unit{font-size:10px;color:var(--muted);}
+.ml-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;}
+.ml-badge.paid{background:rgba(34,197,94,0.15);color:#4ade80;}
+.ml-badge.due{background:rgba(239,68,68,0.15);color:#f87171;}
+.mock-float{position:absolute;background:rgba(13,18,25,0.95);border:1px solid rgba(10,150,144,0.25);border-radius:12px;padding:10px 14px;backdrop-filter:blur(12px);box-shadow:0 12px 32px rgba(0,0,0,0.4);}
+.mock-float.mpesa{top:-20px;right:-20px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--green);}
+.mock-float.repair{bottom:-16px;left:-16px;font-size:10px;color:var(--muted);}
+.repair-val{font-size:13px;font-weight:700;color:#fff;}
+
+/* TRUST STRIP */
+.trust-strip{display:flex;align-items:center;justify-content:center;gap:32px;padding:20px 56px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);flex-wrap:wrap;position:relative;z-index:1;}
+.ts-label{font-size:11px;color:rgba(255,255,255,0.2);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:8px;}
+.ts-badge{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.35);font-weight:600;}
+.ts-badge span{font-size:16px;}
 
 /* SECTIONS */
 section{padding:100px 56px;position:relative;z-index:1;}
@@ -189,27 +230,40 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 .fc a:hover{color:var(--teal);}
 .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:rgba(255,255,255,0.2);}
 
+/* CTA */
+.cta-sec{text-align:center;padding:120px 56px;position:relative;z-index:1;overflow:hidden;}
+.cta-sec::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center;z-index:-1;}
+.cta-sec::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,0.9) 0%,rgba(7,10,14,0.75) 50%,rgba(7,10,14,0.92) 100%);z-index:-1;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.12),transparent);pointer-events:none;}
+.cta-sec h2{font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
+.cta-sec p{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
+
 @media(max-width:900px){
   nav{padding:14px 20px;}
   .nav-links,.nav-cta .btn-nav-ghost{display:none;}
   .mob-menu{display:block;}
   section{padding:60px 20px;}
-  .hero{padding:110px 20px 60px;}
+  .hero{grid-template-columns:1fr;padding:110px 20px 60px;gap:40px;text-align:center;}
+  .hero-left{align-items:center;}
+  .hero h1{text-align:center;}
+  .hero-sub{text-align:center;}
+  .hero-btns{justify-content:center;}
+  .stats-bar{max-width:100%;}
+  .hero-right{display:none;}
   .bento{grid-template-columns:1fr 1fr;}
   .s4,.s5,.s6,.s7,.s8{grid-column:span 2;}
   .serve-grid,.pricing-grid,.testi-grid{grid-template-columns:1fr;}
-  .stats-bar{flex-wrap:wrap;}
-  .stat{flex:1 1 50%;}
   .footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
   .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
   .cta-sec{padding:60px 20px;}
+  .trust-strip{gap:18px;padding:16px 20px;}
 }
 @media(max-width:480px){
   .bento{grid-template-columns:1fr;}
   .s4,.s5,.s6,.s7,.s8{grid-column:span 1;}
-  .stat{flex:1 1 50%;}
   .hero h1{letter-spacing:-1.5px;}
   .footer-grid{grid-template-columns:1fr;}
+  .stat{flex:1 1 50%;}
 }
 </style>
 </head>
@@ -238,19 +292,94 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-pill"><span class="pill-dot"></span> Live · Nairobi, Kenya</div>
-  <h1>Property Management<br/><em>Reimagined</em><br/>for <span class="dim">Kenya</span></h1>
-  <p class="hero-sub">Collect rent via M-Pesa, track repairs, automate water billing and garbage alerts. Built for every Kenyan landlord — from bedsitters to luxury estates.</p>
-  <div class="hero-btns">
-    <a href="landlord.html" class="btn-hero btn-primary">🏢 I'm a Landlord →</a>
-    <a href="tenant.html" class="btn-hero btn-secondary">🏠 I'm a Tenant ↗</a>
+  <div class="hero-left">
+    <div class="hero-pill"><span class="pill-dot"></span> Live · Nairobi, Kenya</div>
+    <h1>Property Management<br/><em>Reimagined</em><br/>for <span class="dim">Kenya</span></h1>
+    <p class="hero-sub">Collect rent via M-Pesa, track repairs, automate water billing and garbage alerts. Built for every Kenyan landlord — from bedsitters to luxury estates.</p>
+    <div class="hero-btns">
+      <a href="landlord.html" class="btn-hero btn-primary">🏢 I'm a Landlord →</a>
+      <a href="tenant.html" class="btn-hero btn-secondary">🏠 I'm a Tenant ↗</a>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-n" data-t="500">0</div><div class="stat-l">Properties</div></div>
+      <div class="stat"><div class="stat-n" data-t="12400">0</div><div class="stat-l">Tenants</div></div>
+      <div class="stat"><div class="stat-n" data-t="98">0</div><div class="stat-l">% Uptime</div></div>
+      <div class="stat"><div class="stat-n" data-t="47">0</div><div class="stat-l">Counties</div></div>
+    </div>
   </div>
-  <div class="stats-bar">
-    <div class="stat"><div class="stat-n" data-t="500">0</div><div class="stat-l">Properties Managed</div></div>
-    <div class="stat"><div class="stat-n" data-t="12400">0</div><div class="stat-l">Happy Tenants</div></div>
-    <div class="stat"><div class="stat-n" data-t="98">0</div><div class="stat-l">% Uptime</div></div>
-    <div class="stat"><div class="stat-n" data-t="47">0</div><div class="stat-l">Counties Covered</div></div>
+  <div class="hero-right">
+    <div class="hero-mockup">
+      <div class="mock-hdr">
+        <div class="mock-dots">
+          <div class="mock-dot" style="background:#FF5F57"></div>
+          <div class="mock-dot" style="background:#FEBC2E"></div>
+          <div class="mock-dot" style="background:#28C840"></div>
+        </div>
+        <div class="mock-title">NyumbaLink · Landlord Dashboard</div>
+      </div>
+      <div class="mock-metrics">
+        <div class="mock-card teal">
+          <div class="mc-label">Collected MTD</div>
+          <div class="mc-val">165K</div>
+          <div class="mc-sub">✅ 8 of 12 paid</div>
+        </div>
+        <div class="mock-card red">
+          <div class="mc-label">Overdue</div>
+          <div class="mc-val">55K</div>
+          <div class="mc-sub">⚠️ 3 tenants</div>
+        </div>
+        <div class="mock-card green">
+          <div class="mc-label">Occupancy</div>
+          <div class="mc-val">80%</div>
+          <div class="mc-sub">12 / 15 units</div>
+        </div>
+        <div class="mock-card gold">
+          <div class="mc-label">Open Repairs</div>
+          <div class="mc-val">4</div>
+          <div class="mc-sub">1 urgent</div>
+        </div>
+      </div>
+      <div class="mock-list">
+        <div class="ml-hdr">Recent Payments</div>
+        <div class="ml-row">
+          <div class="ml-av" style="background:linear-gradient(135deg,#0A4020,#062C14)">FW</div>
+          <div class="ml-name">Faith Wanjiru</div>
+          <div class="ml-unit">A1</div>
+          <div class="ml-badge paid">Paid ✓</div>
+        </div>
+        <div class="ml-row">
+          <div class="ml-av" style="background:linear-gradient(135deg,#0A1840,#060E28)">SN</div>
+          <div class="ml-name">Susan Njeri</div>
+          <div class="ml-unit">B1</div>
+          <div class="ml-badge paid">Paid ✓</div>
+        </div>
+        <div class="ml-row">
+          <div class="ml-av" style="background:linear-gradient(135deg,#1A0A0A,#280606)">DK</div>
+          <div class="ml-name">Daniel Kiptoo</div>
+          <div class="ml-unit">B2</div>
+          <div class="ml-badge due">Overdue</div>
+        </div>
+      </div>
+    </div>
+    <div class="mock-float mpesa">
+      <span style="font-size:20px">📱</span> M-Pesa confirmed · KES 18,000
+    </div>
+    <div class="mock-float repair">
+      <div class="mc-label">Active repair</div>
+      <div class="repair-val">🔧 Leaking tap · B2 · In Progress</div>
+    </div>
   </div>
+</div>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <span class="ts-label">Trusted with</span>
+  <div class="ts-badge"><span>🏦</span> M-Pesa Integrated</div>
+  <div class="ts-badge"><span>🔒</span> SSL Encrypted</div>
+  <div class="ts-badge"><span>☁️</span> 99.8% Uptime</div>
+  <div class="ts-badge"><span>🇰🇪</span> Made in Kenya</div>
+  <div class="ts-badge"><span>📞</span> 24/7 Support</div>
+  <div class="ts-badge"><span>🛡️</span> GDPR Compliant</div>
 </div>
 
 <!-- FEATURES -->
@@ -516,24 +645,56 @@ function togglePricing() {
   document.getElementById('bl-mo').classList.toggle('on', !annual);
   document.getElementById('bl-an').classList.toggle('on', annual);
   document.getElementById('save-tag').style.display = annual ? 'inline-flex' : 'none';
-  // Standard
   document.getElementById('std-price').textContent = 'KES ' + (annual ? plans.standard.an : plans.standard.mo).toLocaleString();
   document.getElementById('std-sub').textContent = annual ? 'Billed annually · KES ' + (plans.standard.an * 12).toLocaleString() + '/year' : 'Billed monthly';
-  document.getElementById('std-orig').textContent = annual ? 'KES 2,000/mo normally' : ' ';
-  // Premium
+  document.getElementById('std-orig').textContent = annual ? 'KES 2,000/mo normally' : ' ';
   document.getElementById('prem-price').textContent = 'KES ' + (annual ? plans.premium.an : plans.premium.mo).toLocaleString();
   document.getElementById('prem-sub').textContent = annual ? 'Unlimited · Billed annually · KES ' + (plans.premium.an * 12).toLocaleString() + '/year' : 'Unlimited units · Billed monthly';
-  document.getElementById('prem-orig').textContent = annual ? 'KES 7,500/mo normally' : ' ';
+  document.getElementById('prem-orig').textContent = annual ? 'KES 7,500/mo normally' : ' ';
 }
 
-// Hide chat tooltip after 5s
-setTimeout(() => { const t = document.getElementById('chat-tip'); if(t) t.style.opacity='0'; }, 5000);
+// Mobile menu
+const mobBtn = document.querySelector('.mob-menu');
+let mobOpen = false;
+if(mobBtn) {
+  const mobDrop = document.createElement('div');
+  mobDrop.id = 'mob-drop';
+  mobDrop.style.cssText = 'display:none;position:fixed;top:60px;left:0;right:0;background:rgba(7,10,14,0.97);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);z-index:99;padding:16px 20px;';
+  mobDrop.innerHTML = `
+    <a href="#features" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Features</a>
+    <a href="#serve" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Who We Serve</a>
+    <a href="#pricing" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Pricing</a>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <a href="tenant.html" style="flex:1;padding:11px;border:1.5px solid rgba(255,255,255,0.12);border-radius:9px;color:rgba(238,242,248,0.6);font-size:13px;font-weight:600;text-decoration:none;text-align:center;">Tenant Login</a>
+      <a href="landlord.html" style="flex:1;padding:11px;background:#0A9690;border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;text-align:center;">Get Started Free</a>
+    </div>`;
+  document.body.appendChild(mobDrop);
+  mobBtn.onclick = () => {
+    mobOpen = !mobOpen;
+    mobDrop.style.display = mobOpen ? 'block' : 'none';
+    mobBtn.textContent = mobOpen ? '\u2715' : '\u2630';
+  };
+  mobDrop.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.onclick = () => { mobOpen = false; mobDrop.style.display = 'none'; mobBtn.textContent = '\u2630'; };
+  });
+}
 
-// Nav scroll effect
+// Hide chat tooltip
+setTimeout(() => { const t = document.getElementById('chat-tip'); if(t) { t.style.opacity='0'; t.style.transition='opacity .5s'; } }, 5000);
+
+// Nav scroll shrink
 window.addEventListener('scroll', () => {
   const nav = document.getElementById('main-nav');
-  if(window.scrollY > 60) { nav.style.padding = '11px 56px'; }
-  else { nav.style.padding = '16px 56px'; }
+  if(nav) nav.style.padding = window.scrollY > 60 ? '11px 56px' : '16px 56px';
+});
+
+// Parallax hero background
+window.addEventListener('scroll', () => {
+  const hero = document.querySelector('.hero');
+  if(hero && window.scrollY < window.innerHeight) {
+    const offset = window.scrollY * 0.25;
+    hero.style.setProperty('--parallax', offset + 'px');
+  }
 });
 </script>
 </body>
