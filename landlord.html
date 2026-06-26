@@ -322,6 +322,20 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
 </style>
 </head>
 <body>
+<div id="sandbox-warn" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a0a00;border-bottom:2px solid #C9921A;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;color:#F5C030;font-family:sans-serif;">
+  ⚠️ You're viewing this inside a preview sandbox — network calls to Supabase are blocked here.
+  <a href="https://lotommartine12-svg.github.io/nyumba-link/landlord.html" target="_blank" style="color:#fff;background:#C9921A;border-radius:6px;padding:3px 10px;margin-left:10px;text-decoration:none;">Open Live Site →</a>
+</div>
+<script>
+// Detect preview sandbox — if window is in a restricted iframe, show the warning
+(function(){
+  try {
+    // fetch a tiny no-op to detect network availability
+    fetch('https://cqxeraovwxlmevvyjtng.supabase.co/rest/v1/', {method:'HEAD', signal: AbortSignal.timeout(3000)})
+      .catch(()=>{ document.getElementById('sandbox-warn').style.display='block'; });
+  } catch(e) { document.getElementById('sandbox-warn').style.display='block'; }
+})();
+</script>
 <div id="auth">
   <div class="auth-hero">
     <div style="position:relative;z-index:1">
@@ -353,17 +367,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="panel on" id="panel-login">
         <div class="auth-title">Welcome back</div>
         <div class="auth-sub">Sign in to your landlord portal</div>
-        <div class="fg"><label>Email</label><input id="li-email" type="email" placeholder="you@email.com"/></div>
-        <div class="fg"><label>Password</label><input id="li-pass" type="password" placeholder="Your password"/></div>
-        <div style="text-align:right;margin-bottom:18px"><a href="#" style="font-size:12px;color:var(--teal);text-decoration:none;font-weight:600">Forgot password?</a></div>
+        <div class="fg"><label>Email</label><input id="li-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <div class="fg"><label>Password</label><input id="li-pass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <div style="text-align:right;margin-bottom:18px"><a href="#" onclick="openForgotPw(event)" style="font-size:12px;color:var(--teal);text-decoration:none;font-weight:600">Forgot password?</a></div>
         <button class="btn btn-teal btn-full" id="login-btn" onclick="doLogin()">Sign In to Portal →</button>
         <div class="demo-chips">
           <div class="demo-lbl">Demo accounts — tap to open portal instantly</div>
-          <div class="demo-chip" onclick="demoLogin('demo.greenview@nyumbalink.app')">
+          <div class="demo-chip" id="demo-chip-1" onclick="demoChipLogin(this,'demo.greenview@nyumbalink.app')">
             <div class="demo-chip-ico">👔</div>
             <div class="demo-chip-info"><strong>J. Mutua · Premium Plan</strong><span>Greenview Apartments · Langata · 15 units</span></div>
           </div>
-          <div class="demo-chip" onclick="demoLogin('demo.kariuki@nyumbalink.app')">
+          <div class="demo-chip" id="demo-chip-2" onclick="demoChipLogin(this,'demo.kariuki@nyumbalink.app')">
             <div class="demo-chip-ico">🏢</div>
             <div class="demo-chip-info"><strong>Kariuki Homes · Standard Plan</strong><span>Kariuki Gardens · Ruaka, Kiambu · 8 units</span></div>
           </div>
@@ -800,6 +814,30 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     </div>
   </div>
 
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="mo-overlay" id="mo-forgot">
+    <div class="modal">
+      <button class="mc" onclick="closeMo('mo-forgot')">✕</button>
+      <h3>🔑 Reset Password</h3>
+      <div class="msub">Enter your email and we'll send you a link to reset your password.</div>
+      <div id="forgot-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+      <div class="fg"><label>Email Address</label><input id="forgot-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')sendResetEmail()"/></div>
+      <button class="btn btn-teal btn-full" id="forgot-btn" onclick="sendResetEmail()">📧 Send Reset Link</button>
+    </div>
+  </div>
+
+  <!-- SET NEW PASSWORD OVERLAY (shown after clicking reset email link) -->
+  <div id="recovery-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,10,14,0.97);z-index:999;display:none;align-items:center;justify-content:center;">
+    <div class="modal" style="max-width:420px;">
+      <h3>🔐 Set New Password</h3>
+      <div class="msub">Choose a new password for your account.</div>
+      <div id="recovery-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+      <div class="fg"><label>New Password</label><input id="new-pass" type="password" placeholder="Minimum 8 characters"/></div>
+      <div class="fg"><label>Confirm Password</label><input id="new-pass2" type="password" placeholder="Repeat password" onkeydown="if(event.key==='Enter')updatePassword()"/></div>
+      <button class="btn btn-teal btn-full" id="recovery-btn" onclick="updatePassword()">✅ Update Password</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script>
@@ -887,14 +925,14 @@ async function doLogin(){
   btn.disabled = true; btn.textContent = 'Signing in…';
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   btn.disabled = false; btn.textContent = 'Sign In to Portal →';
-  if(error){ showAuthErr(error.message); return; }
+  if(error){ showAuthErr(error.message.includes('fetch') ? '⚠️ Preview sandbox — network blocked. Open on GitHub Pages to use this portal.' : error.message); return; }
   await loadPortalForUser(data.user);
 }
 
 async function demoLogin(email){
   document.getElementById('auth-err').classList.remove('on');
   const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
-  if(error){ showAuthErr('Demo login failed: ' + error.message); return; }
+  if(error){ showAuthErr(error.message.includes('fetch') ? '⚠️ Preview sandbox detected — network blocked. Open the live GitHub site to sign in.' : 'Demo login failed: ' + error.message); return; }
   await loadPortalForUser(data.user);
 }
 
@@ -938,6 +976,87 @@ async function logout(){
   document.getElementById('auth').style.display = 'flex';
   swTab('login');
 }
+
+
+/* ============ FORGOT PASSWORD ============ */
+function openForgotPw(e){
+  e.preventDefault();
+  document.getElementById('forgot-email').value = document.getElementById('li-email').value || '';
+  document.getElementById('forgot-status').style.display = 'none';
+  document.getElementById('forgot-btn').disabled = false;
+  document.getElementById('forgot-btn').textContent = '📧 Send Reset Link';
+  document.getElementById('mo-forgot').classList.add('open');
+}
+
+async function sendResetEmail(){
+  const email = document.getElementById('forgot-email').value.trim();
+  const statusEl = document.getElementById('forgot-status');
+  const btn = document.getElementById('forgot-btn');
+  if(!email){ statusEl.textContent='Please enter your email address.'; statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(239,68,68,0.1);color:var(--red)'; return; }
+  btn.disabled=true; btn.textContent='Sending…';
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled=false; btn.textContent='📧 Send Reset Link';
+  if(error){
+    statusEl.textContent='❌ '+error.message;
+    statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(239,68,68,0.1);color:var(--red)';
+  } else {
+    statusEl.textContent='✅ Reset link sent to '+email+' — check your inbox (and spam folder).';
+    statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(34,197,94,0.1);color:var(--green)';
+    btn.textContent='Link Sent ✓';
+  }
+}
+
+/* ============ PASSWORD RECOVERY ============ */
+function showRecoveryOverlay(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('portal').classList.remove('on');
+  const ov=document.getElementById('recovery-overlay');
+  ov.style.display='flex';
+}
+
+async function updatePassword(){
+  const np=document.getElementById('new-pass').value;
+  const np2=document.getElementById('new-pass2').value;
+  const statusEl=document.getElementById('recovery-status');
+  const btn=document.getElementById('recovery-btn');
+  if(np.length<8){ statusEl.textContent='Password must be at least 8 characters.'; statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(239,68,68,0.1);color:var(--red)'; return; }
+  if(np!==np2){ statusEl.textContent='Passwords do not match.'; statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(239,68,68,0.1);color:var(--red)'; return; }
+  btn.disabled=true; btn.textContent='Saving…';
+  const { error } = await sb.auth.updateUser({ password: np });
+  if(error){
+    statusEl.textContent='❌ '+error.message;
+    statusEl.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;background:rgba(239,68,68,0.1);color:var(--red)';
+    btn.disabled=false; btn.textContent='✅ Update Password';
+  } else {
+    document.getElementById('recovery-overlay').style.display='none';
+    toast('Password updated successfully ✅ Please sign in.','s');
+    document.getElementById('auth').style.display='flex';
+    swTab('login');
+  }
+}
+
+/* ============ DEMO CHIP WITH LOADING ============ */
+async function demoChipLogin(chip, email){
+  const orig=chip.innerHTML;
+  chip.style.opacity='0.6';
+  chip.style.pointerEvents='none';
+  chip.querySelector('.demo-chip-info strong').textContent='Signing in…';
+  document.getElementById('auth-err').classList.remove('on');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
+  if(error){
+    chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents='';
+    showAuthErr('Demo login failed: '+error.message); return;
+  }
+  await loadPortalForUser(data.user);
+}
+
+/* ============ AUTH STATE CHANGE (recovery handler) ============ */
+sb.auth.onAuthStateChange((event, session) => {
+  if(event === 'PASSWORD_RECOVERY'){
+    showRecoveryOverlay();
+  }
+});
 
 /* restore session on page load */
 (async function initSession(){
@@ -1059,7 +1178,7 @@ async function doSignup(){
 
   btn.disabled = false; btn.textContent = '🚀 Activate My Portal';
 
-  if(error){ showAuthErr(error.message); return; }
+  if(error){ showAuthErr(error.message.includes('fetch') ? '⚠️ Preview sandbox — network blocked. Open on GitHub Pages to use this portal.' : error.message); return; }
 
   if(!data.session){
     toast('Account created! Check ' + email + ' to confirm, then sign in.', 's');
@@ -1496,14 +1615,14 @@ async function loadCommunity(){
   const { data: posts } = await sb.from('community_posts').select('*').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(20);
   const list = posts || [];
   document.getElementById('community-feed').innerHTML = list.length ? list.map(p => `
-    <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody"><strong>${p.is_landlord_post?'Management':'Tenant'}:</strong> ${esc(p.body)}</div><div class="atime">${timeAgo(p.created_at)}</div></div>
+    <div class="act"><div class="adot" style="background:var(--blue)"></div><div class="abody"><strong>${p.is_landlord_post?'🏢 Management':'👤 Tenant'}:</strong> ${esc(p.body||p.title||'')}</div><div class="atime">${timeAgo(p.created_at)}</div></div>
   `).join('') : '<div class="msub" style="padding:10px">No posts yet — write the first announcement above.</div>';
 }
 async function postCommunity(){
   const body = document.getElementById('community-new-post').value.trim();
   if(!body){ toast('Write something first', 'e'); return; }
   const { error } = await sb.from('community_posts').insert({
-    property_id: currentPropertyId, posted_by_landlord: supaUser.id, body, is_landlord_post: true, category: 'announcement'
+    property_id: currentPropertyId, posted_by_landlord: supaUser.id, body, title: body.slice(0,60), is_landlord_post: true, category: 'announcement'
   });
   if(error){ toast('Failed to post: ' + error.message, 'e'); return; }
   document.getElementById('community-new-post').value = '';
