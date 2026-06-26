@@ -360,6 +360,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 </style>
 </head>
 <body>
+<div id="sandbox-warn" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a0a00;border-bottom:2px solid #C9921A;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;color:#F5C030;font-family:sans-serif;">
+  ⚠️ You're viewing this inside a preview sandbox — network calls to Supabase are blocked here.
+  <a href="https://lotommartine12-svg.github.io/nyumba-link/tenant.html" target="_blank" style="color:#fff;background:#C9921A;border-radius:6px;padding:3px 10px;margin-left:10px;text-decoration:none;">Open Live Site →</a>
+</div>
+<script>
+// Detect preview sandbox — if window is in a restricted iframe, show the warning
+(function(){
+  try {
+    // fetch a tiny no-op to detect network availability
+    fetch('https://cqxeraovwxlmevvyjtng.supabase.co/rest/v1/', {method:'HEAD', signal: AbortSignal.timeout(3000)})
+      .catch(()=>{ document.getElementById('sandbox-warn').style.display='block'; });
+  } catch(e) { document.getElementById('sandbox-warn').style.display='block'; }
+})();
+</script>
 
 <!-- ════════════════════ LOGIN ════════════════════ -->
 <div id="login-screen">
@@ -385,19 +399,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <h2>Welcome back</h2>
       <p>Sign in to your tenant account to manage your home.</p>
       <div id="login-err" style="display:none;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;"></div>
-      <div class="fg"><label>Email Address</label><input id="login-id" type="email" placeholder="e.g. faith.wanjiru@tenant.nyumbalink.app"/></div>
-      <div class="fg"><label>Password</label><input id="login-pass" type="password" placeholder="Enter your password"/></div>
+      <div class="fg"><label>Email Address</label><input id="login-id" type="email" placeholder="e.g. faith.wanjiru@tenant.nyumbalink.app" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fg"><label>Password</label><input id="login-pass" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;"><input type="checkbox" style="width:auto;border-radius:4px;"/> Remember me</label>
-        <a href="#" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
+        <a href="#" onclick="openForgotPw(event)" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
       </div>
       <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
       <div class="demo-row">
         <p>🎯 Demo — click to sign in instantly</p>
         <div class="demo-chips">
-          <div class="demo-chip" onclick="quickLogin('faith.wanjiru@tenant.nyumbalink.app')">👤 Faith Wanjiru — Unit A1 · Greenview (paid ✅)</div>
-          <div class="demo-chip" onclick="quickLogin('mary.achieng@tenant.nyumbalink.app')">👤 Mary Achieng — Unit A3 · Greenview (overdue ⚠️)</div>
-          <div class="demo-chip" onclick="quickLogin('daniel.kiptoo@tenant.nyumbalink.app')">👤 Daniel Kiptoo — Unit B2 · Greenview (overdue ⚠️)</div>
+          <div class="demo-chip" onclick="quickLoginChip(this,'faith.wanjiru@tenant.nyumbalink.app')">👤 Faith Wanjiru — Unit A1 · Greenview (paid ✅)</div>
+          <div class="demo-chip" onclick="quickLoginChip(this,'mary.achieng@tenant.nyumbalink.app')">👤 Mary Achieng — Unit A3 · Greenview (overdue ⚠️)</div>
+          <div class="demo-chip" onclick="quickLoginChip(this,'daniel.kiptoo@tenant.nyumbalink.app')">👤 Daniel Kiptoo — Unit B2 · Greenview (overdue ⚠️)</div>
         </div>
       </div>
     </div>
@@ -1112,7 +1126,7 @@ async function doLogin(){
   setLoginLoading(true);
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   setLoginLoading(false);
-  if(error){showLoginErr(error.message);return;}
+  if(error){showLoginErr(error.message.includes('fetch') ? '⚠️ Preview sandbox — network blocked. Open on GitHub Pages to use this portal.' : error.message);return;}
   await initPortal();
 }
 
@@ -1159,6 +1173,70 @@ async function initPortal(){
   openTab('home');
   startCountdown();
 }
+
+
+/* ── FORGOT PASSWORD ── */
+function openForgotPw(e){
+  e.preventDefault();
+  document.getElementById('forgot-email').value = document.getElementById('login-id').value || '';
+  document.getElementById('forgot-status').style.display='none';
+  document.getElementById('forgot-btn').disabled=false;
+  document.getElementById('forgot-btn').textContent='📧 Send Reset Link';
+  document.getElementById('mo-forgot').style.display='flex';
+}
+async function sendResetEmail(){
+  const email=document.getElementById('forgot-email').value.trim();
+  const statusEl=document.getElementById('forgot-status');
+  const btn=document.getElementById('forgot-btn');
+  if(!email){ showStatus(statusEl,'Please enter your email address.','err'); return; }
+  btn.disabled=true; btn.textContent='Sending…';
+  const { error }=await sb.auth.resetPasswordForEmail(email,{ redirectTo: window.location.origin+window.location.pathname });
+  btn.disabled=false;
+  if(error){ showStatus(statusEl,'❌ '+error.message,'err'); btn.textContent='📧 Send Reset Link'; }
+  else { showStatus(statusEl,'✅ Reset link sent to '+email+'. Check your inbox (and spam folder).','ok'); btn.textContent='Link Sent ✓'; }
+}
+function showStatus(el,msg,type){
+  el.textContent=msg;
+  el.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;'+(type==='err'?'background:rgba(239,68,68,0.1);color:#EF4444':'background:rgba(34,197,94,0.1);color:#22C55E');
+}
+/* ── PASSWORD RECOVERY ── */
+function showRecoveryOverlay(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('recovery-overlay').style.display='flex';
+}
+async function updatePassword(){
+  const np=document.getElementById('new-pass').value;
+  const np2=document.getElementById('new-pass2').value;
+  const statusEl=document.getElementById('recovery-status');
+  const btn=document.getElementById('recovery-btn');
+  if(np.length<8){ showStatus(statusEl,'Password must be at least 8 characters.','err'); return; }
+  if(np!==np2){ showStatus(statusEl,'Passwords do not match.','err'); return; }
+  btn.disabled=true; btn.textContent='Saving…';
+  const { error }=await sb.auth.updateUser({ password: np });
+  if(error){ showStatus(statusEl,'❌ '+error.message,'err'); btn.disabled=false; btn.textContent='✅ Update Password'; }
+  else {
+    document.getElementById('recovery-overlay').style.display='none';
+    document.getElementById('login-screen').style.display='grid';
+    showLoginErr('Password updated! Please sign in with your new password.');
+    document.getElementById('login-err').style.background='rgba(34,197,94,0.1)';
+    document.getElementById('login-err').style.color='#22C55E';
+  }
+}
+/* ── DEMO CHIP WITH LOADING ── */
+async function quickLoginChip(chip, email){
+  const orig=chip.innerHTML;
+  chip.style.opacity='0.6'; chip.style.pointerEvents='none';
+  setLoginLoading(true);
+  const { error }=await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
+  setLoginLoading(false);
+  if(error){ chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents=''; showLoginErr(error.message.includes('fetch') ? '⚠️ Preview sandbox detected — network blocked. Open the live GitHub site to sign in.' : 'Demo failed: '+error.message); return; }
+  await initPortal();
+}
+/* ── AUTH STATE CHANGE ── */
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY') showRecoveryOverlay();
+});
 
 window.addEventListener('DOMContentLoaded',async()=>{
   const {data:{session}}=await sb.auth.getSession();
@@ -1517,5 +1595,29 @@ function showToast(msg,type='success'){
   tt=setTimeout(()=>el.classList.remove('show'),3500);
 }
 </script>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div id="mo-forgot" style="display:none;position:fixed;inset:0;background:rgba(7,10,14,0.85);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:90%;max-width:400px;position:relative;">
+    <button onclick="document.getElementById('mo-forgot').style.display='none'" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.07);border:none;border-radius:8px;color:var(--muted);font-size:16px;width:32px;height:32px;cursor:pointer;">✕</button>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">🔑 Reset Password</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Enter your email and we'll send you a reset link.</div>
+    <div id="forgot-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">EMAIL</label><input id="forgot-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')sendResetEmail()" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <button onclick="sendResetEmail()" id="forgot-btn" style="width:100%;padding:14px;background:var(--teal);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">📧 Send Reset Link</button>
+  </div>
+</div>
+
+<!-- SET NEW PASSWORD OVERLAY -->
+<div id="recovery-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,10,14,0.97);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:90%;max-width:400px;">
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">🔐 Set New Password</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Choose a new password for your account.</div>
+    <div id="recovery-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">NEW PASSWORD</label><input id="new-pass" type="password" placeholder="Minimum 8 characters" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <div style="margin-bottom:20px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM PASSWORD</label><input id="new-pass2" type="password" placeholder="Repeat password" onkeydown="if(event.key==='Enter')updatePassword()" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <button onclick="updatePassword()" id="recovery-btn" style="width:100%;padding:14px;background:var(--teal);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✅ Update Password</button>
+  </div>
+</div>
 </body>
 </html>
