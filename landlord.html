@@ -492,6 +492,13 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     <div class="content">
       <!-- DASHBOARD -->
       <div class="tab-page on" id="tp-dashboard">
+        <div id="dash-property-bar" style="display:none;background:rgba(10,150,144,0.07);border:1px solid rgba(10,150,144,0.15);border-radius:12px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px;">
+          <span style="color:var(--teal);font-size:16px">🏢</span>
+          <span id="dash-property-name" style="font-weight:600;color:var(--text)"></span>
+          <span>·</span><span id="dash-property-town"></span>
+          <span>·</span><span id="dash-paybill"></span>
+          <span style="margin-left:auto;font-size:11px;opacity:.5" id="dash-property-id"></span>
+        </div>
         <div class="metrics" id="dash-metrics">
           <div class="metric m-t"><div class="mico">🏠</div><div class="mlbl">Total Units</div><div class="mval">–</div><div class="msub">Loading…</div></div>
         </div>
@@ -938,34 +945,50 @@ async function demoLogin(email){
 
 async function loadPortalForUser(user){
   supaUser = user;
-  const { data: landlord, error: lErr } = await sb.from('landlords').select('*').eq('id', user.id).single();
-  if(lErr || !landlord){
-    showAuthErr('Could not load your landlord profile.');
+  try {
+    // 1. Load landlord profile
+    const { data: landlord, error: lErr } = await sb.from('landlords').select('*').eq('id', user.id).single();
+    if(lErr){ showAuthErr('Profile error: ' + lErr.message); await sb.auth.signOut(); return; }
+    if(!landlord){ showAuthErr('No landlord profile found for this account.'); await sb.auth.signOut(); return; }
+    STATE = { name: landlord.name, plan: landlord.plan || 'basic', phone: landlord.phone, email: landlord.email };
+
+    // 2. Load property
+    let { data: props, error: pErr } = await sb.from('properties').select('*').eq('landlord_id', user.id).order('created_at', { ascending:true });
+    if(pErr){ showAuthErr('Property error: ' + pErr.message); await sb.auth.signOut(); return; }
+    if(!props || props.length === 0){
+      const { data: newProp, error: insErr } = await sb.from('properties').insert({
+        landlord_id: user.id, name: STATE.name + "'s Property", total_units: 0
+      }).select().single();
+      if(insErr){ showAuthErr('Could not create property: ' + insErr.message); await sb.auth.signOut(); return; }
+      props = newProp ? [newProp] : [];
+      toast('New property created — fill in details under Property Settings', 'i');
+    }
+    propertyData = props[0];
+    currentPropertyId = propertyData ? propertyData.id : null;
+
+    // 3. Update UI
+    document.getElementById('sb-name').textContent = STATE.name;
+    document.getElementById('sb-phone').textContent = STATE.phone || '';
+    document.getElementById('sb-apt').textContent = propertyData ? propertyData.name : 'My Property';
+    document.getElementById('sb-plan-txt').textContent = STATE.plan.charAt(0).toUpperCase() + STATE.plan.slice(1);
+    document.getElementById('sb-av').textContent = STATE.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('auth').style.display = 'none';
+    document.getElementById('portal').classList.add('on');
+    // Show property info bar
+    const bar = document.getElementById('dash-property-bar');
+    if(bar && propertyData){
+      bar.style.display='flex';
+      document.getElementById('dash-property-name').textContent = propertyData.name || 'My Property';
+      document.getElementById('dash-property-town').textContent = propertyData.town || '';
+      document.getElementById('dash-paybill').textContent = propertyData.mpesa_paybill ? 'Paybill: '+propertyData.mpesa_paybill : '';
+      document.getElementById('dash-property-id').textContent = 'ID: '+propertyData.id.slice(0,8)+'…';
+    }
+    nav('dashboard');
+    toast('Welcome back, ' + STATE.name.split(' ')[0] + '! 🎉', 's');
+  } catch(e){
+    showAuthErr('Unexpected error: ' + e.message);
     await sb.auth.signOut();
-    return;
   }
-  STATE = { name: landlord.name, plan: landlord.plan || 'basic', phone: landlord.phone, email: landlord.email };
-
-  let { data: props } = await sb.from('properties').select('*').eq('landlord_id', user.id).order('created_at', { ascending:true });
-  if(!props || props.length === 0){
-    const { data: newProp } = await sb.from('properties').insert({
-      landlord_id: user.id, name: STATE.name + "'s Property", total_units: 0
-    }).select().single();
-    props = newProp ? [newProp] : [];
-    toast('New property created — fill in details under Property Settings', 'i');
-  }
-  propertyData = props[0];
-  currentPropertyId = propertyData ? propertyData.id : null;
-
-  document.getElementById('sb-name').textContent = STATE.name;
-  document.getElementById('sb-phone').textContent = STATE.phone || '';
-  document.getElementById('sb-apt').textContent = propertyData ? propertyData.name : 'My Property';
-  document.getElementById('sb-plan-txt').textContent = STATE.plan.charAt(0).toUpperCase() + STATE.plan.slice(1);
-  document.getElementById('sb-av').textContent = STATE.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('auth').style.display = 'none';
-  document.getElementById('portal').classList.add('on');
-  nav('dashboard');
-  toast('Welcome back, ' + STATE.name.split(' ')[0] + '! 🎉', 's');
 }
 
 async function logout(){
@@ -1198,7 +1221,7 @@ async function doSignup(){
     await sb.from('subscriptions').insert({
       landlord_id: data.user.id, plan: chosenPlan.id, amount: price,
       period_month: period.month, period_year: period.year,
-      status: 'paid', payment_method: 'mpesa',
+      status: 'confirmed', payment_method: 'mpesa',
       mpesa_reference: document.getElementById('mpesa-code').value.trim() || 'STK-CONFIRMED'
     });
   }
@@ -1245,6 +1268,11 @@ function closeSB(){
 
 /* ============ DASHBOARD ============ */
 async function loadDashboard(){
+  if(!currentPropertyId){ 
+    document.getElementById('dash-metrics').innerHTML = '<div style="padding:20px;color:var(--red)">⚠️ No property loaded. Please sign out and sign in again.</div>';
+    return; 
+  }
+  document.getElementById('dash-metrics').innerHTML = '<div style="padding:20px;color:var(--muted)">⏳ Loading data…</div>';
   const period = currentPeriod();
   const [unitsRes, tenantsRes, paymentsRes, repairsRes, recentPayRes] = await Promise.all([
     sb.from('units').select('*').eq('property_id', currentPropertyId),
@@ -1253,6 +1281,13 @@ async function loadDashboard(){
     sb.from('repairs').select('*').eq('property_id', currentPropertyId).in('status', ['open','assigned','in_progress']),
     sb.from('payments').select('*, tenants(name), units(unit_number)').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(5)
   ]);
+
+  // Surface any query errors visibly
+  const errs = [unitsRes.error, tenantsRes.error, paymentsRes.error, repairsRes.error, recentPayRes.error].filter(Boolean);
+  if(errs.length){
+    document.getElementById('dash-metrics').innerHTML = '<div style="padding:20px;color:var(--red)">⚠️ Query error: ' + errs.map(e=>e.message).join(' | ') + '</div>';
+    return;
+  }
 
   const units = unitsRes.data || [];
   const tenants = tenantsRes.data || [];
