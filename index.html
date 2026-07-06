@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>AMANALink – Kenya's Smartest Property Management Platform</title>
+<title>NyumbaLink – Kenya's Smartest Property Management Platform</title>
 <meta name="description" content="Collect rent via M-Pesa, track repairs, automate water bills and garbage alerts. Built for every Kenyan landlord."/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital,opsz,wght@0,10..144,400;0,10..144,700;1,10..144,400&display=swap" rel="stylesheet"/>
 <style>
@@ -210,12 +210,12 @@ tr:last-child td{border-bottom:none;}
 .cta-sec p{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
 
 /* CHAT WIDGET (live demo) */
-.chat-demo{position:fixed;bottom:28px;right:28px;z-index:200;}
-.chat-demo-fab{width:52px;height:52px;background:linear-gradient(135deg,var(--teal),#077A75);border-radius:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(10,150,144,0.4);font-size:22px;border:none;transition:all .2s;animation:fabpop 3s ease-in-out infinite;}
+
+
 @keyframes fabpop{0%,100%{box-shadow:0 6px 24px rgba(10,150,144,0.4);}50%{box-shadow:0 6px 32px rgba(10,150,144,0.6),0 0 0 8px rgba(10,150,144,0.08);}}
-.chat-demo-fab:hover{transform:scale(1.08);}
-.chat-tooltip{position:absolute;bottom:62px;right:0;background:var(--ink2);border:1px solid rgba(10,150,144,0.2);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--text);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
-.chat-tooltip::after{content:"";position:absolute;bottom:-6px;right:18px;width:12px;height:12px;background:var(--ink2);border-right:1px solid rgba(10,150,144,0.2);border-bottom:1px solid rgba(10,150,144,0.2);transform:rotate(45deg);}
+
+
+
 
 /* FOOTER */
 footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relative;z-index:1;}
@@ -264,6 +264,64 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
   .hero h1{letter-spacing:-1.5px;}
   .footer-grid{grid-template-columns:1fr;}
   .stat{flex:1 1 50%;}
+}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.34,1.2,.64,1),transform .7s cubic-bezier(.34,1.2,.64,1);}
+.reveal.visible{opacity:1;transform:none;}
+.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .7s .1s cubic-bezier(.34,1.2,.64,1),transform .7s .1s cubic-bezier(.34,1.2,.64,1);}
+.reveal-left.visible{opacity:1;transform:none;}
+.reveal-right{opacity:0;transform:translateX(28px);transition:opacity .7s .1s cubic-bezier(.34,1.2,.64,1),transform .7s .1s cubic-bezier(.34,1.2,.64,1);}
+.reveal-right.visible{opacity:1;transform:none;}
+
+/* ROADMAP */
+.roadmap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:56px;position:relative;}
+.roadmap-grid::before{content:'';position:absolute;top:32px;left:calc(12.5%);right:calc(12.5%);height:1px;background:linear-gradient(90deg,var(--teal),rgba(10,150,144,0.2));z-index:0;}
+.rm{position:relative;z-index:1;}
+.rm-num{font-family:"Instrument Serif",serif;font-size:48px;color:rgba(10,150,144,0.15);line-height:1;margin-bottom:12px;}
+.rm-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.rm-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.rm-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:999px;}
+.rm-now{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.rm-soon{background:rgba(10,150,144,0.12);color:var(--teal);border:1px solid rgba(10,150,144,0.2);}
+.rm-future{background:rgba(201,146,26,0.12);color:var(--gold);border:1px solid rgba(201,146,26,0.2);}
+.rm-dot{width:12px;height:12px;border-radius:50%;background:var(--teal);margin-bottom:18px;box-shadow:0 0 0 3px rgba(10,150,144,0.2);}
+
+/* IMPROVE SERVE CARDS */
+.sc-low{border-color:rgba(59,130,246,0.25)!important;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(59,130,246,0.02))!important;}
+.sc-low .sc-badge{background:rgba(59,130,246,0.12);color:#60A5FA;border:1px solid rgba(59,130,246,0.2);}
+.sc-low .sc-features li::before{color:#60A5FA;}
+.sc-mid{border-color:rgba(10,150,144,0.3)!important;background:linear-gradient(135deg,rgba(10,150,144,0.08),rgba(10,150,144,0.02))!important;}
+.sc-high{border-color:rgba(168,85,247,0.25)!important;background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(168,85,247,0.02))!important;}
+.sc-high .sc-badge{background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);}
+.sc-high .sc-features li::before{color:#C084FC;}
+
+/* EXTRA BENTO CARDS */
+.bc-community{background:linear-gradient(135deg,rgba(10,150,144,0.1),rgba(10,150,144,0.03))!important;border-color:rgba(10,150,144,0.2)!important;}
+.bc-ussd{background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.02))!important;border-color:rgba(34,197,94,0.2)!important;}
+.bc-finance{background:linear-gradient(135deg,rgba(201,146,26,0.1),rgba(201,146,26,0.02))!important;border-color:rgba(201,146,26,0.2)!important;display:flex;gap:32px;align-items:center;}
+.bc-finance-stats{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;}
+.bfs{background:rgba(201,146,26,0.08);border:1px solid rgba(201,146,26,0.15);border-radius:12px;padding:12px 18px;text-align:center;min-width:100px;}
+.bfs-val{font-family:"Instrument Serif",serif;font-size:22px;color:var(--gold);}
+.bfs-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+.s12{grid-column:span 12;}
+
+/* CTA BG IMAGE */
+.cta-sec{text-align:center;padding:120px 56px;position:relative;z-index:1;overflow:hidden;}
+.cta-sec::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center;z-index:-2;}
+.cta-sec::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,0.92) 0%,rgba(7,10,14,0.78) 50%,rgba(7,10,14,0.94) 100%);z-index:-1;}
+.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.1),transparent);pointer-events:none;z-index:0;}
+.cta-sec h2{position:relative;z-index:1;font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
+.cta-sec p{position:relative;z-index:1;font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
+.cta-sec .hero-btns{position:relative;z-index:1;justify-content:center;}
+
+@media(max-width:900px){
+  .roadmap-grid{grid-template-columns:1fr 1fr;}
+  .roadmap-grid::before{display:none;}
+  .bc-finance{flex-direction:column;gap:16px;}
+}
+@media(max-width:480px){
+  .roadmap-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -384,10 +442,10 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 
 <!-- FEATURES -->
 <section id="features" style="background:var(--ink2);">
-  <span class="sec-pill">Platform Features</span>
+  <span class="sec-pill reveal">Platform Features</span>
   <h2 class="sec-title">Everything. <em>One platform.</em></h2>
   <p class="sec-sub">The most comprehensive property management platform built specifically for Kenyan landlords and tenants.</p>
-  <div class="bento">
+  <div class="bento reveal">
     <div class="bc s7 bc-featured">
       <span class="bc-ico">💳</span>
       <h3>Smart M-Pesa Payment Engine</h3>
@@ -425,15 +483,37 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
       <h3>Tenant Rent Score™</h3>
       <p>Kenya's first rental credit score. Tenants build payment history. Share for new housing, bank loans, or employment.</p>
     </div>
+    <div class="bc s6 bc-community reveal">
+      <span class="bc-ico">🏘️</span>
+      <h3>Digital Community Board</h3>
+      <p>Private resident network per apartment. Share resources, post events, emergency alerts, lost & found. Curated monthly events calendar managed by the landlord.</p>
+    </div>
+    <div class="bc s6 bc-ussd reveal">
+      <span class="bc-ico">📱</span>
+      <h3>USSD + WhatsApp + App</h3>
+      <p>Smartphone app, mobile browser, WhatsApp bot, and USSD *384# for basic phones. Every Kenyan can use NyumbaLink regardless of device or data access.</p>
+    </div>
+    <div class="bc s12 bc-finance reveal">
+      <div style="flex:1">
+        <span class="bc-ico">🏦</span>
+        <h3>Landlord Financing Access</h3>
+        <p>12 months of clean NyumbaLink payment history unlocks renovation loans, bridge financing, and mortgage applications through partner banks and SACCOs. Your rental record becomes your credit history.</p>
+      </div>
+      <div class="bc-finance-stats">
+        <div class="bfs"><div class="bfs-val">KES 2M</div><div class="bfs-lbl">Max loan access</div></div>
+        <div class="bfs"><div class="bfs-val">12%</div><div class="bfs-lbl">Partner rate p.a.</div></div>
+        <div class="bfs"><div class="bfs-val">48h</div><div class="bfs-lbl">Approval time</div></div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- WHO WE SERVE -->
 <section id="serve">
-  <span class="sec-pill">Who We Serve</span>
+  <span class="sec-pill reveal">Who We Serve</span>
   <h2 class="sec-title">Built for <em>every Kenyan</em></h2>
   <p class="sec-sub">From a single room in Kayole to a 200-unit gated estate in Karen — NyumbaLink scales with every landlord.</p>
-  <div class="serve-grid">
+  <div class="serve-grid reveal">
     <div class="sc sc-low">
       <span class="sc-badge">Basic · Free Start</span>
       <span class="sc-ico">🏠</span>
@@ -558,12 +638,12 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 
 <!-- TESTIMONIALS -->
 <section style="background:var(--ink2);">
-  <span class="sec-pill">Testimonials</span>
+  <span class="sec-pill reveal">Testimonials</span>
   <h2 class="sec-title">Loved by landlords <em>& tenants</em></h2>
-  <div class="testi-grid">
+  <div class="testi-grid reveal">
     <div class="testi">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-q">I used to chase 15 tenants on WhatsApp every month. With AmanaLink the money just comes in and I get an SMS. I collected 100% rent in my first month.</p>
+      <p class="testi-q">I used to chase 15 tenants on WhatsApp every month. With NyumbaLink the money just comes in and I get an SMS. I collected 100% rent in my first month.</p>
       <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#0A4020,#062C14)">JM</div><div><div class="ta-n">James Mwangi</div><div class="ta-r">Landlord · 24 units · Githurai</div></div></div>
     </div>
     <div class="testi">
@@ -573,8 +653,46 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
     </div>
     <div class="testi">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-q">We manage 3 blocks for diaspora clients in the UK. AmanaLink gives them a real-time dashboard. Our clients trust us more because of the transparency.</p>
+      <p class="testi-q">We manage 3 blocks for diaspora clients in the UK. NyumbaLink gives them a real-time dashboard. Our clients trust us more because of the transparency.</p>
       <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#3A0A0A,#280606)">AO</div><div><div class="ta-n">Amina Ochieng</div><div class="ta-r">Property Manager · 87 units · Kilimani</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ROADMAP -->
+<section id="roadmap" style="background:var(--ink2);">
+  <span class="sec-pill reveal">Product Roadmap</span>
+  <h2 class="sec-title reveal">Where we're <em>going</em></h2>
+  <p class="sec-sub reveal">We're just getting started. Here's what's coming for NyumbaLink.</p>
+  <div class="roadmap-grid">
+    <div class="rm reveal">
+      <div class="rm-dot"></div>
+      <div class="rm-num">01</div>
+      <div class="rm-title">Web Platform</div>
+      <p class="rm-desc">Full web app for landlords and tenants. Real M-Pesa integration. Repair tracking. Utility billing. All core features live.</p>
+      <span class="rm-badge rm-now">✅ Live Now</span>
+    </div>
+    <div class="rm reveal">
+      <div class="rm-dot"></div>
+      <div class="rm-num">02</div>
+      <div class="rm-title">Android App</div>
+      <p class="rm-desc">Native Android app on Google Play. Push notifications for payments & repairs. Offline mode. Mobile-first experience.</p>
+      <span class="rm-badge rm-soon">Q3 2026</span>
+    </div>
+    <div class="rm reveal">
+      <div class="rm-dot"></div>
+      <div class="rm-num">03</div>
+      <div class="rm-title">iOS App + USSD</div>
+      <p class="rm-desc">iPhone app on App Store. USSD *384# for feature phones. WhatsApp bot for tenants who prefer messaging.</p>
+      <span class="rm-badge rm-soon">Q4 2026</span>
+    </div>
+    <div class="rm reveal">
+      <div class="rm-dot"></div>
+      <div class="rm-num">04</div>
+      <div class="rm-title">East Africa Scale</div>
+      <p class="rm-desc">Uganda, Tanzania, Rwanda expansion. Multi-currency support. Local M-Pesa equivalents per country. Deposit escrow.</p>
+      <span class="rm-badge rm-future">2027</span>
     </div>
   </div>
 </section>
@@ -594,7 +712,7 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 <footer>
   <div class="footer-grid">
     <div>
-      <div class="fb-logo"><div class="fb-logo-mark">🏠</div>AmanaLink</div>
+      <div class="fb-logo"><div class="fb-logo-mark">🏠</div>NyumbaLink</div>
       <p class="fb-desc">Kenya's most comprehensive property management platform. Built for landlords, tenants and technicians across all income levels.</p>
       <div class="fb-badges">
         <span class="fb-badge">🔒 SSL Encrypted</span>
@@ -607,18 +725,20 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
     <div class="fc"><h4>Support</h4><a href="#">Help Center</a><a href="mailto:hello@nyumbalink.co.ke">hello@nyumbalink.co.ke</a><a href="tel:+254700000001">+254 700 000 001</a><a href="#">Privacy Policy</a></div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 AmanaLink Limited · Nairobi, Kenya · All rights reserved</span>
+    <span>© 2026 NyumbaLink Limited · Nairobi, Kenya · All rights reserved</span>
     <span>Built with ❤️ for Kenya</span>
   </div>
 </footer>
 
-<!-- Chat demo fab -->
-<div class="chat-demo">
-  <div class="chat-tooltip" id="chat-tip">🤖 AI Assistant inside portal</div>
-  <button class="chat-demo-fab" onclick="window.location.href='landlord.html'" title="Try AI Assistant">🤖</button>
-</div>
 
 <script>
+// Scroll reveal
+const revEls = document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
+const revObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); revObs.unobserve(e.target); } });
+}, {threshold: 0.1});
+revEls.forEach(el => revObs.observe(el));
+
 // Counter animation
 const nums = document.querySelectorAll('[data-t]');
 const obs = new IntersectionObserver(entries => {
@@ -679,12 +799,10 @@ if(mobBtn) {
   });
 }
 
-// Hide chat tooltip
-setTimeout(() => { const t = document.getElementById('chat-tip'); if(t) { t.style.opacity='0'; t.style.transition='opacity .5s'; } }, 5000);
 
 // Nav scroll shrink
 window.addEventListener('scroll', () => {
-  const nav = document.getElementById('main-nav');
+  const nav = document.querySelector('nav');
   if(nav) nav.style.padding = window.scrollY > 60 ? '11px 56px' : '16px 56px';
 });
 
@@ -693,7 +811,7 @@ window.addEventListener('scroll', () => {
   const hero = document.querySelector('.hero');
   if(hero && window.scrollY < window.innerHeight) {
     const offset = window.scrollY * 0.25;
-    hero.style.setProperty('--parallax', offset + 'px');
+    hero.style.backgroundPositionY = `calc(center + ${offset}px)`;
   }
 });
 </script>
