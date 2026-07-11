@@ -491,6 +491,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
     <div class="topbar">
       <div class="tb-l"><button class="hbg" onclick="toggleSB()">☰</button><div class="tb-title" id="page-title">Dashboard</div></div>
       <div class="tb-r">
+        <a href="index.html" class="btn btn-ghost btn-sm" title="Back to website" style="text-decoration:none;">🏠 Home</a>
         <button class="btn btn-ghost btn-sm" onclick="openMo('mo-unit')">+ Unit</button>
         <button class="btn btn-sm btn-teal" onclick="openMo('mo-tenant')">+ Tenant</button>
         <button class="btn btn-ghost btn-sm" onclick="openMo('mo-pay')">💳 Record</button>
@@ -629,31 +630,36 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
             <div class="fg">
               <label>Payment Method</label>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;" id="pay-method-grid">
-                <div class="pm-opt" id="pm-mpesa_paybill" onclick="selectPayMethod('mpesa_paybill')">
-                  <div style="font-size:20px">📲</div>
+                <div class="pm-opt" id="pm-mpesa_paybill" onclick="openPayMethodModal('mpesa_paybill')">
+                  <div style="font-size:28px">📲</div>
                   <div class="pm-label">M-Pesa Paybill</div>
                   <div class="pm-hint">Business Number</div>
+                  <div class="pm-val" id="pmv-mpesa_paybill" style="font-size:11px;color:var(--teal);font-weight:700;margin-top:4px;min-height:16px;"></div>
                 </div>
-                <div class="pm-opt" id="pm-mpesa_till" onclick="selectPayMethod('mpesa_till')">
-                  <div style="font-size:20px">🏪</div>
+                <div class="pm-opt" id="pm-mpesa_till" onclick="openPayMethodModal('mpesa_till')">
+                  <div style="font-size:28px">🏪</div>
                   <div class="pm-label">M-Pesa Till</div>
                   <div class="pm-hint">Buy Goods Number</div>
+                  <div class="pm-val" id="pmv-mpesa_till" style="font-size:11px;color:var(--teal);font-weight:700;margin-top:4px;min-height:16px;"></div>
                 </div>
-                <div class="pm-opt" id="pm-mpesa_phone" onclick="selectPayMethod('mpesa_phone')">
-                  <div style="font-size:20px">📱</div>
+                <div class="pm-opt" id="pm-mpesa_phone" onclick="openPayMethodModal('mpesa_phone')">
+                  <div style="font-size:28px">📱</div>
                   <div class="pm-label">Send to Phone</div>
                   <div class="pm-hint">Personal M-Pesa</div>
+                  <div class="pm-val" id="pmv-mpesa_phone" style="font-size:11px;color:var(--teal);font-weight:700;margin-top:4px;min-height:16px;"></div>
                 </div>
-                <div class="pm-opt" id="pm-bank" onclick="selectPayMethod('bank')">
-                  <div style="font-size:20px">🏦</div>
+                <div class="pm-opt" id="pm-bank" onclick="openPayMethodModal('bank')">
+                  <div style="font-size:28px">🏦</div>
                   <div class="pm-label">Bank Transfer</div>
                   <div class="pm-hint">Account & Branch</div>
+                  <div class="pm-val" id="pmv-bank" style="font-size:11px;color:var(--teal);font-weight:700;margin-top:4px;min-height:16px;"></div>
                 </div>
               </div>
+              <div id="pm-active-summary" style="display:none;background:rgba(10,150,144,0.07);border:1px solid rgba(10,150,144,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text);margin-top:10px;"></div>
             </div>
 
-            <!-- M-Pesa Paybill fields -->
-            <div id="fields-mpesa_paybill" class="pay-fields">
+            <!-- Pay fields — now managed via modal, kept for data binding -->
+            <div id="fields-mpesa_paybill" class="pay-fields" style="display:none;">
               <div class="fg"><label>Business (Paybill) Number</label><input id="set-paybill" placeholder="e.g. 400200" oninput="updatePayPreview()" inputmode="numeric"/></div>
               <div class="fg"><label>Account Number Format</label>
                 <select id="set-paybill-acct">
@@ -667,19 +673,19 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
             </div>
 
             <!-- M-Pesa Till fields -->
-            <div id="fields-mpesa_till" class="pay-fields" style="display:none">
+            <div id="fields-mpesa_till" class="pay-fields" style="display:none;">
               <div class="fg"><label>Till Number (Buy Goods)</label><input id="set-till" placeholder="e.g. 123456" oninput="updatePayPreview()" inputmode="numeric"/></div>
               <div class="fg"><label>Till Name (as registered)</label><input id="set-till-name" placeholder="e.g. Kariuki Properties"/></div>
             </div>
 
             <!-- M-Pesa Phone fields -->
-            <div id="fields-mpesa_phone" class="pay-fields" style="display:none">
+            <div id="fields-mpesa_phone" class="pay-fields" style="display:none;">
               <div class="fg"><label>M-Pesa Phone Number</label><input id="set-mpesa-phone" placeholder="e.g. 0712 345 678" oninput="updatePayPreview()" inputmode="tel"/></div>
               <div class="fg"><label>Registered Name</label><input id="set-mpesa-name" placeholder="Name as it appears on M-Pesa"/></div>
             </div>
 
             <!-- Bank fields -->
-            <div id="fields-bank" class="pay-fields" style="display:none">
+            <div id="fields-bank" class="pay-fields" style="display:none;">
               <div class="row2">
                 <div class="fg"><label>Bank Name</label>
                   <select id="set-bank">
@@ -939,6 +945,57 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="fg"><label>New Password</label><input id="new-pass" type="password" placeholder="Minimum 8 characters"/></div>
       <div class="fg"><label>Confirm Password</label><input id="new-pass2" type="password" placeholder="Repeat password" onkeydown="if(event.key==='Enter')updatePassword()"/></div>
       <button class="btn btn-teal btn-full" id="recovery-btn" onclick="updatePassword()">✅ Update Password</button>
+    </div>
+  </div>
+
+  <!-- TENANT PAYMENT HISTORY MODAL -->
+  <div class="mo-overlay" id="mo-tenant-hist">
+    <div class="modal" style="max-width:680px;width:95%">
+      <button class="mc" onclick="closeMo('mo-tenant-hist')">✕</button>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--teal-d));display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>
+        <div>
+          <h3 style="margin:0;font-size:18px;" id="th-name">Tenant Name</h3>
+          <div style="font-size:13px;color:var(--muted);">Unit <span id="th-unit">—</span> · <span id="th-total">—</span> total paid</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Balance</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--teal);" id="th-balance">—</div>
+        </div>
+      </div>
+      <div id="th-loading" style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">⏳ Loading payment history…</div>
+      <div id="th-payments" style="display:none;">
+        <div class="tbl" style="max-height:380px;overflow-y:auto;">
+          <table>
+            <thead><tr><th>Type</th><th>Amount</th><th>Method</th><th>Reference</th><th>Period</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="th-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="th-empty" style="display:none;text-align:center;padding:32px;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:10px;">💳</div>
+        <div>No payment records yet for this tenant.</div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn btn-ghost btn-sm" onclick="closeMo('mo-tenant-hist')">Close</button>
+        <button class="btn btn-teal btn-sm" onclick="closeMo('mo-tenant-hist');openMo('mo-pay')">💳 Record Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYMENT METHOD INPUT MODAL -->
+  <div class="mo-overlay" id="mo-pay-method">
+    <div class="modal" style="max-width:480px">
+      <button class="mc" onclick="closeMo('mo-pay-method')">✕</button>
+      <div id="pmi-icon" style="font-size:40px;text-align:center;margin-bottom:8px;"></div>
+      <h3 id="pmi-title" style="text-align:center;margin-bottom:4px;"></h3>
+      <div id="pmi-desc" class="msub" style="text-align:center;margin-bottom:20px;"></div>
+      <div id="pmi-fields"></div>
+      <div id="pmi-preview" style="background:rgba(10,150,144,0.07);border:1px solid rgba(10,150,144,0.2);border-radius:12px;padding:14px;margin:14px 0;display:none;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:8px;">📋 Tenant will see:</div>
+        <div id="pmi-preview-text" style="font-size:13px;color:var(--text);line-height:1.8;"></div>
+      </div>
+      <button class="btn btn-teal btn-full" id="pmi-save-btn" onclick="savePayMethodModal()">💾 Save & Apply</button>
     </div>
   </div>
 
@@ -1457,7 +1514,12 @@ async function loadUnits(){
     const portalCell = hasPortal
       ? `<span class="badge bg">✅ Active</span>`
       : `<button class="btn btn-ghost btn-sm" onclick="openInviteModal('${esc(t.id)}','${esc(t.name)}','${esc(t.email||'')}')">📧 Invite</button>`;
-    return `<tr><td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${esc(t.phone)}</td><td>${money(unit?.monthly_rent)}</td><td>${fmtDate(t.move_in_date)}</td><td>${statusBadge}</td><td>${portalCell}</td></tr>`;
+    return `<tr style="cursor:pointer" onclick="openTenantPayments('${t.id}','${esc(t.name)}','${esc(unit?.unit_number||'—')}')">
+      <td>${esc(t.name)}</td><td>${esc(unit?.unit_number||'—')}</td><td>${esc(t.phone)}</td>
+      <td>${money(unit?.monthly_rent)}</td><td>${fmtDate(t.move_in_date)}</td>
+      <td>${statusBadge}</td>
+      <td onclick="event.stopPropagation()">${portalCell}</td>
+    </tr>`;
   }).join('') : '<tr><td colspan="7">No tenants yet.</td></tr>';
 }
 
