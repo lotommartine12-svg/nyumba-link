@@ -565,11 +565,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <!-- M-Pesa Instructions -->
         <div class="mpesa-box" style="margin-bottom:16px;">
           <div class="mpesa-title">Pay via M-Pesa Paybill</div>
-          <div class="paybill"><span id="pay-modal-paybill">…</span></div>
-          <div class="mpesa-step"><div class="mpesa-step-num">1</div>Go to M-Pesa → Lipa na M-Pesa → Pay Bill</div>
-          <div class="mpesa-step"><div class="mpesa-step-num">2</div>Business No: <strong style="color:white;" id="pay-modal-paybill2">—</strong> (NyumbaLink)</div>
-          <div class="mpesa-step"><div class="mpesa-step-num">3</div>Account No: <strong style="color:white;" id="pay-modal-account">—</strong> (your unit number)</div>
-          <div class="mpesa-step"><div class="mpesa-step-num">4</div>Enter amount → Confirm with your PIN</div>
+          <div id="pay-method-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;color:rgba(255,255,255,0.7);">📲 <span id="pay-method-label">M-Pesa Paybill</span></div>
+          <div class="paybill" id="pay-main-number">…</div>
+          <div id="pay-steps-container"></div>
+          <div id="pay-extra-instructions" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.65);font-style:italic;"></div>
           <div style="margin-top:12px;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
             ✅ Receipt auto-generated within 5 seconds of payment and sent to your phone via SMS
           </div>
@@ -589,7 +588,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
           <div class="sched-row"><span>Reminders sent</span><span>31st, 5th and 9th of month</span></div>
           <div class="sched-row"><span>Water bill due</span><span>20th of month</span></div>
           <div class="sched-row"><span>Garbage fee due</span><span>30th of month</span></div>
-          <div class="sched-row"><span>M-Pesa Paybill</span><span style="color:var(--teal);font-weight:700;font-size:16px;" id="pay-rules-paybill">—</span></div>
+          <div class="sched-row"><span>Payment Method</span><span style="color:var(--teal);font-weight:700;font-size:14px;" id="pay-rules-method">—</span></div>
+          <div class="sched-row"><span>Payment Reference</span><span style="color:var(--teal);font-weight:700;font-size:14px;" id="pay-rules-ref">—</span></div>
           <div class="sched-row"><span>Account number</span><span style="color:var(--teal);font-weight:700;">Your unit (e.g. A3)</span></div>
         </div>
       </div>
@@ -937,11 +937,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <p class="msub">Pay your rent, water bill, or garbage fee directly from your phone.</p>
     <div class="mpesa-box" style="margin-bottom:20px;">
       <div class="mpesa-title">Lipa na M-Pesa Paybill</div>
-      <div class="paybill">522 522</div>
-      <div class="mpesa-step"><div class="mpesa-step-num">1</div>Open M-Pesa → Lipa na M-Pesa → Pay Bill</div>
-      <div class="mpesa-step"><div class="mpesa-step-num">2</div>Business No: <strong style="color:white;">522 522</strong></div>
-      <div class="mpesa-step"><div class="mpesa-step-num">3</div>Account No: <strong style="color:white;" id="unit-display">A3</strong> (your unit)</div>
-      <div class="mpesa-step"><div class="mpesa-step-num">4</div>Amount → PIN → Confirm</div>
+      <div class="paybill" id="pay-page-main-num">…</div>
+      <div id="pay-page-steps"></div>
+      <div id="pay-page-instructions" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.65);font-style:italic;"></div>
     </div>
     <div class="fg"><label>What are you paying?</label>
       <select>
@@ -1170,6 +1168,7 @@ async function initPortal(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   await Promise.all([loadHomeStats(),loadPayments(),loadWater(),loadRepairs(),loadCommunity(),loadNotifications()]);
+  buildPaymentInstructions();
   openTab('home');
   startCountdown();
 }
@@ -1250,6 +1249,90 @@ async function logout(){
   document.getElementById('login-id').value='';
   document.getElementById('login-pass').value='';
   document.getElementById('login-err').style.display='none';
+}
+
+
+/* ══ PAYMENT INSTRUCTIONS (dynamic from landlord settings) ══ */
+function buildPaymentInstructions(){
+  if(!propertyData) return;
+  const method = propertyData.payment_method || 'mpesa_paybill';
+  const unit = unitData.unit_number || '—';
+  const rent = Number(unitData.monthly_rent||0).toLocaleString();
+  const instr = propertyData.payment_instructions || '';
+
+  let label = '', mainNum = '', steps = [];
+
+  if(method === 'mpesa_paybill'){
+    const pb = propertyData.mpesa_paybill || '—';
+    label = '📲 M-Pesa Paybill';
+    mainNum = pb;
+    steps = [
+      'Open M-Pesa → Lipa na M-Pesa → <strong>Pay Bill</strong>',
+      `Business No: <strong style="color:white">${pb}</strong>`,
+      `Account No: <strong style="color:white">${unit}</strong> (your unit number)`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`
+    ];
+  } else if(method === 'mpesa_till'){
+    const till = propertyData.mpesa_till || '—';
+    label = '🏪 M-Pesa Till (Buy Goods)';
+    mainNum = till;
+    steps = [
+      'Open M-Pesa → Lipa na M-Pesa → <strong>Buy Goods & Services</strong>',
+      `Till No: <strong style="color:white">${till}</strong>`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`,
+      'Screenshot the receipt and send to your landlord'
+    ];
+  } else if(method === 'mpesa_phone'){
+    const phone = propertyData.mpesa_phone || '—';
+    const name = propertyData.bank_name || 'Landlord';
+    label = '📱 M-Pesa Send Money';
+    mainNum = phone;
+    steps = [
+      'Open M-Pesa → <strong>Send Money</strong>',
+      `To: <strong style="color:white">${phone}</strong> (${name})`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`,
+      `Reference: <strong style="color:white">Unit ${unit}</strong> + your name`
+    ];
+  } else if(method === 'bank'){
+    const bank = propertyData.bank_name || '—';
+    const branch = propertyData.bank_branch || '';
+    const acct = propertyData.bank_account || '—';
+    label = '🏦 Bank Transfer';
+    mainNum = acct;
+    steps = [
+      `Bank: <strong style="color:white">${bank}${branch?' — '+branch:''}</strong>`,
+      `Account: <strong style="color:white">${acct}</strong>`,
+      `Amount: <strong style="color:white">KES ${rent}</strong>`,
+      `Reference: <strong style="color:white">Unit ${unit} — ${tenantProfile.name}</strong>`
+    ];
+  }
+
+  const stepsHTML = steps.map((s,i)=>`<div class="mpesa-step"><div class="mpesa-step-num">${i+1}</div>${s}</div>`).join('');
+
+  // Update modal
+  setText('pay-method-label', label.replace(/^📲|📱|🏪|🏦\s*/,''));
+  const badge = document.getElementById('pay-method-badge');
+  if(badge) badge.querySelector('span').textContent = label;
+  setText('pay-main-number', mainNum);
+  const modalSteps = document.getElementById('pay-steps-container');
+  if(modalSteps) modalSteps.innerHTML = stepsHTML;
+  const modalExtra = document.getElementById('pay-extra-instructions');
+  if(modalExtra){ modalExtra.textContent = instr; modalExtra.style.display = instr?'block':'none'; }
+
+  // Update pay page
+  setText('pay-page-main-num', mainNum);
+  const pageSteps = document.getElementById('pay-page-steps');
+  if(pageSteps) pageSteps.innerHTML = stepsHTML;
+  const pageExtra = document.getElementById('pay-page-instructions');
+  if(pageExtra){ pageExtra.textContent = instr; pageExtra.style.display = instr?'block':'none'; }
+
+  // Update rules/schedule section
+  const methodLabels = {mpesa_paybill:'M-Pesa Paybill',mpesa_till:'M-Pesa Till (Buy Goods)',mpesa_phone:'M-Pesa Send Money',bank:'Bank Transfer'};
+  setText('pay-rules-method', methodLabels[method]||method);
+  setText('pay-rules-ref', mainNum);
+  setText('pay-modal-paybill', mainNum);
+  setText('pay-modal-account', unit);
+  setText('pay-modal-amount', `KES ${rent}`);
 }
 
 /* ═══ HOME STATS ═══ */
