@@ -1277,9 +1277,9 @@ async function loadDashboard(){
   const [unitsRes, tenantsRes, paymentsRes, repairsRes, recentPayRes] = await Promise.all([
     sb.from('units').select('*').eq('property_id', currentPropertyId),
     sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
-    sb.from('payments').select('*').eq('property_id', currentPropertyId).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year),
-    sb.from('repairs').select('*').eq('property_id', currentPropertyId).in('status', ['open','assigned','in_progress']),
-    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(5)
+    sb.from('payments').select('*').eq('landlord_id', supaUser.id).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year),
+    sb.from('repairs').select('*').eq('landlord_id', supaUser.id).in('status', ['open','assigned','in_progress']),
+    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(5)
   ]);
 
   // Surface any query errors visibly
@@ -1323,7 +1323,7 @@ async function loadDashboard(){
 async function sendReminders(){
   if(!tenantsCache.length){ toast('Load the dashboard first', 'e'); return; }
   const period = currentPeriod();
-  const { data: payments } = await sb.from('payments').select('tenant_id').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
+  const { data: payments } = await sb.from('payments').select('tenant_id').eq('landlord_id', supaUser.id).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
   const paidIds = new Set((payments||[]).map(p=>p.tenant_id));
   const overdue = tenantsCache.filter(t => t.unit_id && !paidIds.has(t.id));
   if(!overdue.length){ toast('No overdue tenants to remind 🎉', 'i'); return; }
@@ -1368,8 +1368,8 @@ async function loadUnits(){
 async function loadPayments(){
   const period = currentPeriod();
   const [payRes, monthRes] = await Promise.all([
-    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('property_id', currentPropertyId).order('created_at', {ascending:false}).limit(50),
-    sb.from('payments').select('amount').eq('property_id', currentPropertyId).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year)
+    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(50),
+    sb.from('payments').select('amount').eq('landlord_id', supaUser.id).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year)
   ]);
   const payments = payRes.data || [];
   paymentsCache = payments;
@@ -1389,7 +1389,7 @@ async function loadPayments(){
 
 /* ============ REPAIRS ============ */
 async function loadRepairs(){
-  const { data: repairs } = await sb.from('repairs').select('*, units(unit_number)').eq('property_id', currentPropertyId).order('submitted_at', {ascending:false});
+  const { data: repairs } = await sb.from('repairs').select('*, units(unit_number)').eq('landlord_id', supaUser.id).order('submitted_at', {ascending:false});
   const list = repairs || [];
   repairsCache = list.filter(r => ['open','assigned','in_progress'].includes(r.status));
 
@@ -1425,8 +1425,8 @@ async function loadAI(){
   const [unitsRes, tenantsRes, paymentsRes, repairsRes] = await Promise.all([
     sb.from('units').select('*').eq('property_id', currentPropertyId),
     sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
-    sb.from('payments').select('*').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('period_month',period.month).eq('period_year',period.year),
-    sb.from('repairs').select('*').eq('property_id', currentPropertyId)
+    sb.from('payments').select('*').eq('landlord_id', supaUser.id).eq('payment_type','rent').eq('period_month',period.month).eq('period_year',period.year),
+    sb.from('repairs').select('*').eq('landlord_id', supaUser.id)
   ]);
   const units = unitsRes.data || [];
   const tenants = tenantsRes.data || [];
@@ -1695,7 +1695,7 @@ async function loadKRA(){
     return;
   }
   const year = new Date().getFullYear();
-  const { data: payments } = await sb.from('payments').select('amount').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_year', year);
+  const { data: payments } = await sb.from('payments').select('amount').eq('landlord_id', supaUser.id).eq('payment_type','rent').eq('status','confirmed').eq('period_year', year);
   const gross = (payments||[]).reduce((s,p)=>s+Number(p.amount||0),0);
   const tax = gross * 0.075;
   body.innerHTML = `
@@ -1870,7 +1870,7 @@ async function chatSend(){
   let reply;
   if(lower.includes('overdue') || lower.includes('late')){
     const period = currentPeriod();
-    const { data: payments } = await sb.from('payments').select('tenant_id').eq('property_id', currentPropertyId).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
+    const { data: payments } = await sb.from('payments').select('tenant_id').eq('landlord_id', supaUser.id).eq('payment_type','rent').eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year);
     const paidIds = new Set((payments||[]).map(p=>p.tenant_id));
     const { data: tenants } = await sb.from('tenants').select('name,unit_id').eq('property_id', currentPropertyId).eq('status','active');
     const overdue = (tenants||[]).filter(t=>t.unit_id && !paidIds.has(t.id));
@@ -1879,7 +1879,7 @@ async function chatSend(){
     const { data: units } = await sb.from('units').select('unit_number,monthly_rent').eq('property_id', currentPropertyId).eq('status','vacant');
     reply = units && units.length ? `${units.length} vacant unit(s): ${units.map(u=>u.unit_number+' ('+money(u.monthly_rent)+')').join(', ')}.` : 'No vacant units right now — fully occupied!';
   } else if(lower.includes('repair') || lower.includes('fix') || lower.includes('maintenance')){
-    const { data: repairs } = await sb.from('repairs').select('title,priority,units(unit_number)').eq('property_id', currentPropertyId).in('status',['open','assigned','in_progress']);
+    const { data: repairs } = await sb.from('repairs').select('title,priority,units(unit_number)').eq('landlord_id', supaUser.id).in('status',['open','assigned','in_progress']);
     reply = repairs && repairs.length ? `${repairs.length} open ticket(s): ${repairs.map(r=>`${r.title} (${r.units?.unit_number}, ${r.priority})`).join('; ')}.` : 'No open repair tickets right now.';
   } else {
     reply = 'I can help with tenants, payments, repairs, or property settings. Try asking "who is overdue" or "list vacant units".';
