@@ -460,6 +460,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         </div>
       </div>
       <div class="tb-right">
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🏠 Home</a>
         <button class="notif-btn" onclick="openTab('notifications')">🔔<span class="ndot">3</span></button>
         <button class="tb-btn primary" onclick="showModal('modal-pay')">📱 Pay Now</button>
         <button class="tb-btn" onclick="logout()">Sign Out</button>
@@ -1124,7 +1125,7 @@ async function doLogin(){
   setLoginLoading(true);
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   setLoginLoading(false);
-  if(error){showLoginErr(error.message.includes('fetch') ? '⚠️ Preview sandbox — network blocked. Open on GitHub Pages to use this portal.' : error.message);return;}
+  if(error){const msg=error?.message||error?.error_description||JSON.stringify(error)||'Unknown error'; showLoginErr(msg.includes('fetch')?'⚠️ Preview sandbox — network blocked. Open on GitHub Pages to sign in.':msg);return;}
   await initPortal();
 }
 
@@ -1152,7 +1153,7 @@ async function initPortal(){
     .select('*, units(*), properties(*)')
     .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
     .single();
-  if(te||!tenant){showLoginErr('Tenant profile not found for this account.');return;}
+  if(te){showLoginErr('Account error: '+( te?.message||JSON.stringify(te)));return;} if(!tenant){showLoginErr('No tenant profile found for this account. Contact your landlord.');return;}
   tenantProfile=tenant;
   unitData=tenant.units||{};
   propertyData=tenant.properties||{};
@@ -1229,7 +1230,7 @@ async function quickLoginChip(chip, email){
   setLoginLoading(true);
   const { error }=await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
   setLoginLoading(false);
-  if(error){ chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents=''; showLoginErr(error.message.includes('fetch') ? '⚠️ Preview sandbox detected — network blocked. Open the live GitHub site to sign in.' : 'Demo failed: '+error.message); return; }
+  if(error){ chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents=''; const msg=error?.message||error?.error_description||JSON.stringify(error)||'Login failed'; showLoginErr(msg.includes('fetch')?'⚠️ Preview sandbox — network blocked. Open on GitHub Pages to sign in.':msg.includes('Invalid')||msg==='{}'?'Invalid email or password. Try: Demo@2026':msg); return; }
   await initPortal();
 }
 /* ── AUTH STATE CHANGE ── */
@@ -1351,7 +1352,7 @@ async function loadHomeStats(){
   const waterBill=water&&water[0];
   setText('stat-rent-val',Number(unitData.monthly_rent||0).toLocaleString());
   if(thisMonthRent&&thisMonthRent.status==='completed'){
-    setText('stat-rent-sub',`✅ Paid ${fmtDate(thisMonthRent.created_at)} · ${thisMonthRent.payment_method||'M-Pesa'}`);
+    setText('stat-rent-sub',`✅ Paid ${fmtDate(thisMonthRent.created_at)} via ${thisMonthRent.payment_method||'M-Pesa'}`);
     setStatColor('stat-rent','teal');
   } else {
     setText('stat-rent-sub',`⏳ Due ${propertyData.rent_due_day||5}th this month`);
