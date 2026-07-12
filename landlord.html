@@ -1433,7 +1433,7 @@ async function loadDashboard(){
     sb.from('tenants').select('*').eq('property_id', currentPropertyId).eq('status','active'),
     sb.from('payments').select('*').eq('landlord_id', supaUser.id).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year),
     sb.from('repairs').select('*').eq('landlord_id', supaUser.id).in('status', ['open','assigned','in_progress']),
-    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(5)
+    sb.from('payments').select('*, tenants!tenant_id(name), units!unit_id(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(5)
   ]);
 
   // Surface any query errors visibly
@@ -1527,7 +1527,7 @@ async function loadUnits(){
 async function loadPayments(){
   const period = currentPeriod();
   const [payRes, monthRes] = await Promise.all([
-    sb.from('payments').select('*, tenants(name), units(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(50),
+    sb.from('payments').select('*, tenants!tenant_id(name), units!unit_id(unit_number)').eq('landlord_id', supaUser.id).order('created_at', {ascending:false}).limit(50),
     sb.from('payments').select('amount').eq('landlord_id', supaUser.id).eq('status','confirmed').eq('period_month',period.month).eq('period_year',period.year)
   ]);
   const payments = payRes.data || [];
@@ -1548,7 +1548,7 @@ async function loadPayments(){
 
 /* ============ REPAIRS ============ */
 async function loadRepairs(){
-  const { data: repairs } = await sb.from('repairs').select('*, units(unit_number)').eq('landlord_id', supaUser.id).order('submitted_at', {ascending:false});
+  const { data: repairs } = await sb.from('repairs').select('*, units!unit_id(unit_number)').eq('landlord_id', supaUser.id).order('submitted_at', {ascending:false});
   const list = repairs || [];
   repairsCache = list.filter(r => ['open','assigned','in_progress'].includes(r.status));
 
@@ -2038,7 +2038,7 @@ async function chatSend(){
     const { data: units } = await sb.from('units').select('unit_number,monthly_rent').eq('property_id', currentPropertyId).eq('status','vacant');
     reply = units && units.length ? `${units.length} vacant unit(s): ${units.map(u=>u.unit_number+' ('+money(u.monthly_rent)+')').join(', ')}.` : 'No vacant units right now — fully occupied!';
   } else if(lower.includes('repair') || lower.includes('fix') || lower.includes('maintenance')){
-    const { data: repairs } = await sb.from('repairs').select('title,priority,units(unit_number)').eq('landlord_id', supaUser.id).in('status',['open','assigned','in_progress']);
+    const { data: repairs } = await sb.from('repairs').select('title,priority,units!unit_id(unit_number)').eq('landlord_id', supaUser.id).in('status',['open','assigned','in_progress']);
     reply = repairs && repairs.length ? `${repairs.length} open ticket(s): ${repairs.map(r=>`${r.title} (${r.units?.unit_number}, ${r.priority})`).join('; ')}.` : 'No open repair tickets right now.';
   } else {
     reply = 'I can help with tenants, payments, repairs, or property settings. Try asking "who is overdue" or "list vacant units".';
