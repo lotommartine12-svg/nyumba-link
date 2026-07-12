@@ -1150,7 +1150,7 @@ async function initPortal(){
   const {data:{user}}=await sb.auth.getUser();
   if(!user){showLoginErr('Could not verify session.');return;}
   const {data:tenant,error:te}=await sb.from('tenants')
-    .select('*, units(*), properties(*)')
+    .select('*, units!unit_id(*), properties!property_id(*)')
     .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
     .single();
   if(te){showLoginErr('Account error: '+( te?.message||JSON.stringify(te)));return;} if(!tenant){showLoginErr('No tenant profile found for this account. Contact your landlord.');return;}
