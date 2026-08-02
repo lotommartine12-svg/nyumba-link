@@ -406,6 +406,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
         <a href="#" onclick="openForgotPw(event)" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
       </div>
       <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
+      <a id="go-landlord-btn" href="landlord.html" style="display:none;margin-top:12px;width:100%;padding:13px;background:rgba(10,150,144,0.1);border:1.5px solid rgba(10,150,144,0.3);border-radius:12px;color:var(--teal);font-size:14px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;">🏢 Go to Landlord Portal →</a>
       <div class="demo-row">
         <p>🎯 Demo — click to sign in instantly</p>
         <div class="demo-chips">
@@ -1122,6 +1123,7 @@ async function doLogin(){
   const email=document.getElementById('login-id').value.trim();
   const pass=document.getElementById('login-pass').value;
   if(!email||!pass){showLoginErr('Please enter your email and password.');return;}
+  document.getElementById('go-landlord-btn').style.display='none';
   setLoginLoading(true);
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   setLoginLoading(false);
@@ -1153,7 +1155,20 @@ async function initPortal(){
     .select('*, units!unit_id(*), properties!property_id(*)')
     .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
     .single();
-  if(te){showLoginErr('Account error: '+( te?.message||JSON.stringify(te)));return;} if(!tenant){showLoginErr('No tenant profile found for this account. Contact your landlord.');return;}
+  if(te){
+    const msg = te?.message||'';
+    if(msg.includes('coerce')||msg.includes('multiple')||msg.includes('single')){
+      showLoginErr('This account is not a tenant account. Are you a landlord? Go to the Landlord Portal instead.');
+      setTimeout(()=>{ document.getElementById('go-landlord-btn').style.display='block'; }, 100);
+    } else {
+      showLoginErr('Account error: '+msg);
+    }
+    await sb.auth.signOut(); return;
+  }
+  if(!tenant){
+    showLoginErr('No tenant record found. Your landlord needs to invite you first.');
+    await sb.auth.signOut(); return;
+  }
   tenantProfile=tenant;
   unitData=tenant.units||{};
   propertyData=tenant.properties||{};
