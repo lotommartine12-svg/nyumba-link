@@ -408,11 +408,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
       <a id="go-landlord-btn" href="landlord.html" style="display:none;margin-top:12px;width:100%;padding:13px;background:rgba(10,150,144,0.1);border:1.5px solid rgba(10,150,144,0.3);border-radius:12px;color:var(--teal);font-size:14px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;">🏢 Go to Landlord Portal →</a>
       <div class="demo-row">
-        <p>🎯 Demo — click to sign in instantly</p>
-        <div class="demo-chips">
-          <div class="demo-chip" onclick="quickLoginChip(this,'faith.wanjiru@tenant.nyumbalink.app')">👤 Faith Wanjiru — Unit A1 · Greenview (paid ✅)</div>
-          <div class="demo-chip" onclick="quickLoginChip(this,'mary.achieng@tenant.nyumbalink.app')">👤 Mary Achieng — Unit A3 · Greenview (overdue ⚠️)</div>
-          <div class="demo-chip" onclick="quickLoginChip(this,'daniel.kiptoo@tenant.nyumbalink.app')">👤 Daniel Kiptoo — Unit B2 · Greenview (overdue ⚠️)</div>
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:10px;">🎯 Demo — tap to sign in instantly</p>
+          <div class="demo-chips">
+            <div class="demo-chip" id="dc-faith" onclick="demoSignIn('faith.wanjiru@tenant.nyumbalink.app','dc-faith')">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Faith Wanjiru</div><div style="font-size:11px;opacity:.7">Unit A1 · Greenview · Paid ✅</div></div>
+            </div>
+            <div class="demo-chip" id="dc-mary" onclick="demoSignIn('mary.achieng@tenant.nyumbalink.app','dc-mary')">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Mary Achieng</div><div style="font-size:11px;opacity:.7">Unit A3 · Greenview · Overdue ⚠️</div></div>
+            </div>
+            <div class="demo-chip" id="dc-daniel" onclick="demoSignIn('daniel.kiptoo@tenant.nyumbalink.app','dc-daniel')">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Daniel Kiptoo</div><div style="font-size:11px;opacity:.7">Unit B2 · Greenview · Overdue ⚠️</div></div>
+            </div>
+          </div>
+          <div id="demo-loading" style="display:none;text-align:center;padding:10px;font-size:13px;color:var(--teal);font-weight:600;">⏳ Signing in…</div>
+        </div>
         </div>
       </div>
     </div>
@@ -1238,15 +1250,46 @@ async function updatePassword(){
     document.getElementById('login-err').style.color='#22C55E';
   }
 }
-/* ── DEMO CHIP WITH LOADING ── */
+/* ── DEMO SIGN IN ── */
+async function demoSignIn(email, chipId){
+  // disable all chips, show loader
+  document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='0.5'; c.style.pointerEvents='none'; });
+  const chip = document.getElementById(chipId);
+  if(chip){ chip.style.opacity='1'; chip.style.background='rgba(10,150,144,0.1)'; chip.style.borderColor='var(--teal)'; }
+  document.getElementById('demo-loading').style.display='block';
+  document.getElementById('login-err').style.display='none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
+
+    if(error){
+      // Reset chips
+      document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='1'; c.style.pointerEvents=''; c.style.background=''; c.style.borderColor=''; });
+      document.getElementById('demo-loading').style.display='none';
+      const msg = error?.message || error?.error_description || JSON.stringify(error) || 'Unknown error';
+      if(msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')){
+        showLoginErr('⚠️ Network error — make sure you are on the live GitHub site, not the Claude preview.');
+      } else if(msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')){
+        showLoginErr('❌ Login failed. The demo password may need resetting — contact support or try manually: ' + email + ' / Demo@2026');
+      } else {
+        showLoginErr('❌ ' + msg);
+      }
+      return;
+    }
+
+    // Success — load portal
+    await initPortal();
+
+  } catch(e){
+    document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='1'; c.style.pointerEvents=''; c.style.background=''; c.style.borderColor=''; });
+    document.getElementById('demo-loading').style.display='none';
+    showLoginErr('⚠️ Could not connect. Are you on the live site at GitHub Pages?');
+  }
+}
+
+/* ── QUICK LOGIN CHIP ALIAS ── */
 async function quickLoginChip(chip, email){
-  const orig=chip.innerHTML;
-  chip.style.opacity='0.6'; chip.style.pointerEvents='none';
-  setLoginLoading(true);
-  const { error }=await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
-  setLoginLoading(false);
-  if(error){ chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents=''; const msg=error?.message||error?.error_description||JSON.stringify(error)||'Login failed'; showLoginErr(msg.includes('fetch')?'⚠️ Preview sandbox — network blocked. Open on GitHub Pages to sign in.':msg.includes('Invalid')||msg==='{}'?'Invalid email or password. Try: Demo@2026':msg); return; }
-  await initPortal();
+  await demoSignIn(email, chip.id||'');
 }
 /* ── AUTH STATE CHANGE ── */
 sb.auth.onAuthStateChange((event)=>{
