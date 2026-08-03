@@ -1216,16 +1216,18 @@ async function updatePassword(){
 /* ============ DEMO CHIP WITH LOADING ============ */
 async function demoChipLogin(chip, email){
   const orig=chip.innerHTML;
-  chip.style.opacity='0.6';
-  chip.style.pointerEvents='none';
+  chip.style.opacity='0.6'; chip.style.pointerEvents='none';
   chip.querySelector('.demo-chip-info strong').textContent='Signing in…';
   document.getElementById('auth-err').classList.remove('on');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
-  if(error){
-    chip.innerHTML=orig; chip.style.opacity='1'; chip.style.pointerEvents='';
-    showAuthErr('Demo login failed: '+error.message); return;
-  }
-  await loadPortalForUser(data.user);
+  const reset=()=>{chip.innerHTML=orig;chip.style.opacity='1';chip.style.pointerEvents='';};
+  try {
+    const res=await fetch('https://cqxeraovwxlmevvyjtng.supabase.co/functions/v1/demo-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const json=await res.json();
+    if(!res.ok||json.error){reset();showAuthErr('Demo error: '+(json.error||'unknown'));return;}
+    const {data,error}=await sb.auth.verifyOtp({token_hash:json.token_hash,type:'magiclink'});
+    if(error){reset();showAuthErr('Session error: '+error.message);return;}
+    await loadPortalForUser(data.user);
+  } catch(e){reset();showAuthErr('Network error — use the live GitHub site.');}
 }
 
 /* ============ AUTH STATE CHANGE (recovery handler) ============ */
