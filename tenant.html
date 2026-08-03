@@ -1250,51 +1250,32 @@ async function updatePassword(){
     document.getElementById('login-err').style.color='#22C55E';
   }
 }
-/* ── DEMO SIGN IN ── */
+/* ── DEMO SIGN IN via edge function (no password needed) ── */
 async function demoSignIn(email, chipId){
-  // disable all chips, show loader
-  document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='0.5'; c.style.pointerEvents='none'; });
-  const chip = document.getElementById(chipId);
-  if(chip){ chip.style.opacity='1'; chip.style.background='rgba(10,150,144,0.1)'; chip.style.borderColor='var(--teal)'; }
-  document.getElementById('demo-loading').style.display='block';
+  document.querySelectorAll('.demo-chip').forEach(c=>{c.style.opacity='0.5';c.style.pointerEvents='none';});
+  const chip=document.getElementById(chipId);
+  if(chip){chip.style.opacity='1';chip.style.background='rgba(10,150,144,0.1)';chip.style.borderColor='var(--teal)';}
+  const loadEl=document.getElementById('demo-loading');
+  if(loadEl) loadEl.style.display='block';
   document.getElementById('login-err').style.display='none';
-
-  try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: 'Demo@2026' });
-
-    if(error){
-      // Reset chips
-      document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='1'; c.style.pointerEvents=''; c.style.background=''; c.style.borderColor=''; });
-      document.getElementById('demo-loading').style.display='none';
-      const msg = error?.message || error?.error_description || JSON.stringify(error) || 'Unknown error';
-      if(msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')){
-        showLoginErr('⚠️ Network error — make sure you are on the live GitHub site, not the Claude preview.');
-      } else if(msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')){
-        showLoginErr('❌ Login failed. The demo password may need resetting — contact support or try manually: ' + email + ' / Demo@2026');
-      } else {
-        showLoginErr('❌ ' + msg);
-      }
-      return;
-    }
-
-    // Success — load portal
+  const reset=()=>{
+    document.querySelectorAll('.demo-chip').forEach(c=>{c.style.opacity='1';c.style.pointerEvents='';c.style.background='';c.style.borderColor='';});
+    if(loadEl) loadEl.style.display='none';
+  };
+  try{
+    const res=await fetch('https://cqxeraovwxlmevvyjtng.supabase.co/functions/v1/demo-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const json=await res.json();
+    if(!res.ok||json.error){reset();showLoginErr('Demo error: '+(json.error||'unknown'));return;}
+    const {data,error}=await sb.auth.verifyOtp({token_hash:json.token_hash,type:'magiclink'});
+    if(error){reset();showLoginErr('Session error: '+error.message);return;}
+    reset();
     await initPortal();
-
-  } catch(e){
-    document.querySelectorAll('.demo-chip').forEach(c=>{ c.style.opacity='1'; c.style.pointerEvents=''; c.style.background=''; c.style.borderColor=''; });
-    document.getElementById('demo-loading').style.display='none';
-    showLoginErr('⚠️ Could not connect. Are you on the live site at GitHub Pages?');
+  }catch(e){
+    reset();
+    showLoginErr('Network error — use the live GitHub site, not a preview.');
   }
 }
-
-/* ── QUICK LOGIN CHIP ALIAS ── */
-async function quickLoginChip(chip, email){
-  await demoSignIn(email, chip.id||'');
-}
-/* ── AUTH STATE CHANGE ── */
-sb.auth.onAuthStateChange((event)=>{
-  if(event==='PASSWORD_RECOVERY') showRecoveryOverlay();
-});
+async function quickLoginChip(chip,email){await demoSignIn(email,chip.id||'');}
 
 window.addEventListener('DOMContentLoaded',async()=>{
   const {data:{session}}=await sb.auth.getSession();
