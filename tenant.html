@@ -410,15 +410,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       <div class="demo-row">
           <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:10px;">🎯 Demo — tap to sign in instantly</p>
           <div class="demo-chips">
-            <div class="demo-chip" id="dc-faith" onclick="demoSignIn('faith.wanjiru@tenant.nyumbalink.app','dc-faith')">
+            <div class="demo-chip" id="dc-faith" onclick="demoSignIn('faith','dc-faith')" style="cursor:pointer">
               <span style="font-size:18px">👤</span>
               <div><div style="font-weight:700;font-size:13px">Faith Wanjiru</div><div style="font-size:11px;opacity:.7">Unit A1 · Greenview · Paid ✅</div></div>
             </div>
-            <div class="demo-chip" id="dc-mary" onclick="demoSignIn('mary.achieng@tenant.nyumbalink.app','dc-mary')">
+            <div class="demo-chip" id="dc-mary" onclick="demoSignIn('mary','dc-mary')" style="cursor:pointer">
               <span style="font-size:18px">👤</span>
               <div><div style="font-weight:700;font-size:13px">Mary Achieng</div><div style="font-size:11px;opacity:.7">Unit A3 · Greenview · Overdue ⚠️</div></div>
             </div>
-            <div class="demo-chip" id="dc-daniel" onclick="demoSignIn('daniel.kiptoo@tenant.nyumbalink.app','dc-daniel')">
+            <div class="demo-chip" id="dc-daniel" onclick="demoSignIn('daniel','dc-daniel')" style="cursor:pointer">
               <span style="font-size:18px">👤</span>
               <div><div style="font-weight:700;font-size:13px">Daniel Kiptoo</div><div style="font-size:11px;opacity:.7">Unit B2 · Greenview · Overdue ⚠️</div></div>
             </div>
@@ -1250,37 +1250,130 @@ async function updatePassword(){
     document.getElementById('login-err').style.color='#22C55E';
   }
 }
-/* ── DEMO SIGN IN via edge function (no password needed) ── */
-async function demoSignIn(email, chipId){
-  document.querySelectorAll('.demo-chip').forEach(c=>{c.style.opacity='0.5';c.style.pointerEvents='none';});
-  const chip=document.getElementById(chipId);
-  if(chip){chip.style.opacity='1';chip.style.background='rgba(10,150,144,0.1)';chip.style.borderColor='var(--teal)';}
-  const loadEl=document.getElementById('demo-loading');
-  if(loadEl) loadEl.style.display='block';
-  document.getElementById('login-err').style.display='none';
-  const reset=()=>{
-    document.querySelectorAll('.demo-chip').forEach(c=>{c.style.opacity='1';c.style.pointerEvents='';c.style.background='';c.style.borderColor='';});
-    if(loadEl) loadEl.style.display='none';
-  };
-  try{
-    const res=await fetch('https://cqxeraovwxlmevvyjtng.supabase.co/functions/v1/demo-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-    const json=await res.json();
-    if(!res.ok||json.error){reset();showLoginErr('Demo error: '+(json.error||'unknown'));return;}
-    const {data,error}=await sb.auth.verifyOtp({token_hash:json.token_hash,type:'magiclink'});
-    if(error){reset();showLoginErr('Session error: '+error.message);return;}
-    reset();
-    await initPortal();
-  }catch(e){
-    reset();
-    showLoginErr('Network error — use the live GitHub site, not a preview.');
+/* ── INSTANT DEMO (no auth required) ── */
+const DEMO_PROFILES = {"faith": {"name": "Faith Wanjiru", "unit": "A1", "property": "Greenview Apartments", "town": "Langata", "rent": 12000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 0, "payments": [{"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ9823ABZ", "period": "Jun 2026", "date": "Jun 3, 2026", "status": "confirmed"}, {"type": "Water", "amount": 1050, "method": "M-Pesa", "ref": "QKL8812", "period": "May 2026", "date": "May 30, 2026", "status": "confirmed"}, {"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ5421XYZ", "period": "May 2026", "date": "May 2, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 119, "curr": 132, "used": 13, "bill": 1950, "status": "pending"}, {"period": "May 2026", "prev": 107, "curr": 119, "used": 12, "bill": 1800, "status": "confirmed"}], "repairs": [], "status": "paid"}, "mary": {"name": "Mary Achieng", "unit": "A3", "property": "Greenview Apartments", "town": "Langata", "rent": 12000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 12000, "payments": [{"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ1234AB", "period": "May 2026", "date": "May 2, 2026", "status": "confirmed"}, {"type": "Water", "amount": 900, "method": "M-Pesa", "ref": "QKL5544", "period": "Apr 2026", "date": "Apr 28, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 88, "curr": 100, "used": 12, "bill": 1800, "status": "pending"}, {"period": "May 2026", "prev": 76, "curr": 88, "used": 12, "bill": 1800, "status": "pending"}], "repairs": [{"title": "Electrical socket sparking", "cat": "Electrical", "priority": "High", "status": "open", "ref": "RPR-003", "date": "Jun 8, 2026"}], "status": "overdue"}, "daniel": {"name": "Daniel Kiptoo", "unit": "B2", "property": "Greenview Apartments", "town": "Langata", "rent": 18000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 18000, "payments": [{"type": "Rent", "amount": 18000, "method": "M-Pesa", "ref": "QHJ8877CD", "period": "Apr 2026", "date": "Apr 3, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 156, "curr": 170, "used": 14, "bill": 2100, "status": "pending"}], "repairs": [{"title": "Leaking kitchen tap", "cat": "Plumbing", "priority": "Medium", "status": "in_progress", "ref": "RPR-002", "date": "Jun 5, 2026"}], "status": "overdue"}};
+
+function demoSignIn(email, chipId){
+  // Determine which demo profile to load
+  const key = email.includes('faith') ? 'faith' : email.includes('mary') ? 'mary' : 'daniel';
+  const d = DEMO_PROFILES[key];
+
+  // Store demo data globally
+  tenantProfile = { name: d.name, unit_id: 'demo', property_id: 'demo', is_demo: true };
+  unitData = { unit_number: d.unit, monthly_rent: d.rent };
+  propertyData = { name: d.property, town: d.town, mpesa_paybill: d.paybill,
+    payment_method: d.payment_method, rent_due_day: 5 };
+
+  // Update UI
+  const hr = new Date().getHours();
+  const greet = hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  setText('tb-greeting', greet + ', ' + d.name.split(' ')[0] + ' 👋');
+  setText('tb-apt', d.property + ' · Unit ' + d.unit + ' · ' + d.town);
+  setText('sb-initials', d.name.split(' ').map(w=>w[0]).join('').slice(0,2));
+  setText('sb-name', d.name);
+  setText('sb-unit', 'Unit ' + d.unit);
+
+  // Show portal instantly
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+
+  // Render all pages with demo data
+  renderDemoHome(d);
+  renderDemoPayments(d);
+  renderDemoWater(d);
+  renderDemoRepairs(d);
+  buildPaymentInstructions();
+  openTab('home');
+  startCountdown();
+}
+
+function renderDemoHome(d){
+  setText('stat-rent-val', Number(d.rent).toLocaleString());
+  if(d.balance === 0){
+    setText('stat-rent-sub', '✅ Paid this month via M-Pesa');
+    setStatColor('stat-rent','teal');
+  } else {
+    setText('stat-rent-sub', '⏳ Due 5th this month');
+    setStatColor('stat-rent','red');
+  }
+  setText('stat-bal-val', 'KES ' + Number(d.balance).toLocaleString());
+  setText('stat-bal-sub', d.balance > 0 ? '⚠️ KES ' + Number(d.balance).toLocaleString() + ' outstanding' : '✅ All clear · No arrears');
+  setStatColor('stat-bal', d.balance > 0 ? 'red' : 'green');
+  const w = d.water[0];
+  if(w){ setText('stat-water-val', w.bill.toLocaleString()); setText('stat-water-sub', (w.status==='confirmed'?'✅ Paid':'⏳ Due') + ' · ' + w.used + ' m³'); setStatColor('stat-water', w.status==='confirmed'?'teal':'gold'); }
+  setText('stat-garbage-val', '500'); setText('stat-garbage-sub', 'Monthly · KES 500/mo');
+  checkPenalty(d.balance);
+  // Activity feed
+  const el = document.getElementById('activity-feed');
+  if(el){
+    if(!d.payments.length){ el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:8px 0">No payment history yet.</p>'; return; }
+    el.innerHTML = d.payments.map(p=>`
+      <div class="li">
+        <div class="li-ico" style="background:${p.status==='confirmed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='confirmed'?'var(--green)':'var(--amber)'}">${p.status==='confirmed'?'✅':'⏳'}</div>
+        <div class="li-desc"><strong>${p.type} Payment</strong><span>${p.method} · ${p.ref} · ${p.date}</span></div>
+        <div class="li-amount"><div class="amt ${p.status==='confirmed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div><div class="bal">${p.status==='confirmed'?'Confirmed':'Pending'}</div></div>
+      </div>`).join('');
   }
 }
-async function quickLoginChip(chip,email){await demoSignIn(email,chip.id||'');}
 
-window.addEventListener('DOMContentLoaded',async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session) await initPortal();
-});
+function renderDemoPayments(d){
+  const el = document.getElementById('payments-list');
+  if(!el) return;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(!d.payments.length){ el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</div>'; return; }
+  el.innerHTML = d.payments.map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${p.status==='confirmed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='confirmed'?'var(--green)':'var(--amber)'}">${p.status==='confirmed'?'✅':'⏳'}</div>
+      <div class="li-desc"><strong>${capitalize(p.type)} — ${p.period}</strong><span>${p.method} · Ref: ${p.ref} · ${p.date}</span></div>
+      <div class="li-amount"><div class="amt ${p.status==='confirmed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div><div class="bal"><span class="badge ${p.status==='confirmed'?'bg':'ba'}">${p.status}</span></div></div>
+    </div>`).join('');
+  const paid = d.payments.filter(p=>p.status==='confirmed');
+  setText('pay-total-paid', 'KES ' + paid.reduce((s,p)=>s+p.amount,0).toLocaleString());
+  setText('pay-count', paid.length + ' payments');
+}
+
+function renderDemoWater(d){
+  const el = document.getElementById('water-history');
+  if(!el) return;
+  if(!d.water.length){ el.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">No readings yet.</div>'; return; }
+  el.innerHTML = d.water.map(r=>`
+    <div class="li">
+      <div class="li-ico" style="background:var(--blue-light);color:var(--blue)">💧</div>
+      <div class="li-desc"><strong>${r.period}</strong><span>Prev: ${r.prev}m³ → Curr: ${r.curr}m³ · Used: ${r.used}m³</span></div>
+      <div class="li-amount"><div class="amt" style="color:var(--blue)">KES ${Number(r.bill).toLocaleString()}</div><div class="bal"><span class="badge ${r.status==='confirmed'?'bg':'ba'}">${r.status}</span></div></div>
+    </div>`).join('');
+  const latest = d.water[0];
+  setText('water-units', latest.used + ' m³');
+  setText('water-current-bill', 'KES ' + latest.bill.toLocaleString());
+  setText('water-status', latest.status==='confirmed'?'✅ Paid':'⏳ Unpaid');
+  buildWaterChart(d.water.map(r=>({units_consumed:r.used,period_month:parseInt(r.period)})).reverse());
+}
+
+function renderDemoRepairs(d){
+  const el = document.getElementById('repairs-list');
+  if(!el) return;
+  const tabR = document.getElementById('tab-repairs');
+  if(tabR) tabR.innerHTML = '🔧 Repairs' + (d.repairs.length ? ` <span class="tbadge">${d.repairs.filter(r=>r.status==='open').length||''}</span>` : '');
+  if(!d.repairs.length){ el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🔧</div><div>No repair tickets yet.</div></div>'; return; }
+  const prioColor={Low:'bt',Medium:'ba',High:'br',Urgent:'br'};
+  const statusColor={open:'r',in_progress:'a',completed:'g',assigned:'a'};
+  const statusLabel={open:'Open',in_progress:'In Progress',completed:'Completed',assigned:'Assigned'};
+  el.innerHTML = d.repairs.map(r=>`
+    <div class="repair-card ${r.status==='completed'?'done':r.status==='in_progress'||r.status==='assigned'?'progress':'open'}">
+      <div class="rc-head">
+        <span style="font-size:20px">${catIcon(r.cat)}</span>
+        <div class="rc-title">${r.title}</div>
+        <span class="badge b${statusColor[r.status]||'m'}">${statusLabel[r.status]||r.status}</span>
+        <span class="badge ${prioColor[r.priority]||'bt'}">${r.priority}</span>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">
+        <span>📋 ${r.ref}</span><span>📅 ${r.date}</span><span>🏷️ ${r.cat}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function quickLoginChip(chip,email){ demoSignIn(email, chip.id||''); }
+
 
 async function logout(){
   await sb.auth.signOut();
