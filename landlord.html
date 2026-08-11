@@ -1220,14 +1220,27 @@ async function demoChipLogin(chip, email){
   chip.querySelector('.demo-chip-info strong').textContent='Signing in…';
   document.getElementById('auth-err').classList.remove('on');
   const reset=()=>{chip.innerHTML=orig;chip.style.opacity='1';chip.style.pointerEvents='';};
-  try {
+  try{
     const res=await fetch('https://cqxeraovwxlmevvyjtng.supabase.co/functions/v1/demo-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-    const json=await res.json();
-    if(!res.ok||json.error){reset();showAuthErr('Demo error: '+(json.error||'unknown'));return;}
+    const text=await res.text();
+    let json={};
+    try{json=JSON.parse(text);}catch(e){reset();showAuthErr('Server error: '+text.slice(0,100));return;}
+    
+    console.log('Demo login response:',json);
+    
+    if(!res.ok||json.error){
+      reset();
+      const errMsg=typeof json.error==='object'?JSON.stringify(json.error):(json.error||'Unknown');
+      showAuthErr('❌ '+errMsg);return;
+    }
+    if(!json.token_hash){reset();showAuthErr('No token. Keys: '+Object.keys(json).join(','));return;}
+    
     const {data,error}=await sb.auth.verifyOtp({token_hash:json.token_hash,type:'magiclink'});
-    if(error){reset();showAuthErr('Session error: '+error.message);return;}
+    if(error){reset();showAuthErr('Session error: '+(error.message||JSON.stringify(error)));return;}
+    if(!data?.user){reset();showAuthErr('No user in session');return;}
+    
     await loadPortalForUser(data.user);
-  } catch(e){reset();showAuthErr('Network error — use the live GitHub site.');}
+  }catch(e){reset();showAuthErr('Network error: '+(e.message||String(e)));}
 }
 
 /* ============ AUTH STATE CHANGE (recovery handler) ============ */
@@ -1729,8 +1742,104 @@ function loadSettings(){
   document.getElementById('set-units').value = propertyData?.total_units || '';
   document.getElementById('set-town').value = propertyData?.town || '';
   if(propertyData?.county) document.getElementById('set-county').value = propertyData.county;
-  document.getElementById('set-paybill').value = propertyData?.mpesa_paybill || '';
-  document.getElementById('set-bank').value = propertyData?.bank_name || '';
+
+  // Mark active card and show saved values as badges
+  const method = propertyData?.payment_method || 'mpesa_paybill';
+  document.querySelectorAll('.pm-opt').forEach(el => el.classList.remove('selected'));
+  const activeCard = document.getElementById('pm-' + method);
+  if(activeCard) activeCard.classList.add('selected');
+
+  const badges = {
+    mpesa_paybill: propertyData?.mpesa_paybill,
+    mpesa_till:    propertyData?.mpesa_till,
+    mpesa_phone:   propertyData?.mpesa_phone,
+    bank:          propertyData?.bank_account
+  };
+  Object.entries(badges).forEach(([m, val]) => {
+    const el = document.getElementById('pmv-' + m);
+    if(el) el.textContent = val ? '✅ ' + val : 'Tap to set up';
+  });
+
+  const summaryEl = document.getElementById('pm-active-summary');
+  if(summaryEl){
+    const labels = {mpesa_paybill:'📲 M-Pesa Paybill',mpesa_till:'🏪 M-Pesa Till',mpesa_phone:'📱 Send to Phone',bank:'🏦 Bank Transfer'};
+    const val = badges[method];
+    summaryEl.style.display = 'block';
+    summaryEl.innerHTML = '<strong>Active:</strong> ' + (labels[method]||method) + (val ? ' · <span style="color:var(--teal);font-weight:700">'+val+'</span>' : ' <span style="color:var(--muted)">— tap a card below to add details</span>');
+  }
+}
+
+/* ============ PAYMENT METHOD MODAL ============ */
+const PM_CONFIG = {
+  mpesa_paybill:{icon:'📲',title:'M-Pesa Paybill',desc:'Tenants pay via Lipa na M-Pesa → Pay Bill',
+    fields:[{id:'pmi-paybill',label:'Business (Paybill) Number *',placeholder:'e.g. 400200',inputmode:'numeric'},
+            {id:'pmi-paybill-name',label:'Paybill Name (as registered)',placeholder:'e.g. Greenview Apartments'}]},
+  mpesa_till:{icon:'🏪',title:'M-Pesa Till (Buy Goods)',desc:'Tenants pay via Lipa na M-Pesa → Buy Goods',
+    fields:[{id:'pmi-till',label:'Till Number *',placeholder:'e.g. 123456',inputmode:'numeric'},
+            {id:'pmi-till-name',label:'Till Name (as registered)',placeholder:'e.g. Kariuki Properties'}]},
+  mpesa_phone:{icon:'📱',title:'Send Money (M-Pesa)',desc:'Tenants send directly to your M-Pesa number',
+    fields:[{id:'pmi-phone',label:'M-Pesa Phone Number *',placeholder:'e.g. 0712 345 678',inputmode:'tel'},
+            {id:'pmi-phone-name',label:'Name on M-Pesa',placeholder:'e.g. John Mutua'}]},
+  bank:{icon:'🏦',title:'Bank Transfer',desc:'Tenants transfer directly to your bank account',
+    fields:[{id:'pmi-bank-name',label:'Bank Name *',type:'select',options:['Equity Bank','KCB Bank','Co-operative Bank','NCBA Bank','Absa Bank Kenya','Standard Chartered','I&M Bank','DTB Bank','Family Bank','Stanbic Bank','HF Group','Sidian Bank','Other']},
+            {id:'pmi-bank-branch',label:'Branch',placeholder:'e.g. Westlands'},
+            {id:'pmi-bank-account',label:'Account Number *',placeholder:'e.g. 0012345678901',inputmode:'numeric'},
+            {id:'pmi-bank-acct-name',label:'Account Name',placeholder:'Name on the account'}]}
+};
+let _curPM = null;
+
+function openPayMethodModal(method){
+  _curPM = method;
+  const cfg = PM_CONFIG[method];
+  document.getElementById('pmi-icon').textContent  = cfg.icon;
+  document.getElementById('pmi-title').textContent = cfg.title;
+  document.getElementById('pmi-desc').textContent  = cfg.desc;
+  const fieldsEl = document.getElementById('pmi-fields');
+  fieldsEl.innerHTML = cfg.fields.map(f => {
+    if(f.type==='select') return `<div class="fg" style="margin-bottom:14px"><label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">${f.label}</label><select id="${f.id}" onchange="updatePMIPreview()" style="font-size:14px;width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)"><option value="">Select bank…</option>${f.options.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    return `<div class="fg" style="margin-bottom:14px"><label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">${f.label}</label><input id="${f.id}" placeholder="${f.placeholder||''}" inputmode="${f.inputmode||'text'}" oninput="updatePMIPreview()" style="font-size:20px;letter-spacing:2px;font-weight:700;padding:14px;width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)"/></div>`;
+  }).join('');
+
+  // Pre-fill
+  const saved = {'pmi-paybill':propertyData?.mpesa_paybill,'pmi-paybill-name':propertyData?.name,'pmi-till':propertyData?.mpesa_till,'pmi-phone':propertyData?.mpesa_phone,'pmi-bank-name':propertyData?.bank_name,'pmi-bank-branch':propertyData?.bank_branch,'pmi-bank-account':propertyData?.bank_account};
+  Object.entries(saved).forEach(([id,val])=>{ const el=document.getElementById(id); if(el&&val) el.value=val; });
+
+  document.getElementById('pmi-preview').style.display='none';
+  const btn=document.getElementById('pmi-save-btn');
+  btn.disabled=false; btn.textContent='💾 Save & Apply to Tenant Portal';
+  updatePMIPreview();
+  openMo('mo-pay-method');
+  setTimeout(()=>{ const f=fieldsEl.querySelector('input,select'); if(f) f.focus(); },200);
+}
+
+function updatePMIPreview(){
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  let steps=[];
+  if(_curPM==='mpesa_paybill'){const pb=g('pmi-paybill');if(!pb)return;steps=[`M-Pesa → Lipa na M-Pesa → <b>Pay Bill</b>`,`Business No: <b style="color:var(--teal)">${pb}</b>`,`Account No: <b>Your unit number</b> (e.g. A1)`,`Amount → PIN → Confirm`];}
+  else if(_curPM==='mpesa_till'){const till=g('pmi-till');if(!till)return;steps=[`M-Pesa → Lipa na M-Pesa → <b>Buy Goods</b>`,`Till No: <b style="color:var(--teal)">${till}</b>`,`Amount → PIN → Confirm`,`Send receipt screenshot to landlord`];}
+  else if(_curPM==='mpesa_phone'){const ph=g('pmi-phone');if(!ph)return;const nm=g('pmi-phone-name')||'Landlord';steps=[`M-Pesa → <b>Send Money</b>`,`Phone: <b style="color:var(--teal)">${ph}</b> (${nm})`,`Amount → PIN → Confirm`,`Reference: your unit number + name`];}
+  else if(_curPM==='bank'){const bank=g('pmi-bank-name');if(!bank)return;const branch=g('pmi-bank-branch'),acct=g('pmi-bank-account');steps=[`Bank: <b>${bank}${branch?' — '+branch:''}</b>`,`Account: <b style="color:var(--teal)">${acct||'—'}</b>`,`Amount → transfer`,`Reference: unit number + name`];}
+  if(!steps.length)return;
+  document.getElementById('pmi-preview-text').innerHTML=steps.map((s,i)=>`<div style="margin-bottom:5px">${i+1}. ${s}</div>`).join('');
+  document.getElementById('pmi-preview').style.display='block';
+}
+
+async function savePayMethodModal(){
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  const btn=document.getElementById('pmi-save-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  const updates={payment_method:_curPM};
+  if(_curPM==='mpesa_paybill'){if(!g('pmi-paybill')){toast('Please enter the Paybill number','e');btn.disabled=false;btn.textContent='💾 Save & Apply to Tenant Portal';return;}updates.mpesa_paybill=g('pmi-paybill');}
+  else if(_curPM==='mpesa_till'){if(!g('pmi-till')){toast('Please enter the Till number','e');btn.disabled=false;btn.textContent='💾 Save & Apply to Tenant Portal';return;}updates.mpesa_till=g('pmi-till');}
+  else if(_curPM==='mpesa_phone'){if(!g('pmi-phone')){toast('Please enter the phone number','e');btn.disabled=false;btn.textContent='💾 Save & Apply to Tenant Portal';return;}updates.mpesa_phone=g('pmi-phone');}
+  else if(_curPM==='bank'){if(!g('pmi-bank-name')||!g('pmi-bank-account')){toast('Enter bank name and account number','e');btn.disabled=false;btn.textContent='💾 Save & Apply to Tenant Portal';return;}updates.bank_name=g('pmi-bank-name');updates.bank_branch=g('pmi-bank-branch');updates.bank_account=g('pmi-bank-account');}
+  const {error}=await sb.from('properties').update(updates).eq('id',currentPropertyId);
+  btn.disabled=false; btn.textContent='💾 Save & Apply to Tenant Portal';
+  if(error){toast('Save failed: '+error.message,'e');return;}
+  Object.assign(propertyData,updates);
+  closeMo('mo-pay-method');
+  loadSettings();
+  toast('✅ Payment method saved — tenants see this instantly on their portal','s');
 }
 async function saveGeneralSettings(){
   const updates = {
@@ -1755,6 +1864,8 @@ async function savePaymentSettings(){
   Object.assign(propertyData, updates);
   toast('Payment settings saved ✅', 's');
 }
+
+async function savePaymentSettings(){ await savePayMethodModal(); }
 
 /* ============ CHARGES ============ */
 function loadCharges(){
