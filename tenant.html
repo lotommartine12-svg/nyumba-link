@@ -1195,7 +1195,7 @@ async function initPortal(){
   document.getElementById('sb-unit').textContent=`Unit ${unitData.unit_number||'—'}`;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
-  await Promise.all([loadHomeStats(),loadPayments(),loadWater(),loadRepairs(),loadCommunity(),loadNotifications()]);
+  await Promise.all([loadHomeStats(),loadPayments(),loadWater(),loadRepairs(),loadCommunity(),loadNotifications(),loadTenantDocuments()]);
   buildPaymentInstructions();
   openTab('home');
   startCountdown();
@@ -1703,6 +1703,8 @@ async function submitRepair(){
 
 /* ═══ TAB NAVIGATION ═══ */
 function openTab(tab){
+  // Documents tab handled same as others
+
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.sni').forEach(s=>s.classList.remove('active'));
