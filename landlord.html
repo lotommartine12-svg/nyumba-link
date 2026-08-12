@@ -6,6 +6,7 @@
 <title>NyumbaLink – Landlord Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -568,14 +569,51 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
 
       <!-- AI INSIGHTS -->
       <div class="tab-page" id="tp-ai">
-        <div class="ai-wrap">
-          <div class="ai-hdr"><div class="ai-ico">🤖</div><div class="ai-title">Property Insights</div><span class="ai-badge">PREMIUM</span></div>
-          <div id="ai-insights-body"><div class="msub" style="padding:16px">Loading…</div></div>
+        <!-- Charts Row -->
+        <div class="g2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📈 Revenue Trend (6 months)</span></div>
+            <canvas id="chart-revenue" height="180"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">🏠 Occupancy & Collection Rate</span></div>
+            <canvas id="chart-occupancy" height="180"></canvas>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-hdr"><span class="card-title">Ask the AI Assistant</span></div>
-          <div class="msub" style="margin-bottom:14px">Try the chat bubble in the bottom-right corner — ask things like "which tenants are overdue" or "list vacant units".</div>
-          <button class="btn btn-teal btn-sm" onclick="toggleChat()">🤖 Open AI Chat</button>
+        <div class="g2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">💳 Payment Methods Breakdown</span></div>
+            <canvas id="chart-payment-methods" height="180"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">🔧 Repairs by Category</span></div>
+            <canvas id="chart-repairs" height="180"></canvas>
+          </div>
+        </div>
+        <!-- AI Insights -->
+        <div class="ai-wrap">
+          <div class="ai-hdr">
+            <div class="ai-ico">🤖</div>
+            <div>
+              <div class="ai-title">AI Property Intelligence</div>
+              <div style="font-size:12px;color:var(--muted)">Analysing your property data in real time</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="loadAI()" style="margin-left:auto">🔄 Refresh</button>
+          </div>
+          <div id="ai-insights-body"><div class="msub" style="padding:16px">Loading insights…</div></div>
+        </div>
+        <!-- AI Chat -->
+        <div class="card" style="margin-top:20px">
+          <div class="card-hdr"><span class="card-title">💬 Ask AI Assistant</span><span class="badge bg">Live</span></div>
+          <div class="msub" style="margin-bottom:12px">Ask anything — tenant history, payment trends, maintenance forecasts, rent optimisation…</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+            <div class="badge bt" style="cursor:pointer;padding:6px 12px" onclick="chatQuick('Which tenants are most at risk of defaulting?')">💡 Default risk</div>
+            <div class="badge bt" style="cursor:pointer;padding:6px 12px" onclick="chatQuick('What is my average rent collection rate?')">📊 Collection rate</div>
+            <div class="badge bt" style="cursor:pointer;padding:6px 12px" onclick="chatQuick('Which units have the highest maintenance costs?')">🔧 Maintenance cost</div>
+            <div class="badge bt" style="cursor:pointer;padding:6px 12px" onclick="chatQuick('Suggest a rent increase strategy')">💰 Rent strategy</div>
+            <div class="badge bt" style="cursor:pointer;padding:6px 12px" onclick="chatQuick('Generate a summary of all my tenants')">👥 Tenant summary</div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="toggleChat()">🤖 Open Full AI Chat</button>
         </div>
       </div>
 
@@ -812,7 +850,74 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
         </div>
       </div>
 
+      <!-- DOCUMENTS -->
+      <div class="tab-page" id="tp-documents">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:'Instrument Serif',serif;font-size:24px;font-weight:700">📄 Tenant Documents</div>
+            <div class="msub">Upload and share documents with tenants — they appear instantly on the tenant portal</div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="openMo('mo-upload-doc')">+ Upload Document</button>
+        </div>
+
+        <!-- Emergency Contacts Card -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-hdr"><span class="card-title">🚨 Emergency Contacts</span><button class="btn btn-ghost btn-sm" onclick="openMo('mo-add-contact')">+ Add Contact</button></div>
+          <div id="emergency-contacts-list"><div class="msub">Loading…</div></div>
+        </div>
+
+        <!-- Document types quick filter -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="badge bt doc-filter on" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('all',this)">All</div>
+          <div class="badge bt doc-filter" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('lease',this)">📋 Lease</div>
+          <div class="badge bt doc-filter" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('receipt',this)">🧾 Receipts</div>
+          <div class="badge bt doc-filter" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('move_in_report',this)">🏠 Move-in</div>
+          <div class="badge bt doc-filter" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('handbook',this)">📚 Handbook</div>
+          <div class="badge bt doc-filter" style="cursor:pointer;padding:6px 14px" onclick="filterDocs('rent_score',this)">⭐ Rent Score</div>
+        </div>
+        <div id="docs-list"><div class="msub">Loading documents…</div></div>
+      </div>
+
+      <!-- RECORDS (Print/Download) -->
+      <div class="tab-page" id="tp-records">
+        <div style="font-family:'Instrument Serif',serif;font-size:24px;font-weight:700;margin-bottom:6px">🗂️ Records & Reports</div>
+        <div class="msub" style="margin-bottom:20px">Print, share or download all tenant and property records</div>
+
+        <!-- Quick stats for printing -->
+        <div class="g2" style="margin-bottom:20px">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📋 Tenant Records</span></div>
+            <div class="msub" style="margin-bottom:14px">Complete record of all tenants including payment history and status</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-teal btn-sm" onclick="printTenantRecords()">🖨️ Print All</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportCSV('tenants')">⬇ Download CSV</button>
+              <button class="btn btn-ghost btn-sm" onclick="shareRecords()">📤 Share</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">💳 Payment Records</span></div>
+            <div class="msub" style="margin-bottom:14px">Full payment ledger with M-Pesa references and dates</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-teal btn-sm" onclick="printPaymentRecords()">🖨️ Print All</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportCSV('payments')">⬇ Download CSV</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Records table -->
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-title">Full Tenant Directory & Payment Summary</span>
+            <div style="display:flex;gap:8px">
+              <input id="records-search" placeholder="Search tenant…" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;width:160px" oninput="filterRecords(this.value)"/>
+            </div>
+          </div>
+          <div class="tbl" id="records-table-wrap"><div class="msub">Loading…</div></div>
+        </div>
+      </div>
+
       <!-- KRA REPORTS -->
+            <!-- KRA REPORTS -->
       <div class="tab-page" id="tp-kra">
         <div class="card" style="margin-bottom:18px">
           <div class="card-hdr"><span class="card-title">Rental Income Summary</span><span class="badge bgd">PREMIUM</span></div>
@@ -871,6 +976,60 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <button class="chat-send" onclick="chatSend()">➤</button>
     </div>
   </div>
+
+
+  <!-- UPLOAD DOCUMENT MODAL -->
+  <div class="mo-overlay" id="mo-upload-doc">
+    <div class="modal" style="max-width:520px">
+      <button class="mc" onclick="closeMo('mo-upload-doc')">✕</button>
+      <h3>📄 Upload Document</h3>
+      <div class="msub" style="margin-bottom:16px">Upload a document for a tenant. They'll see it instantly on their portal.</div>
+      <div class="fg"><label>Document Type</label>
+        <select id="doc-type">
+          <option value="lease">📋 Lease Agreement</option>
+          <option value="receipt">🧾 Payment Receipt</option>
+          <option value="move_in_report">🏠 Move-in Inspection Report</option>
+          <option value="handbook">📚 Tenant Handbook</option>
+          <option value="rent_score">⭐ Rent Score Certificate</option>
+          <option value="emergency_contacts">🚨 Emergency Contacts</option>
+          <option value="other">📎 Other Document</option>
+        </select>
+      </div>
+      <div class="fg"><label>Title / Name</label><input id="doc-title" placeholder="e.g. Lease Agreement — Faith Wanjiru Jan 2026"/></div>
+      <div class="fg"><label>Tenant (optional — leave blank for all tenants)</label>
+        <select id="doc-tenant"><option value="">All tenants</option></select>
+      </div>
+      <div class="fg"><label>File URL (Google Drive, Dropbox link, or paste URL)</label>
+        <input id="doc-url" placeholder="https://drive.google.com/file/..." type="url"/>
+        <div class="msub" style="margin-top:4px">💡 Upload to Google Drive/Dropbox, set to "Anyone with link can view", then paste the link here.</div>
+      </div>
+      <div class="fg"><label>Notes (optional)</label><textarea id="doc-notes" rows="2" placeholder="Any additional notes…"></textarea></div>
+      <div id="doc-save-status" style="display:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:10px"></div>
+      <button class="btn btn-teal btn-full" onclick="uploadDocument()">📤 Save & Share with Tenant</button>
+    </div>
+  </div>
+
+  <!-- ADD EMERGENCY CONTACT MODAL -->
+  <div class="mo-overlay" id="mo-add-contact">
+    <div class="modal" style="max-width:460px">
+      <button class="mc" onclick="closeMo('mo-add-contact')">✕</button>
+      <h3>🚨 Add Emergency Contact</h3>
+      <div class="msub" style="margin-bottom:16px">This contact will appear on all tenant portals for this property.</div>
+      <div class="row2">
+        <div class="fg"><label>Name *</label><input id="ec-name" placeholder="e.g. Brian Otieno"/></div>
+        <div class="fg"><label>Role *</label><input id="ec-role" placeholder="e.g. Caretaker, Plumber"/></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label>Phone *</label><input id="ec-phone" placeholder="0712 345 678" inputmode="tel"/></div>
+        <div class="fg"><label>Phone 2 (optional)</label><input id="ec-phone2" placeholder="0798 765 432" inputmode="tel"/></div>
+      </div>
+      <div class="fg"><label>Available Hours</label><input id="ec-hours" placeholder="e.g. 24/7 or Mon-Fri 8am-6pm"/></div>
+      <button class="btn btn-teal btn-full" onclick="saveEmergencyContact()">Save Contact</button>
+    </div>
+  </div>
+
+  <!-- RECORD PAYMENT (ENHANCED) MODAL -->
+  <!-- Already exists as mo-pay — we'll update its function -->
 
   <!-- MODALS -->
   <div class="mo-overlay" id="mo-unit">
@@ -1404,7 +1563,8 @@ const PAGE_TITLES = {
   ai:'AI Insights', water:'Water Readings', electricity:'Electricity', garbage:'Garbage',
   settings:'Property Settings', charges:'Fees & Charges', schedules:'Schedules', ussd:'USSD Setup',
   whatsapp:'WhatsApp Bot', swahili:'Kiswahili', community:'Community', broadcast:'Broadcast SMS',
-  kra:'KRA Reports', crb:'CRB Screening', amenity:'Amenity Booking'
+  kra:'KRA Reports', crb:'CRB Screening', amenity:'Amenity Booking',
+  documents:'Documents', records:'Records & Reports'
 };
 
 const PAGE_LOADERS = {
@@ -2099,6 +2259,401 @@ function toggleAcc(hdr){
   chev.classList.toggle('open');
   if(body.classList.contains('open') && hdr.closest('#tp-settings')){ loadSettings(); }
 }
+
+
+/* ============ SUBSCRIPTION GATING ============ */
+const PLAN_FEATURES = {
+  basic:    ['dashboard','units','payments','repairs','settings'],
+  standard: ['dashboard','units','payments','repairs','settings','water','electricity','garbage','charges','schedules','broadcast','community','documents','records'],
+  premium:  ['dashboard','units','payments','repairs','settings','water','electricity','garbage','charges','schedules','broadcast','community','documents','records','ai','kra','crb','whatsapp','ussd','swahili','amenity']
+};
+
+function planHas(feature){
+  const plan = STATE.plan || 'basic';
+  return (PLAN_FEATURES[plan] || PLAN_FEATURES.basic).includes(feature);
+}
+
+function checkPlanAccess(page){
+  if(!planHas(page)){
+    const planNames = {basic:'Basic',standard:'Standard',premium:'Premium'};
+    const required = Object.entries(PLAN_FEATURES).find(([p,f])=>f.includes(page))?.[0] || 'premium';
+    toast(`⭐ Upgrade to ${planNames[required]||'Premium'} to access this feature`,'i');
+    return false;
+  }
+  return true;
+}
+
+/* ============ CHARTS ============ */
+let _charts = {};
+
+async function loadCharts(){
+  if(typeof Chart === 'undefined') return;
+
+  // Destroy existing charts
+  Object.values(_charts).forEach(c=>c.destroy());
+  _charts = {};
+
+  const period = currentPeriod();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Get last 6 months payment data
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth()-5);
+
+  const { data: payments } = await sb.from('payments')
+    .select('amount,status,payment_method,payment_type,period_month,period_year,created_at')
+    .eq('landlord_id', supaUser?.id)
+    .gte('created_at', sixMonthsAgo.toISOString());
+
+  const { data: repairsAll } = await sb.from('repairs')
+    .select('category,status')
+    .eq('landlord_id', supaUser?.id);
+
+  const chartDefaults = {
+    plugins:{legend:{labels:{color:'rgba(238,242,248,0.7)',font:{size:11}}}},
+    scales:{x:{ticks:{color:'rgba(238,242,248,0.5)'},grid:{color:'rgba(255,255,255,0.05)'}},
+            y:{ticks:{color:'rgba(238,242,248,0.5)'},grid:{color:'rgba(255,255,255,0.05)'}}}
+  };
+
+  // Revenue trend chart
+  const revCtx = document.getElementById('chart-revenue');
+  if(revCtx && payments){
+    const revByMonth = {};
+    const now = new Date();
+    for(let i=5;i>=0;i--){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()+1}`;
+      revByMonth[key] = {label: months[d.getMonth()], confirmed:0, pending:0};
+    }
+    payments.forEach(p=>{
+      const key = `${p.period_year}-${p.period_month}`;
+      if(revByMonth[key]){
+        if(p.status==='confirmed') revByMonth[key].confirmed += Number(p.amount);
+        else revByMonth[key].pending += Number(p.amount);
+      }
+    });
+    const vals = Object.values(revByMonth);
+    _charts.revenue = new Chart(revCtx, {
+      type:'bar',
+      data:{
+        labels: vals.map(v=>v.label),
+        datasets:[
+          {label:'Collected',data:vals.map(v=>v.confirmed),backgroundColor:'rgba(10,150,144,0.7)',borderRadius:6},
+          {label:'Pending',data:vals.map(v=>v.pending),backgroundColor:'rgba(201,146,26,0.5)',borderRadius:6}
+        ]
+      },
+      options:{...chartDefaults, responsive:true, plugins:{...chartDefaults.plugins, tooltip:{callbacks:{label:ctx=>'KES '+Number(ctx.raw).toLocaleString()}}}}
+    });
+  }
+
+  // Payment methods pie
+  const pmCtx = document.getElementById('chart-payment-methods');
+  if(pmCtx && payments){
+    const methods={};
+    payments.filter(p=>p.status==='confirmed').forEach(p=>{
+      const m = p.payment_method||'other';
+      methods[m]=(methods[m]||0)+1;
+    });
+    _charts.methods = new Chart(pmCtx,{
+      type:'doughnut',
+      data:{
+        labels:Object.keys(methods).map(m=>m.replace('_',' ')),
+        datasets:[{data:Object.values(methods),backgroundColor:['rgba(10,150,144,0.8)','rgba(34,197,94,0.7)','rgba(201,146,26,0.7)','rgba(59,130,246,0.7)'],borderWidth:0}]
+      },
+      options:{responsive:true,plugins:{...chartDefaults.plugins}}
+    });
+  }
+
+  // Occupancy gauge (use bar as proxy)
+  const occCtx = document.getElementById('chart-occupancy');
+  if(occCtx){
+    const occupied = units.filter(u=>u.status==='occupied').length;
+    const vacant = units.length - occupied;
+    const collectionRate = payments ? Math.round(payments.filter(p=>p.status==='confirmed').length / Math.max(units.filter(u=>u.status==='occupied').length,1) * 100) : 0;
+    _charts.occupancy = new Chart(occCtx,{
+      type:'bar',
+      data:{
+        labels:['Occupied','Vacant','Collection %'],
+        datasets:[{data:[occupied,vacant,Math.min(collectionRate,100)],backgroundColor:['rgba(34,197,94,0.7)','rgba(239,68,68,0.5)','rgba(10,150,144,0.7)'],borderRadius:8}]
+      },
+      options:{...chartDefaults,responsive:true,indexAxis:'y'}
+    });
+  }
+
+  // Repairs by category
+  const repCtx = document.getElementById('chart-repairs');
+  if(repCtx && repairsAll){
+    const cats={};
+    repairsAll.forEach(r=>{ const c=r.category||'other'; cats[c]=(cats[c]||0)+1; });
+    _charts.repairs = new Chart(repCtx,{
+      type:'doughnut',
+      data:{
+        labels:Object.keys(cats),
+        datasets:[{data:Object.values(cats),backgroundColor:['rgba(239,68,68,0.7)','rgba(59,130,246,0.7)','rgba(201,146,26,0.7)','rgba(168,85,247,0.7)','rgba(34,197,94,0.7)'],borderWidth:0}]
+      },
+      options:{responsive:true,plugins:{...chartDefaults.plugins}}
+    });
+  }
+}
+
+/* ============ DOCUMENTS ============ */
+let _allDocs = [];
+let _allContacts = [];
+
+async function loadDocuments(){
+  if(!currentPropertyId) return;
+
+  // Load documents
+  const {data:docs} = await sb.from('tenant_documents')
+    .select('*, tenants(name)')
+    .eq('property_id', currentPropertyId)
+    .order('created_at',{ascending:false});
+  _allDocs = docs || [];
+
+  // Populate tenant dropdown in upload modal
+  const sel = document.getElementById('doc-tenant');
+  if(sel && tenants.length){
+    sel.innerHTML = '<option value="">All tenants</option>' +
+      tenants.map(t=>`<option value="${t.id}">${esc(t.name)} — Unit ${esc(units.find(u=>u.id===t.unit_id)?.unit_number||'')}</option>`).join('');
+  }
+
+  renderDocs('all');
+
+  // Load emergency contacts
+  const {data:contacts} = await sb.from('emergency_contacts')
+    .select('*').eq('property_id', currentPropertyId).order('created_at');
+  _allContacts = contacts || [];
+  renderEmergencyContacts();
+}
+
+function renderDocs(filter){
+  const el = document.getElementById('docs-list');
+  if(!el) return;
+  const filtered = filter==='all' ? _allDocs : _allDocs.filter(d=>d.doc_type===filter);
+  if(!filtered.length){
+    el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)"><div style="font-size:36px;margin-bottom:10px">📄</div><div>No documents yet. Upload the first one.</div></div>';
+    return;
+  }
+  const icons={lease:'📋',receipt:'🧾',move_in_report:'🏠',handbook:'📚',rent_score:'⭐',emergency_contacts:'🚨',other:'📎'};
+  el.innerHTML=`<div class="tbl"><table><thead><tr><th>Type</th><th>Title</th><th>Tenant</th><th>Date</th><th>Shared</th><th></th></tr></thead><tbody>
+    ${filtered.map(d=>`<tr>
+      <td>${icons[d.doc_type]||'📎'} ${capitalize(d.doc_type.replace('_',' '))}</td>
+      <td style="font-weight:600">${esc(d.title)}</td>
+      <td>${d.tenants?esc(d.tenants.name):'All tenants'}</td>
+      <td>${fmtDate(d.created_at)}</td>
+      <td>${d.is_shared_with_tenant?'<span class="badge bg">✅ Shared</span>':'<span class="badge ba">Hidden</span>'}</td>
+      <td style="display:flex;gap:6px">
+        ${d.file_url?`<a href="${d.file_url}" target="_blank" class="btn btn-ghost btn-sm">View ↗</a>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="deleteDoc('${d.id}')">🗑</button>
+      </td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+function filterDocs(filter, btn){
+  document.querySelectorAll('.doc-filter').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderDocs(filter);
+}
+
+function renderEmergencyContacts(){
+  const el = document.getElementById('emergency-contacts-list');
+  if(!el) return;
+  if(!_allContacts.length){
+    el.innerHTML='<div class="msub">No emergency contacts yet. Add one above.</div>';
+    return;
+  }
+  el.innerHTML=`<div class="tbl"><table><thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Hours</th><th></th></tr></thead><tbody>
+    ${_allContacts.map(c=>`<tr>
+      <td style="font-weight:600">${esc(c.name)}</td>
+      <td>${esc(c.role)}</td>
+      <td>${esc(c.phone)}${c.phone2?' / '+esc(c.phone2):''}</td>
+      <td>${esc(c.available_hours||'—')}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="deleteContact('${c.id}')">🗑</button></td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+async function uploadDocument(){
+  const type=document.getElementById('doc-type').value;
+  const title=document.getElementById('doc-title').value.trim();
+  const tenant=document.getElementById('doc-tenant').value;
+  const url=document.getElementById('doc-url').value.trim();
+  const notes=document.getElementById('doc-notes').value.trim();
+  const statusEl=document.getElementById('doc-save-status');
+
+  if(!title){toast('Please enter a document title','e');return;}
+
+  const payload={
+    landlord_id:supaUser.id, property_id:currentPropertyId,
+    doc_type:type, title, file_url:url||null, notes:notes||null,
+    tenant_id:tenant||null,
+    unit_id:tenant?tenants.find(t=>t.id===tenant)?.unit_id:null,
+    is_shared_with_tenant:true
+  };
+
+  const {error}=await sb.from('tenant_documents').insert(payload);
+  if(error){toast('Upload failed: '+error.message,'e');return;}
+
+  closeMo('mo-upload-doc');
+  document.getElementById('doc-title').value='';
+  document.getElementById('doc-url').value='';
+  document.getElementById('doc-notes').value='';
+  toast('Document saved and shared with tenant ✅','s');
+  await loadDocuments();
+}
+
+async function deleteDoc(id){
+  if(!confirm('Delete this document?')) return;
+  await sb.from('tenant_documents').delete().eq('id',id);
+  toast('Document deleted','s');
+  await loadDocuments();
+}
+
+async function saveEmergencyContact(){
+  const name=document.getElementById('ec-name').value.trim();
+  const role=document.getElementById('ec-role').value.trim();
+  const phone=document.getElementById('ec-phone').value.trim();
+  const phone2=document.getElementById('ec-phone2').value.trim();
+  const hours=document.getElementById('ec-hours').value.trim();
+  if(!name||!role||!phone){toast('Please fill name, role and phone','e');return;}
+  const {error}=await sb.from('emergency_contacts').insert({
+    landlord_id:supaUser.id, property_id:currentPropertyId, name, role, phone, phone2:phone2||null, available_hours:hours||null
+  });
+  if(error){toast('Save failed: '+error.message,'e');return;}
+  closeMo('mo-add-contact');
+  ['ec-name','ec-role','ec-phone','ec-phone2','ec-hours'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  toast('Emergency contact added ✅','s');
+  await loadDocuments();
+}
+
+async function deleteContact(id){
+  if(!confirm('Delete this contact?')) return;
+  await sb.from('emergency_contacts').delete().eq('id',id);
+  await loadDocuments();
+}
+
+/* ============ RECORDS & REPORTS ============ */
+async function loadRecords(){
+  const el = document.getElementById('records-table-wrap');
+  if(!el) return;
+
+  const {data:pays} = await sb.from('payments').select('*')
+    .eq('landlord_id',supaUser.id).eq('status','confirmed').order('created_at',{ascending:false});
+
+  // Build per-tenant summary
+  const summary = tenants.map(t=>{
+    const unit = units.find(u=>u.id===t.unit_id);
+    const tPays = (pays||[]).filter(p=>p.tenant_id===t.id);
+    const totalPaid = tPays.reduce((s,p)=>s+Number(p.amount),0);
+    const lastPay = tPays[0];
+    const period = currentPeriod();
+    const paidThisMonth = tPays.some(p=>p.period_month===period.month&&p.period_year===period.year);
+    return { ...t, unit, totalPaid, lastPay, paidThisMonth, tPays };
+  });
+
+  window._recordsData = summary; // store for filtering
+  renderRecordsTable(summary);
+}
+
+function renderRecordsTable(data){
+  const el = document.getElementById('records-table-wrap');
+  if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="msub" style="padding:16px">No tenant records.</div>'; return; }
+  el.innerHTML=`<table class="records-tbl" style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead style="background:rgba(255,255,255,0.03)">
+      <tr><th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Tenant</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Unit</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Phone</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Rent</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Total Paid</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">This Month</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Move-in</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Status</th>
+      <th style="padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">History</th></tr>
+    </thead>
+    <tbody>
+    ${data.map(t=>`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 12px;font-weight:600">${esc(t.name)}</td>
+      <td style="padding:10px 12px">${esc(t.unit?.unit_number||'—')}</td>
+      <td style="padding:10px 12px">${esc(t.phone||'—')}</td>
+      <td style="padding:10px 12px">${money(t.unit?.monthly_rent)}</td>
+      <td style="padding:10px 12px;color:var(--teal);font-weight:700">${money(t.totalPaid)}</td>
+      <td style="padding:10px 12px">${t.paidThisMonth?'<span class="badge bg">Paid ✅</span>':'<span class="badge br">Overdue ⚠️</span>'}</td>
+      <td style="padding:10px 12px">${fmtDate(t.move_in_date)}</td>
+      <td style="padding:10px 12px"><span class="badge ${t.status==='active'?'bg':'ba'}">${capitalize(t.status)}</span></td>
+      <td style="padding:10px 12px"><button class="btn btn-ghost btn-sm" onclick="openTenantPayments('${t.id}','${esc(t.name)}','${esc(t.unit?.unit_number||'')}')">View</button></td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function filterRecords(q){
+  if(!window._recordsData) return;
+  const filtered = q ? window._recordsData.filter(t=>t.name.toLowerCase().includes(q.toLowerCase())||t.phone?.includes(q)) : window._recordsData;
+  renderRecordsTable(filtered);
+}
+
+function printTenantRecords(){
+  const rows = (window._recordsData||[]).map(t=>`
+    <tr><td>${t.name}</td><td>${t.unit?.unit_number||'—'}</td><td>${t.phone||'—'}</td>
+    <td>KES ${Number(t.unit?.monthly_rent||0).toLocaleString()}</td>
+    <td>KES ${Number(t.totalPaid).toLocaleString()}</td>
+    <td>${t.paidThisMonth?'Paid':'Overdue'}</td>
+    <td>${t.move_in_date?new Date(t.move_in_date).toLocaleDateString('en-KE'):''}</td>
+    <td>${t.status}</td></tr>`).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<html><head><title>Tenant Records — ${propertyData?.name||''}</title>
+    <style>body{font-family:Arial,sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px 12px;font-size:12px}th{background:#f5f5f5;font-weight:700}h2{margin-bottom:4px}p{color:#666;font-size:12px;margin-bottom:16px}</style></head>
+    <body><h2>${propertyData?.name||'Property'} — Tenant Records</h2>
+    <p>Generated on ${new Date().toLocaleDateString('en-KE')} | ${(window._recordsData||[]).length} tenants</p>
+    <table><thead><tr><th>Name</th><th>Unit</th><th>Phone</th><th>Rent</th><th>Total Paid</th><th>This Month</th><th>Move-in</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table></body></html>`);
+  win.document.close();
+  win.print();
+}
+
+async function printPaymentRecords(){
+  const {data:pays}=await sb.from('payments').select('*,tenants!tenant_id(name),units!unit_id(unit_number)')
+    .eq('landlord_id',supaUser.id).order('created_at',{ascending:false});
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rows=(pays||[]).map(p=>`<tr><td>${p.tenants?.name||'—'}</td><td>${p.units?.unit_number||'—'}</td>
+    <td>${p.payment_type}</td><td>KES ${Number(p.amount).toLocaleString()}</td>
+    <td>${p.payment_method||'—'}</td><td>${p.mpesa_reference||p.receipt_number||'—'}</td>
+    <td>${p.period_month?months[p.period_month-1]+' '+p.period_year:''}</td>
+    <td>${p.status}</td><td>${p.created_at?new Date(p.created_at).toLocaleDateString('en-KE'):''}</td></tr>`).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<html><head><title>Payment Records — ${propertyData?.name||''}</title>
+    <style>body{font-family:Arial,sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px 10px;font-size:11px}th{background:#f5f5f5;font-weight:700}</style></head>
+    <body><h2>${propertyData?.name||'Property'} — Payment Records</h2>
+    <p>Generated ${new Date().toLocaleDateString('en-KE')} | ${(pays||[]).length} records</p>
+    <table><thead><tr><th>Tenant</th><th>Unit</th><th>Type</th><th>Amount</th><th>Method</th><th>Reference</th><th>Period</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>${rows}</tbody></table></body></html>`);
+  win.document.close(); win.print();
+}
+
+function exportCSV(type){
+  let rows=[], headers=[];
+  if(type==='tenants' && window._recordsData){
+    headers=['Name','Unit','Phone','Rent (KES)','Total Paid (KES)','This Month','Move-in','Status'];
+    rows=window._recordsData.map(t=>[t.name,t.unit?.unit_number||'',t.phone||'',t.unit?.monthly_rent||0,t.totalPaid,t.paidThisMonth?'Paid':'Overdue',t.move_in_date||'',t.status]);
+  }
+  const csv=[headers,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download=`${propertyData?.name||'records'}_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function shareRecords(){
+  if(navigator.share){
+    navigator.share({title:`${propertyData?.name||'Property'} Records`,text:`Tenant records from NyumbaLink — ${new Date().toLocaleDateString('en-KE')}`});
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    toast('Link copied to clipboard','s');
+  }
+}
+
+/* ============ ENHANCED AI INSIGHTS ============ */
 
 /* ============ DAY PICKER (single-select) ============ */
 document.addEventListener('click', function(e){
