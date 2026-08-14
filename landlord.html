@@ -328,6 +328,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
 .pm-label{font-size:13px;font-weight:700;color:var(--text);margin-top:6px;}
 .pm-hint{font-size:11px;color:var(--muted);margin-top:2px;}
 .pay-fields{margin-top:4px;}
+
+.doc-tmpl-card{border:1.5px solid var(--border);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;}
+.doc-tmpl-card:hover{border-color:var(--teal);background:rgba(10,150,144,0.06);transform:translateY(-2px);}
 </style>
 </head>
 <body>
@@ -857,7 +860,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
             <div style="font-family:'Instrument Serif',serif;font-size:24px;font-weight:700">📄 Tenant Documents</div>
             <div class="msub">Upload and share documents with tenants — they appear instantly on the tenant portal</div>
           </div>
-          <button class="btn btn-teal btn-sm" onclick="openMo('mo-upload-doc')">+ Upload Document</button>
+          <button class="btn btn-teal btn-sm" onclick="openDocCentre()">+ Upload Document</button>
         </div>
 
         <!-- Emergency Contacts Card -->
@@ -978,34 +981,100 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
   </div>
 
 
-  <!-- UPLOAD DOCUMENT MODAL -->
-  <div class="mo-overlay" id="mo-upload-doc">
-    <div class="modal" style="max-width:520px">
+  <!-- DOCUMENT CENTER MODAL -->
+  <div class="mo-overlay" id="mo-upload-doc" style="align-items:flex-start;padding:20px;overflow-y:auto">
+    <div class="modal" style="max-width:860px;width:100%;margin:auto;max-height:none">
       <button class="mc" onclick="closeMo('mo-upload-doc')">✕</button>
-      <h3>📄 Upload Document</h3>
-      <div class="msub" style="margin-bottom:16px">Upload a document for a tenant. They'll see it instantly on their portal.</div>
-      <div class="fg"><label>Document Type</label>
-        <select id="doc-type">
-          <option value="lease">📋 Lease Agreement</option>
-          <option value="receipt">🧾 Payment Receipt</option>
-          <option value="move_in_report">🏠 Move-in Inspection Report</option>
-          <option value="handbook">📚 Tenant Handbook</option>
-          <option value="rent_score">⭐ Rent Score Certificate</option>
-          <option value="emergency_contacts">🚨 Emergency Contacts</option>
-          <option value="other">📎 Other Document</option>
-        </select>
+      <h3>📄 Document Centre</h3>
+      <div class="msub" style="margin-bottom:20px">Create from a template, or upload an existing file. Saved documents appear instantly on the tenant portal.</div>
+
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px">
+        <button id="doc-tab-templates" onclick="switchDocTab('templates')" style="flex:1;padding:10px;border:none;background:var(--teal);color:#fff;font-size:13px;font-weight:700;cursor:pointer">📝 Use Template</button>
+        <button id="doc-tab-upload" onclick="switchDocTab('upload')" style="flex:1;padding:10px;border:none;background:var(--bg);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer">📁 Upload File / Link</button>
       </div>
-      <div class="fg"><label>Title / Name</label><input id="doc-title" placeholder="e.g. Lease Agreement — Faith Wanjiru Jan 2026"/></div>
-      <div class="fg"><label>Tenant (optional — leave blank for all tenants)</label>
-        <select id="doc-tenant"><option value="">All tenants</option></select>
+
+      <!-- TEMPLATES PANEL -->
+      <div id="doc-panel-templates">
+        <!-- Template picker -->
+        <div id="doc-template-picker">
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Choose a template:</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+            <div class="doc-tmpl-card" onclick="loadTemplate('lease')"><div style="font-size:28px;margin-bottom:6px">📋</div><div style="font-weight:700;font-size:13px">Lease Agreement</div><div style="font-size:11px;color:var(--muted)">Auto-fills with tenant & property details</div></div>
+            <div class="doc-tmpl-card" onclick="loadTemplate('move_in')"><div style="font-size:28px;margin-bottom:6px">🏠</div><div style="font-weight:700;font-size:13px">Move-in Report</div><div style="font-size:11px;color:var(--muted)">Condition checklist with notes</div></div>
+            <div class="doc-tmpl-card" onclick="loadTemplate('receipt')"><div style="font-size:28px;margin-bottom:6px">🧾</div><div style="font-weight:700;font-size:13px">Payment Receipt</div><div style="font-size:11px;color:var(--muted)">Auto-generated from payments</div></div>
+            <div class="doc-tmpl-card" onclick="loadTemplate('handbook')"><div style="font-size:28px;margin-bottom:6px">📚</div><div style="font-weight:700;font-size:13px">Tenant Handbook</div><div style="font-size:11px;color:var(--muted)">Rules, policies & contacts</div></div>
+            <div class="doc-tmpl-card" onclick="loadTemplate('rent_score')"><div style="font-size:28px;margin-bottom:6px">⭐</div><div style="font-weight:700;font-size:13px">Rent Score Cert</div><div style="font-size:11px;color:var(--muted)">Auto-generated certificate</div></div>
+            <div class="doc-tmpl-card" onclick="loadTemplate('notice')"><div style="font-size:28px;margin-bottom:6px">📢</div><div style="font-weight:700;font-size:13px">Notice Letter</div><div style="font-size:11px;color:var(--muted)">Rent increase, repairs, etc.</div></div>
+          </div>
+          <div class="fg">
+            <label>Tenant (required for tenant-specific documents)</label>
+            <select id="doc-tenant-tmpl"><option value="">Select tenant…</option></select>
+          </div>
+        </div>
+
+        <!-- Template editor (shown after picking) -->
+        <div id="doc-template-editor" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <button onclick="showTemplatePicker()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);cursor:pointer;font-size:12px">← Back</button>
+            <span id="doc-tmpl-title" style="font-weight:700;font-size:15px"></span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button onclick="printTemplate()" class="btn btn-ghost btn-sm">🖨️ Print / PDF</button>
+              <button onclick="saveTemplate()" class="btn btn-teal btn-sm">💾 Save & Share</button>
+            </div>
+          </div>
+          <!-- Editable document body -->
+          <div id="doc-editor-body" contenteditable="true"
+            style="border:1px solid var(--border);border-radius:12px;padding:28px 32px;min-height:400px;background:#fff;color:#111;font-family:Georgia,serif;font-size:14px;line-height:1.8;outline:none;max-height:60vh;overflow-y:auto">
+          </div>
+          <div class="msub" style="margin-top:8px">✏️ Click anywhere in the document to edit. All highlighted fields are pre-filled but editable.</div>
+        </div>
       </div>
-      <div class="fg"><label>File URL (Google Drive, Dropbox link, or paste URL)</label>
-        <input id="doc-url" placeholder="https://drive.google.com/file/..." type="url"/>
-        <div class="msub" style="margin-top:4px">💡 Upload to Google Drive/Dropbox, set to "Anyone with link can view", then paste the link here.</div>
+
+      <!-- UPLOAD PANEL -->
+      <div id="doc-panel-upload" style="display:none">
+        <div class="fg"><label>Document Type</label>
+          <select id="doc-type">
+            <option value="lease">📋 Lease Agreement</option>
+            <option value="receipt">🧾 Payment Receipt</option>
+            <option value="move_in_report">🏠 Move-in Inspection Report</option>
+            <option value="handbook">📚 Tenant Handbook</option>
+            <option value="rent_score">⭐ Rent Score Certificate</option>
+            <option value="other">📎 Other Document</option>
+          </select>
+        </div>
+        <div class="fg"><label>Document Title</label><input id="doc-title" placeholder="e.g. Lease Agreement — Faith Wanjiru Jan 2026"/></div>
+        <div class="fg"><label>Tenant</label>
+          <select id="doc-tenant"><option value="">All tenants</option></select>
+        </div>
+
+        <!-- File upload -->
+        <div class="fg">
+          <label>Upload File (PDF, Word, Image — max 10MB)</label>
+          <div id="doc-drop-zone" onclick="document.getElementById('doc-file-input').click()"
+            style="border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s"
+            ondragover="event.preventDefault();this.style.borderColor='var(--teal)'"
+            ondragleave="this.style.borderColor='var(--border)'"
+            ondrop="handleDocDrop(event)">
+            <div style="font-size:32px;margin-bottom:8px">📁</div>
+            <div style="font-weight:600;color:var(--text)">Click to browse or drag file here</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">PDF, Word, JPG, PNG · Max 10MB</div>
+            <div id="doc-file-name" style="margin-top:10px;font-size:13px;color:var(--teal);font-weight:600"></div>
+          </div>
+          <input type="file" id="doc-file-input" style="display:none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleDocFile(this)"/>
+        </div>
+
+        <div style="text-align:center;font-size:13px;color:var(--muted);margin:4px 0">— or paste a link —</div>
+
+        <div class="fg"><input id="doc-url" placeholder="https://drive.google.com/file/… or Dropbox link" type="url"/></div>
+        <div class="fg"><label>Notes (optional)</label><textarea id="doc-notes" rows="2" placeholder="Visible to tenant…"></textarea></div>
+        <div id="doc-upload-progress" style="display:none;margin-bottom:10px">
+          <div style="background:var(--border);border-radius:999px;height:6px"><div id="doc-progress-bar" style="background:var(--teal);height:6px;border-radius:999px;width:0%;transition:width .3s"></div></div>
+          <div id="doc-progress-label" style="font-size:12px;color:var(--muted);margin-top:4px">Uploading…</div>
+        </div>
+        <div id="doc-save-status" style="display:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:10px"></div>
+        <button class="btn btn-teal btn-full" onclick="uploadDocument()">📤 Save & Share with Tenant</button>
       </div>
-      <div class="fg"><label>Notes (optional)</label><textarea id="doc-notes" rows="2" placeholder="Any additional notes…"></textarea></div>
-      <div id="doc-save-status" style="display:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:10px"></div>
-      <button class="btn btn-teal btn-full" onclick="uploadDocument()">📤 Save & Share with Tenant</button>
     </div>
   </div>
 
@@ -2654,6 +2723,347 @@ function shareRecords(){
 }
 
 /* ============ ENHANCED AI INSIGHTS ============ */
+
+
+/* ============ DOCUMENT CENTRE JS ============ */
+let _docFile = null;
+let _currentTemplate = null;
+let _docTenantForTemplate = null;
+
+function switchDocTab(tab){
+  const isTemplates = tab === 'templates';
+  document.getElementById('doc-panel-templates').style.display = isTemplates ? 'block' : 'none';
+  document.getElementById('doc-panel-upload').style.display = isTemplates ? 'none' : 'block';
+  document.getElementById('doc-tab-templates').style.cssText = `flex:1;padding:10px;border:none;background:${isTemplates?'var(--teal)':'var(--bg)'};color:${isTemplates?'#fff':'var(--muted)'};font-size:13px;font-weight:700;cursor:pointer`;
+  document.getElementById('doc-tab-upload').style.cssText = `flex:1;padding:10px;border:none;background:${!isTemplates?'var(--teal)':'var(--bg)'};color:${!isTemplates?'#fff':'var(--muted)'};font-size:13px;font-weight:${!isTemplates?'700':'600'};cursor:pointer`;
+}
+
+function openDocCentre(){
+  // Populate tenant dropdowns
+  ['doc-tenant-tmpl','doc-tenant'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(sel && tenants.length){
+      const extra = id==='doc-tenant' ? '<option value="">All tenants</option>' : '<option value="">Select tenant…</option>';
+      sel.innerHTML = extra + tenants.map(t=>{
+        const unit = units.find(u=>u.id===t.unit_id);
+        return `<option value="${t.id}">${esc(t.name)} — Unit ${esc(unit?.unit_number||'')} (KES ${Number(unit?.monthly_rent||0).toLocaleString()})</option>`;
+      }).join('');
+    }
+  });
+  showTemplatePicker();
+  switchDocTab('templates');
+  openMo('mo-upload-doc');
+}
+
+function showTemplatePicker(){
+  document.getElementById('doc-template-picker').style.display = 'block';
+  document.getElementById('doc-template-editor').style.display = 'none';
+}
+
+function loadTemplate(type){
+  const tenantId = document.getElementById('doc-tenant-tmpl')?.value;
+  const tenant = tenantId ? tenants.find(t=>t.id===tenantId) : null;
+  const unit = tenant ? units.find(u=>u.id===tenant.unit_id) : null;
+  const prop = propertyData || {};
+  const today = new Date().toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
+  const tName = tenant?.name || '[TENANT NAME]';
+  const tPhone = tenant?.phone || '[PHONE]';
+  const uNum = unit?.unit_number || '[UNIT]';
+  const rent = unit?.monthly_rent ? 'KES '+Number(unit.monthly_rent).toLocaleString() : '[AMOUNT]';
+  const pName = prop.name || '[PROPERTY NAME]';
+  const pTown = prop.town || '[TOWN]';
+  const lName = STATE?.name || '[LANDLORD NAME]';
+  const lPhone = STATE?.phone || '[LANDLORD PHONE]';
+
+  _currentTemplate = type;
+  _docTenantForTemplate = tenantId;
+
+  const labels = {lease:'📋 Lease Agreement',move_in:'🏠 Move-in Inspection Report',receipt:'🧾 Payment Receipt',handbook:'📚 Tenant Handbook',rent_score:'⭐ Rent Score Certificate',notice:'📢 Notice Letter'};
+  document.getElementById('doc-tmpl-title').textContent = labels[type] || type;
+
+  const s = (t) => `<span style="background:#FFF9C4;padding:1px 4px;border-radius:3px;color:#333">${t}</span>`;
+
+  const templates = {
+    lease: `
+<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:16px;margin-bottom:24px">
+  <div style="font-size:22px;font-weight:700;font-family:Georgia,serif">${s(pName)}</div>
+  <div style="font-size:14px;color:#555">${s(pTown)}</div>
+  <div style="font-size:18px;font-weight:700;margin-top:10px;letter-spacing:1px">RESIDENTIAL TENANCY AGREEMENT</div>
+</div>
+<p><strong>Date:</strong> ${s(today)}</p>
+<p><strong>This Agreement</strong> is entered into between:</p>
+<p><strong>LANDLORD:</strong> ${s(lName)} · Phone: ${s(lPhone)}</p>
+<p><strong>TENANT:</strong> ${s(tName)} · Phone: ${s(tPhone)} · National ID: ${s('[ID NUMBER]')}</p>
+<br>
+<p><strong>1. PREMISES</strong><br>
+The Landlord agrees to rent to the Tenant Unit ${s(uNum)} at ${s(pName)}, ${s(pTown)}.</p>
+<p><strong>2. TERM</strong><br>
+The tenancy shall commence on ${s('[START DATE]')} and continue on a month-to-month basis unless terminated by either party giving 30 days written notice.</p>
+<p><strong>3. RENT</strong><br>
+The monthly rent is ${s(rent)}, payable on or before the ${s(prop.rent_due_day||'5')}th of each month via ${s(prop.mpesa_paybill?'M-Pesa Paybill '+prop.mpesa_paybill:'M-Pesa')}. A late fee of ${s('KES '+(prop.late_penalty_per_day||20)+'/day')} will be charged for payments received after the due date.</p>
+<p><strong>4. SECURITY DEPOSIT</strong><br>
+A refundable security deposit of ${s(rent)} (one month's rent) is payable upon signing. This deposit will be refunded within 7 days of vacating, less any deductions for damage or unpaid rent.</p>
+<p><strong>5. UTILITIES</strong><br>
+Water is billed at ${s('KES '+(prop.water_rate_per_m3||150)+'/m³')} per reading. Garbage collection fee: ${s('KES '+(prop.garbage_fee||500)+'/month')}.</p>
+<p><strong>6. TENANT OBLIGATIONS</strong><br>
+The Tenant agrees to: (a) keep the premises clean and in good repair; (b) not sublet without written consent; (c) not make alterations without consent; (d) report maintenance issues promptly.</p>
+<p><strong>7. TERMINATION</strong><br>
+Either party may terminate this agreement by giving 30 days written notice. The Landlord may terminate immediately for non-payment of rent or breach of agreement.</p>
+<br>
+<div style="display:flex;justify-content:space-between;margin-top:40px">
+  <div style="text-align:center;width:45%"><div style="border-top:1px solid #333;padding-top:8px;margin-top:50px">${s(lName)}<br><small>Landlord Signature & Date</small></div></div>
+  <div style="text-align:center;width:45%"><div style="border-top:1px solid #333;padding-top:8px;margin-top:50px">${s(tName)}<br><small>Tenant Signature & Date</small></div></div>
+</div>`,
+
+    move_in: `
+<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:12px;margin-bottom:20px">
+  <div style="font-size:18px;font-weight:700">MOVE-IN INSPECTION REPORT</div>
+  <div>${s(pName)} — Unit ${s(uNum)}</div>
+</div>
+<p><strong>Tenant:</strong> ${s(tName)} &nbsp; <strong>Date:</strong> ${s(today)} &nbsp; <strong>Unit:</strong> ${s(uNum)}</p>
+<br>
+<p><strong>CONDITION KEY:</strong> E = Excellent &nbsp; G = Good &nbsp; F = Fair &nbsp; P = Poor &nbsp; N/A = Not Applicable</p>
+<br>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead><tr style="background:#f5f5f5"><th style="border:1px solid #ccc;padding:8px;text-align:left">Area / Item</th><th style="border:1px solid #ccc;padding:8px">Condition</th><th style="border:1px solid #ccc;padding:8px;text-align:left">Notes / Existing Damage</th></tr></thead>
+  <tbody>
+    ${['Walls & Ceiling','Floor / Tiles','Windows & Grills','Doors & Locks','Kitchen — Sink','Kitchen — Cabinets','Bathroom — Toilet','Bathroom — Shower/Tap','Electrical Sockets','Light Fittings','Water Pressure','Overall Cleanliness'].map(item=>`<tr><td style="border:1px solid #ccc;padding:8px">${item}</td><td style="border:1px solid #ccc;padding:8px;text-align:center"><span style="background:#FFF9C4;padding:2px 8px">G</span></td><td style="border:1px solid #ccc;padding:8px">—</td></tr>`).join('')}
+  </tbody>
+</table>
+<br>
+<p><strong>Meter Readings:</strong></p>
+<p>Water Meter: ${s('[READING]')} m³ &nbsp; Electricity Meter: ${s('[READING]')} kWh</p>
+<p><strong>Keys Issued:</strong> ${s('[NUMBER]')} key(s)</p>
+<p><strong>Additional Notes:</strong> ${s('[Any additional notes]')}</p>
+<br>
+<div style="display:flex;justify-content:space-between;margin-top:30px">
+  <div style="text-align:center;width:45%"><div style="border-top:1px solid #333;padding-top:8px;margin-top:50px">Landlord: ${s(lName)}<br><small>Signature & Date</small></div></div>
+  <div style="text-align:center;width:45%"><div style="border-top:1px solid #333;padding-top:8px;margin-top:50px">Tenant: ${s(tName)}<br><small>Signature & Date</small></div></div>
+</div>`,
+
+    receipt: `
+<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:12px;margin-bottom:20px">
+  <div style="font-size:20px;font-weight:700">OFFICIAL RENT RECEIPT</div>
+  <div>${s(pName)}</div>
+</div>
+<p><strong>Receipt No:</strong> ${s('RCP-'+Date.now().toString().slice(-6))} &nbsp; <strong>Date:</strong> ${s(today)}</p>
+<br>
+<p><strong>Received From:</strong> ${s(tName)}</p>
+<p><strong>Unit:</strong> ${s(uNum)} — ${s(pName)}, ${s(pTown)}</p>
+<p><strong>Amount:</strong> ${s(rent)}</p>
+<p><strong>For:</strong> ${s('[Month/Period]')} Rent Payment</p>
+<p><strong>Payment Method:</strong> ${s(prop.mpesa_paybill?'M-Pesa Paybill '+prop.mpesa_paybill:'M-Pesa')}</p>
+<p><strong>M-Pesa Reference:</strong> ${s('[MPESA REF]')}</p>
+<br>
+<div style="background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:16px;margin:16px 0">
+  <div style="font-size:13px;color:#555;margin-bottom:4px">Amount in Words:</div>
+  <div style="font-weight:700">${s('[Amount in words]')} Kenya Shillings Only</div>
+</div>
+<p>This receipt confirms that the above amount has been received in full for the period stated.</p>
+<br>
+<div style="display:flex;justify-content:space-between;margin-top:30px">
+  <div style="text-align:center;width:40%"><div style="border-top:1px solid #333;padding-top:8px;margin-top:40px">Received by: ${s(lName)}<br><small>Landlord Signature</small></div></div>
+  <div style="text-align:right;font-size:12px;color:#777;width:55%"><div>NyumbaLink Property Management<br>Generated: ${today}</div></div>
+</div>`,
+
+    handbook: `
+<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:16px;margin-bottom:24px">
+  <div style="font-size:22px;font-weight:700">${s(pName)}</div>
+  <div style="font-size:18px;font-weight:700;margin-top:8px">TENANT HANDBOOK</div>
+  <div style="font-size:13px;color:#555;margin-top:4px">Welcome to your new home</div>
+</div>
+<p>Dear ${s(tName)}, welcome to ${s(pName)}. This handbook contains everything you need to know.</p>
+<br>
+<p><strong>📋 1. RENT PAYMENT</strong><br>
+Rent of ${s(rent)} is due on the ${s(prop.rent_due_day||'5')}th of every month. Pay via M-Pesa Paybill ${s(prop.mpesa_paybill||'[PAYBILL]')}, Account: ${s(uNum)} (your unit number). Always keep your M-Pesa confirmation message.</p>
+<p><strong>🔧 2. MAINTENANCE & REPAIRS</strong><br>
+Report any issues immediately via the NyumbaLink tenant app or call ${s(lPhone)}. Do not attempt major repairs yourself. Routine maintenance (changing bulbs, minor cleaning) is your responsibility.</p>
+<p><strong>🗑️ 3. GARBAGE COLLECTION</strong><br>
+Garbage is collected ${s(prop.garbage_collection_day||'Wednesday and Friday')}. Please put your bins out by ${s('7:00 AM')}. Keep common areas clean at all times.</p>
+<p><strong>💧 4. WATER & UTILITIES</strong><br>
+Water bills are calculated monthly from meter readings at ${s('KES '+(prop.water_rate_per_m3||150)+'/m³')}. Report any leaks immediately.</p>
+<p><strong>🔊 5. NOISE & NEIGHBOURS</strong><br>
+Quiet hours are ${s('10:00 PM – 6:00 AM')} daily. Please be considerate of neighbours at all times. Loud music, parties or disturbances are not permitted.</p>
+<p><strong>🚪 6. VISITORS & SECURITY</strong><br>
+Long-term visitors (over 7 days) must be registered with the landlord. Gate closes at ${s('10:00 PM')}. Keep your unit locked at all times.</p>
+<p><strong>⚠️ 7. PROHIBITED ACTIVITIES</strong><br>
+No subletting without written consent. No pets without prior approval. No illegal activities on the premises. No structural alterations.</p>
+<p><strong>📞 8. EMERGENCY CONTACTS</strong><br>
+Landlord: ${s(lName)} — ${s(lPhone)}<br>
+Caretaker: ${s('[CARETAKER NAME]')} — ${s('[CARETAKER PHONE]')}</p>`,
+
+    rent_score: `
+<div style="text-align:center;padding:24px;border:3px double #C9921A;border-radius:16px">
+  <div style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">NyumbaLink</div>
+  <div style="font-size:22px;font-weight:700;font-family:Georgia,serif">RENT SCORE™ CERTIFICATE</div>
+  <br>
+  <p>This certifies that</p>
+  <div style="font-size:26px;font-weight:700;font-family:Georgia,serif;color:#C9921A;margin:10px 0">${s(tName)}</div>
+  <p>tenant at ${s(pName)}, Unit ${s(uNum)}, ${s(pTown)}</p>
+  <br>
+  <div style="font-size:64px;font-weight:700;color:#0A9690;font-family:Georgia,serif">${s('720')}</div>
+  <div style="font-size:18px;font-weight:700;color:#22c55e">EXCELLENT ⭐</div>
+  <br>
+  <div style="background:#f9f9f9;border-radius:8px;padding:12px;margin:16px 0;font-size:13px;color:#555">
+    <p>Based on ${s('[X]')} months of tenancy with ${s('[X]')} on-time payments</p>
+    <p>This tenant is rated as a <strong>Reliable Payer</strong></p>
+  </div>
+  <p style="font-size:12px;color:#888">Issued on ${today} · Valid for 6 months<br>Verify at nyumbalink.app · Ref: ${s('CERT-'+Date.now().toString().slice(-8))}</p>
+  <br>
+  <div style="border-top:1px solid #ccc;padding-top:12px;margin-top:8px">
+    <strong>${s(lName)}</strong><br>
+    <small>Landlord Signature</small>
+  </div>
+</div>`,
+
+    notice: `
+<div style="text-align:right;margin-bottom:20px">
+  <div>${s(pName)}</div>
+  <div>${s(pTown)}</div>
+  <div>${s(today)}</div>
+</div>
+<p><strong>To:</strong> ${s(tName)}<br>Unit ${s(uNum)}, ${s(pName)}</p>
+<br>
+<p><strong>Re: ${s('[SUBJECT — e.g. Rent Increase Notice / Repair Notice / General Notice]')}</strong></p>
+<br>
+<p>Dear ${s(tName)},</p>
+<br>
+<p>${s('[Write your notice content here. E.g.: Please be informed that effective [DATE], your monthly rent will be revised from KES X to KES Y in line with current market rates. This change will take effect from [DATE].]')}</p>
+<br>
+<p>${s('[Additional paragraph if needed]')}</p>
+<br>
+<p>If you have any questions, please contact me on ${s(lPhone)}.</p>
+<br>
+<p>Yours sincerely,</p>
+<br>
+<div style="border-top:1px solid #333;width:200px;padding-top:8px;margin-top:40px">
+  ${s(lName)}<br>
+  <small>Landlord · ${s(pName)}</small>
+</div>`
+  };
+
+  const body = templates[type] || `<p>Template not found for type: ${type}</p>`;
+  document.getElementById('doc-editor-body').innerHTML = body;
+  document.getElementById('doc-template-picker').style.display = 'none';
+  document.getElementById('doc-template-editor').style.display = 'block';
+}
+
+function printTemplate(){
+  const body = document.getElementById('doc-editor-body').innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<html><head><title>Document</title>
+    <style>body{font-family:Georgia,serif;padding:40px 60px;max-width:800px;margin:auto;font-size:14px;line-height:1.8;color:#111}
+    table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px}
+    span[style*="FFF9C4"]{background:none!important}@media print{span[style*="FFF9C4"]{background:none!important}}</style>
+    </head><body>${body}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>win.print(), 500);
+}
+
+async function saveTemplate(){
+  const tenantId = _docTenantForTemplate;
+  const tenant = tenantId ? tenants.find(t=>t.id===tenantId) : null;
+  const typeLabels = {lease:'Lease Agreement',move_in:'Move-in Inspection Report',receipt:'Payment Receipt',handbook:'Tenant Handbook',rent_score:'Rent Score Certificate',notice:'Notice Letter'};
+  const typeDb = {lease:'lease',move_in:'move_in_report',receipt:'receipt',handbook:'handbook',rent_score:'rent_score',notice:'other'};
+
+  // Save the HTML content as a data URL (inline storage)
+  const htmlContent = document.getElementById('doc-editor-body').innerHTML;
+  const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(`<html><head><style>body{font-family:Georgia,serif;padding:40px 60px;max-width:800px;margin:auto;font-size:14px;line-height:1.8;color:#111}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px}</style></head><body>${htmlContent}</body></html>`);
+
+  const title = typeLabels[_currentTemplate] + (tenant?' — '+tenant.name:'') + ' · ' + new Date().toLocaleDateString('en-KE',{month:'short',year:'numeric'});
+
+  const { error } = await sb.from('tenant_documents').insert({
+    landlord_id: supaUser.id,
+    property_id: currentPropertyId,
+    tenant_id: tenantId || null,
+    unit_id: tenant?.unit_id || null,
+    doc_type: typeDb[_currentTemplate] || 'other',
+    title,
+    file_url: null,
+    notes: 'Created from NyumbaLink template',
+    is_shared_with_tenant: true
+  });
+
+  if(error){ toast('Save failed: '+error.message, 'e'); return; }
+  closeMo('mo-upload-doc');
+  toast('✅ Document saved and shared with tenant — they can view it on their portal', 's');
+  await loadDocuments();
+}
+
+/* File upload helpers */
+function handleDocFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  _docFile = file;
+  document.getElementById('doc-file-name').textContent = '📎 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + 'MB)';
+  document.getElementById('doc-drop-zone').style.borderColor = 'var(--teal)';
+}
+
+function handleDocDrop(e){
+  e.preventDefault();
+  document.getElementById('doc-drop-zone').style.borderColor = 'var(--border)';
+  const file = e.dataTransfer.files[0];
+  if(file){
+    _docFile = file;
+    document.getElementById('doc-file-name').textContent = '📎 ' + file.name;
+    document.getElementById('doc-drop-zone').style.borderColor = 'var(--teal)';
+  }
+}
+
+async function uploadDocument(){
+  const type = document.getElementById('doc-type').value;
+  const title = document.getElementById('doc-title').value.trim();
+  const tenantId = document.getElementById('doc-tenant').value;
+  const url = document.getElementById('doc-url').value.trim();
+  const notes = document.getElementById('doc-notes').value.trim();
+  const statusEl = document.getElementById('doc-save-status');
+
+  if(!title){ toast('Please enter a document title', 'e'); return; }
+
+  let fileUrl = url || null;
+
+  // Upload file to Supabase Storage if selected
+  if(_docFile && !fileUrl){
+    document.getElementById('doc-upload-progress').style.display = 'block';
+    document.getElementById('doc-progress-bar').style.width = '30%';
+    document.getElementById('doc-progress-label').textContent = 'Uploading file…';
+
+    const ext = _docFile.name.split('.').pop();
+    const path = `${currentPropertyId}/${Date.now()}_${_docFile.name}`;
+    const { data: uploadData, error: upErr } = await sb.storage
+      .from('tenant-docs').upload(path, _docFile, { upsert: false });
+
+    document.getElementById('doc-progress-bar').style.width = '70%';
+
+    if(upErr){ document.getElementById('doc-upload-progress').style.display='none'; toast('Upload failed: '+upErr.message,'e'); return; }
+
+    const { data: urlData } = sb.storage.from('tenant-docs').getPublicUrl(path);
+    fileUrl = urlData?.publicUrl || null;
+    document.getElementById('doc-progress-bar').style.width = '100%';
+    document.getElementById('doc-progress-label').textContent = 'Upload complete ✅';
+  }
+
+  const tenant = tenantId ? tenants.find(t=>t.id===tenantId) : null;
+  const { error } = await sb.from('tenant_documents').insert({
+    landlord_id: supaUser.id, property_id: currentPropertyId,
+    doc_type: type, title, file_url: fileUrl, notes: notes||null,
+    tenant_id: tenantId||null, unit_id: tenant?.unit_id||null,
+    is_shared_with_tenant: true
+  });
+
+  document.getElementById('doc-upload-progress').style.display = 'none';
+
+  if(error){ toast('Save failed: '+error.message,'e'); return; }
+
+  _docFile = null;
+  ['doc-title','doc-url','doc-notes'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('doc-file-name').textContent = '';
+  document.getElementById('doc-drop-zone').style.borderColor = 'var(--border)';
+  closeMo('mo-upload-doc');
+  toast('✅ Document saved and shared with tenant', 's');
+  await loadDocuments();
+}
 
 /* ============ DAY PICKER (single-select) ============ */
 document.addEventListener('click', function(e){
