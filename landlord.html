@@ -480,6 +480,8 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
       <div class="sni" onclick="nav('whatsapp')" id="sni-whatsapp"><span class="ico">💬</span>WhatsApp Bot</div>
       <div class="sni" onclick="nav('swahili')" id="sni-swahili"><span class="ico">🇰🇪</span>Kiswahili</div>
       <div class="sb-grp">More</div>
+      <div class="sni" onclick="nav('documents')" id="sni-documents"><span class="ico">📄</span>Documents</div>
+      <div class="sni" onclick="nav('records')" id="sni-records"><span class="ico">🗂️</span>Records</div>
       <div class="sni" onclick="nav('community')" id="sni-community"><span class="ico">🏘️</span>Community</div>
       <div class="sni" onclick="nav('broadcast')" id="sni-broadcast"><span class="ico">📢</span>Broadcast SMS</div>
       <div class="sni" onclick="nav('kra')" id="sni-kra"><span class="ico">📋</span>KRA Reports</div>
@@ -1640,7 +1642,8 @@ const PAGE_LOADERS = {
   dashboard: loadDashboard, units: loadUnits, payments: loadPayments, repairs: loadRepairs,
   ai: loadAI, water: loadWater, electricity: loadElectricity, garbage: loadGarbage,
   settings: loadSettings, charges: loadCharges, schedules: loadSchedules, swahili: loadSwahili,
-  community: loadCommunity, broadcast: loadBroadcast, kra: loadKRA, crb: loadCRB
+  community: loadCommunity, broadcast: loadBroadcast, kra: loadKRA, crb: loadCRB,
+  documents: loadDocuments, records: loadRecords, ai: loadAI
 };
 
 function nav(page){
