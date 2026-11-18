@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>NyumbaLink – Kenya's Smartest Property Management Platform</title>
 <meta name="description" content="Collect rent via M-Pesa, track repairs, automate water bills and garbage alerts. Built for every Kenyan landlord."/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital,opsz,wght@0,10..144,400;0,10..144,700;1,10..144,400&display=swap" rel="stylesheet"/>
@@ -322,6 +322,43 @@ footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relati
 }
 @media(max-width:480px){
   .roadmap-grid{grid-template-columns:1fr;}
+}
+
+/* ══ MOBILE FIXES (phones) ══ */
+html{-webkit-text-size-adjust:100%;}
+@media(max-width:900px){
+  .hero{grid-template-columns:minmax(0,1fr);}
+  .hero-left,.hero-sub,.hero-btns,.stats-bar{min-width:0;max-width:100%;width:100%;}
+  .hero-sub{font-size:15px;}
+  .stats-bar{flex-wrap:wrap;}
+  .stat{flex:1 1 40%;min-width:0;border-bottom:1px solid var(--border);}
+  .bento{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .bento>*{grid-column:span 2;min-width:0;}
+  .bc-finance{flex-direction:column;align-items:flex-start;}
+  .bc-finance-stats{flex-shrink:1;width:100%;}
+  .compare-wrap,.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+}
+@media(max-width:600px){
+  nav{padding:12px 14px;}
+  .nav-logo-name{font-size:19px;}
+  .btn-nav-primary{padding:9px 12px;font-size:12px;white-space:nowrap;}
+  .bento{grid-template-columns:minmax(0,1fr);}
+  .bento>*{grid-column:auto;}
+  .hero{padding:96px 16px 48px;}
+  .hero-btns{flex-direction:column;align-items:stretch;}
+  .hero-btns a,.hero-btns .btn{justify-content:center;text-align:center;min-height:48px;}
+  section{padding:48px 16px;}
+  .pricing-grid,.serve-grid,.testi-grid{gap:14px;}
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+}
+
+@media(max-width:360px){
+  nav{padding:10px 12px;}
+  .nav-logo-mark{width:34px;height:34px;}
+  .nav-logo-name{font-size:16px;}
+  .nav-cta{gap:6px;}
+  .btn-nav-primary{padding:8px 9px;font-size:11px;}
+  .mob-menu{padding:6px 8px;}
 }
 </style>
 </head>
