@@ -405,6 +405,22 @@ html{-webkit-text-size-adjust:100%;}
   .lf-inner h2{font-size:30px;}
   .lf-inner p{margin-bottom:24px;}
 }
+
+/* ══ GOOGLE + PHONE OTP LOGIN ══ */
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;background:#fff;color:#3c4043;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:box-shadow .2s,border-color .2s;}
+.btn-google:hover{box-shadow:0 2px 10px rgba(0,0,0,.1);border-color:#c9c4bb;}
+.btn-google:disabled{opacity:.6;cursor:wait;}
+.or-div{display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:var(--muted);font-size:12px;font-weight:600;}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border);}
+.phone-row{display:flex;gap:8px;align-items:stretch;}
+.phone-row input{flex:1;min-width:0;}
+.phone-cc{display:flex;align-items:center;padding:0 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm,10px);font-weight:700;font-size:15px;color:var(--text);}
+.otp-links{display:flex;justify-content:space-between;margin-top:12px;}
+.otp-links button{background:none;border:none;color:var(--teal);font-weight:600;font-size:13px;cursor:pointer;padding:10px 4px;min-height:40px;font-family:inherit;}
+.otp-links button:disabled{color:var(--muted);cursor:default;}
+#phone-step1 .btn-login,#phone-step2 .btn-login{margin-top:4px;}
+#pw-toggle{display:block;text-align:center;margin:18px 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px;}
+#pw-toggle:hover{color:var(--teal);}
 </style>
 </head>
 <body>
@@ -447,6 +463,25 @@ html{-webkit-text-size-adjust:100%;}
       <h2>Welcome back</h2>
       <p>Sign in to your tenant account to manage your home.</p>
       <div id="login-err" style="display:none;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;"></div>
+      <button type="button" class="btn-google" id="google-btn" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="or-div"><span>or sign in with your phone</span></div>
+      <div id="phone-step1">
+        <div class="fg"><label>Phone number</label>
+          <div class="phone-row"><span class="phone-cc">+254</span><input id="login-phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="712 345 678" onkeydown="if(event.key==='Enter')sendPhoneOtp()"/></div>
+        </div>
+        <button type="button" class="btn-login" id="otp-send-btn" onclick="sendPhoneOtp()">Send code</button>
+      </div>
+      <div id="phone-step2" style="display:none;">
+        <p id="otp-sent-to" style="font-size:13px;color:var(--muted);margin-bottom:14px;"></p>
+        <div class="fg"><label>6-digit code</label><input id="login-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="000000" style="letter-spacing:8px;font-size:22px;text-align:center;" oninput="onOtpInput(this)" onkeydown="if(event.key==='Enter')verifyPhoneOtp()"/></div>
+        <button type="button" class="btn-login" id="otp-verify-btn" onclick="verifyPhoneOtp()">Verify and sign in</button>
+        <div class="otp-links"><button type="button" id="otp-resend" onclick="sendPhoneOtp(true)" disabled>Resend code</button><button type="button" onclick="resetPhoneStep()">Change number</button></div>
+      </div>
+      <a href="#" id="pw-toggle" onclick="togglePwLogin(event)">Use email and password instead</a>
+      <div id="pw-login" style="display:none;">
       <div class="fg"><label>Email Address</label><input id="login-id" type="email" placeholder="e.g. faith.wanjiru@tenant.nyumbalink.app" onkeydown="if(event.key==='Enter')doLogin()"/></div>
       <div class="fg"><label>Password</label><input id="login-pass" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -454,6 +489,7 @@ html{-webkit-text-size-adjust:100%;}
         <a href="#" onclick="openForgotPw(event)" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
       </div>
       <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
+      </div>
       <a id="go-landlord-btn" href="landlord.html" style="display:none;margin-top:12px;width:100%;padding:13px;background:rgba(10,150,144,0.1);border:1.5px solid rgba(10,150,144,0.3);border-radius:12px;color:var(--teal);font-size:14px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;">🏢 Go to Landlord Portal →</a>
       <div class="demo-row">
           <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:10px;">🎯 Demo — tap to sign in instantly</p>
@@ -1208,14 +1244,17 @@ function showLoginErr(msg){
   if(e){e.textContent=msg;e.style.display='block';}
 }
 
-async function initPortal(){
+async function initPortal(auto=false){
   const {data:{user}}=await sb.auth.getUser();
-  if(!user){showLoginErr('Could not verify session.');return;}
+  if(!user){if(!auto)showLoginErr('Could not verify session.');return;}
+  // Links a verified Google email / phone number to the tenant the landlord registered
+  try{await sb.rpc('claim_tenant_account');}catch(e){}
   const {data:tenant,error:te}=await sb.from('tenants')
     .select('*, units!unit_id(*), properties!property_id(*)')
     .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
-    .single();
+    .maybeSingle();
   if(te){
+    if(auto)return;
     const msg = te?.message||'';
     if(msg.includes('coerce')||msg.includes('multiple')||msg.includes('single')){
       showLoginErr('This account is not a tenant account. Are you a landlord? Go to the Landlord Portal instead.');
@@ -1226,7 +1265,10 @@ async function initPortal(){
     await sb.auth.signOut(); return;
   }
   if(!tenant){
-    showLoginErr('No tenant record found. Your landlord needs to invite you first.');
+    if(auto)return;
+    const who=user.email||user.phone||'this account';
+    showLoginErr('No tenant account found for '+who+'. Ask your landlord to add your '+(user.email?'email':'phone number')+', or sign in with the contact they registered.');
+    document.getElementById('go-landlord-btn').style.display='block';
     await sb.auth.signOut(); return;
   }
   tenantProfile=tenant;
@@ -1841,6 +1883,118 @@ function checkPenalty(balance){
 /* ═══ REPAIR FORM ═══ */
 function selCat(el,cat){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selectedCat=cat;}
 function selPrio(el,p){document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});el.classList.add('s'+p);selectedPrio=p;}
+
+
+
+/* ═══ DOCUMENTS (was called by initPortal but never defined, which stopped the dashboard finishing setup) ═══ */
+async function loadTenantDocuments(){
+  const box=document.querySelector('#pg-documents > div:nth-child(2)');
+  if(!box)return;
+  const icons={lease:'📋',receipt:'🧾',handbook:'📖',move_in_report:'🏠',rent_score:'⭐',emergency_contacts:'☎️',other:'📄'};
+  const {data,error}=await sb.from('tenant_documents')
+    .select('id,doc_type,title,file_url,file_name,notes,created_at')
+    .eq('tenant_id',tenantProfile.id).eq('is_shared_with_tenant',true)
+    .order('created_at',{ascending:false});
+  box.textContent='';
+  const note=t=>{const d=document.createElement('div');d.style.cssText='padding:28px 12px;text-align:center;color:var(--muted);font-size:14px;';d.textContent=t;box.appendChild(d);};
+  if(error)return note('Could not load your documents. Please try again later.');
+  if(!data||!data.length)return note('No documents shared with you yet. Your lease and receipts will appear here.');
+  data.forEach(d=>{
+    const card=document.createElement('div');card.className='doc-card';
+    const ic=document.createElement('span');ic.className='doc-icon';ic.textContent=icons[d.doc_type]||'📄';
+    const info=document.createElement('div');info.className='doc-info';
+    const st=document.createElement('strong');st.textContent=d.title;
+    const sp=document.createElement('span');
+    sp.textContent=[new Date(d.created_at).toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'}),d.notes].filter(Boolean).join(' · ');
+    info.append(st,sp);
+    const act=document.createElement('div');act.className='doc-actions';
+    if(d.file_url&&/^https?:\/\//i.test(d.file_url)){
+      const a=document.createElement('a');a.href=d.file_url;a.target='_blank';a.rel='noopener';a.className='btn btn-teal btn-sm';a.style.textDecoration='none';a.textContent='📥 Open';
+      act.appendChild(a);
+    }
+    card.append(ic,info,act);box.appendChild(card);
+  });
+}
+
+/* ═══ GOOGLE + PHONE OTP ═══ */
+function hideLoginErr(){const e=document.getElementById('login-err');if(e)e.style.display='none';}
+function togglePwLogin(e){
+  e.preventDefault();
+  const box=document.getElementById('pw-login');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  document.getElementById('pw-toggle').textContent=open?'Hide email and password':'Use email and password instead';
+}
+async function googleLogin(){
+  hideLoginErr();
+  const btn=document.getElementById('google-btn');btn.disabled=true;
+  try{sessionStorage.setItem('nl_oauth','1');}catch(e){}
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});
+  if(error){btn.disabled=false;showLoginErr(error.message.includes('provider')?'Google sign-in is not switched on yet. Please use your phone number.':error.message);}
+}
+let otpPhone='',otpTimer=null;
+function normPhoneKE(raw){
+  let d=(raw||'').replace(/\D/g,'');
+  if(d.startsWith('254'))d=d.slice(3);else if(d.startsWith('0'))d=d.slice(1);
+  return /^[17]\d{8}$/.test(d)?'+254'+d:null;
+}
+function startResendTimer(sec){
+  const b=document.getElementById('otp-resend');clearInterval(otpTimer);b.disabled=true;
+  const tick=()=>{b.textContent=sec>0?'Resend code in '+sec+'s':'Resend code';if(sec<=0){b.disabled=false;clearInterval(otpTimer);}sec--;};
+  tick();otpTimer=setInterval(tick,1000);
+}
+async function sendPhoneOtp(isResend){
+  hideLoginErr();
+  const phone=isResend===true&&otpPhone?otpPhone:normPhoneKE(document.getElementById('login-phone').value);
+  if(!phone){showLoginErr('Enter a valid Kenyan mobile number, for example 0712 345 678.');return;}
+  const btn=document.getElementById('otp-send-btn');btn.disabled=true;btn.textContent='Checking…';
+  const fail=m=>{btn.disabled=false;btn.textContent='Send code';showLoginErr(m);};
+  const {data:ok,error:e0}=await sb.rpc('tenant_phone_registered',{p_phone:phone});
+  if(e0)return fail(e0.message.includes('fetch')?'No connection. Check your internet and try again.':'Could not check this number. Try again.');
+  if(!ok)return fail('This number is not registered with any property yet. Ask your landlord to add it, or continue with Google.');
+  const {error}=await sb.auth.signInWithOtp({phone});
+  if(error)return fail(/rate|seconds/i.test(error.message)?'Please wait a minute before asking for another code.':error.message);
+  btn.disabled=false;btn.textContent='Send code';
+  otpPhone=phone;
+  document.getElementById('otp-sent-to').textContent='We sent a 6-digit code by SMS to '+phone+'.';
+  document.getElementById('phone-step1').style.display='none';
+  document.getElementById('phone-step2').style.display='block';
+  document.getElementById('login-otp').value='';
+  document.getElementById('login-otp').focus();
+  startResendTimer(60);
+}
+function onOtpInput(el){
+  el.value=el.value.replace(/\D/g,'').slice(0,6);
+  if(el.value.length===6)verifyPhoneOtp();
+}
+let otpBusy=false;
+async function verifyPhoneOtp(){
+  if(otpBusy)return;
+  hideLoginErr();
+  const token=document.getElementById('login-otp').value.replace(/\D/g,'');
+  if(token.length!==6){showLoginErr('Enter the 6-digit code from the SMS.');return;}
+  otpBusy=true;
+  const btn=document.getElementById('otp-verify-btn');btn.disabled=true;btn.textContent='Verifying…';
+  const {error}=await sb.auth.verifyOtp({phone:otpPhone,token,type:'sms'});
+  otpBusy=false;btn.disabled=false;btn.textContent='Verify and sign in';
+  if(error){showLoginErr('That code is wrong or has expired. Check the SMS or request a new code.');return;}
+  await initPortal();
+}
+function resetPhoneStep(){
+  clearInterval(otpTimer);hideLoginErr();otpPhone='';
+  document.getElementById('phone-step2').style.display='none';
+  document.getElementById('phone-step1').style.display='block';
+  document.getElementById('login-phone').focus();
+}
+
+/* ═══ SESSION RESTORE (refresh, Google return) + PASSWORD RECOVERY ═══ */
+sb.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY')showRecoveryOverlay();});
+(async()=>{
+  if(/type=recovery/.test(location.hash))return;
+  let fromGoogle=false;try{fromGoogle=sessionStorage.getItem('nl_oauth')==='1';sessionStorage.removeItem('nl_oauth');}catch(e){}
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await initPortal(!fromGoogle);   // quiet on plain refresh, explains the problem after a Google sign-in
+})();
 
 /* ═══ MODAL ═══ */
 function showModal(id){const el=document.getElementById(id);if(el)el.classList.add('open');}
