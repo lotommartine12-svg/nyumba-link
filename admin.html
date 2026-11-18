@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>NyumbaLink – Super Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -148,13 +148,49 @@ tr:hover td{background:rgba(99,102,241,0.03);}
 .toast.i{background:var(--purple);color:white;}
 .toast.w{background:var(--gold);color:#1a1000;}
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* ══ MOBILE LAYOUT (phones & tablets) ══ */
+.hbg{display:none;background:var(--s2);border:1px solid var(--border);border-radius:9px;width:40px;height:40px;color:var(--text);font-size:18px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;}
+.sb-ov.show{display:block;}
+.tb-l{display:flex;align-items:center;gap:10px;min-width:0;}
+.main,.content{min-width:0;}
+.mg>*,.two-col>*,.three-col>*,.form-row>*,.lc-stats>*{min-width:0;}
+@media(max-width:900px){
+  input,select,textarea{font-size:16px !important;}
+  .sb{transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;box-shadow:none;}
+  .sb.open{transform:translateX(0);box-shadow:8px 0 40px rgba(0,0,0,.5);}
+  .main{margin-left:0;}
+  .hbg{display:flex;}
+  .topbar{padding:0 14px;gap:8px;}
+  .tb-title{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-date,.tb-right .btn-ghost{display:none;}
+  .tb-right{flex-shrink:0;}
+  .tb-right .btn{min-height:40px;}
+  .content{padding:16px 14px 40px;}
+  .mg,.mg[style]{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:10px;}
+  .two-col{grid-template-columns:1fr;}
+  .three-col{grid-template-columns:1fr;}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+  table{min-width:560px;}
+  .card{padding:16px;min-width:0;max-width:100%;overflow-x:auto;}
+  .modal{padding:22px 16px;border-radius:16px;}
+  .form-row{grid-template-columns:1fr;}
+  .chart-bars{gap:6px;}
+}
+@media(max-width:480px){
+  .mg,.mg[style]{grid-template-columns:minmax(0,1fr) !important;}
+  .lc-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+
 </style>
 </head>
 <body>
 <div class="particles"></div>
 
 <!-- SIDEBAR -->
-<div class="sb">
+<div class="sb-ov" id="sb-ov" onclick="closeSB()"></div>
+<div class="sb" id="sb">
   <div class="sb-logo">
     <div class="sb-logo-badge">⚡</div>
     <div><div class="sb-logo-text">NyumbaLink</div><div class="sb-logo-sub">Super Admin</div></div>
@@ -183,7 +219,7 @@ tr:hover td{background:rgba(99,102,241,0.03);}
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div class="tb-title" id="page-title">Platform Overview</div>
+    <div class="tb-l"><button class="hbg" onclick="toggleSB()" aria-label="Open menu">☰</button><div class="tb-title" id="page-title">Platform Overview</div></div>
     <div class="tb-right">
       <div class="tb-date" id="live-date">Loading...</div>
       <button class="btn btn-ghost btn-sm" onclick="showToast('Generating full report PDF…','i')">📄 Export Report</button>
@@ -455,7 +491,10 @@ const TICKETS=[
   {id:'TKT-004',from:'Ali Mohamed',issue:'SMS not sending to 0799 numbers (Airtel)',priority:'normal',date:'Apr 18'},
 ];
 
+function toggleSB(){document.getElementById('sb').classList.toggle('open');document.getElementById('sb-ov').classList.toggle('show');}
+function closeSB(){document.getElementById('sb').classList.remove('open');document.getElementById('sb-ov').classList.remove('show');}
 function nav(page){
+  closeSB();
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sni').forEach(s=>s.classList.remove('active'));
   document.getElementById('pg-'+page)?.classList.add('active');
