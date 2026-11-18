@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>NyumbaLink – Landlord Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -331,6 +331,46 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(10,150,144,0.02
 
 .doc-tmpl-card{border:1.5px solid var(--border);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .2s;}
 .doc-tmpl-card:hover{border-color:var(--teal);background:rgba(10,150,144,0.06);transform:translateY(-2px);}
+
+/* ══ MOBILE FIXES (phones) ══ */
+html{-webkit-text-size-adjust:100%;}
+.main,.content,.tab-page{min-width:0;max-width:100%;}
+.g2>*,.g3>*,.g4>*,.metrics>*,.row2>*{min-width:0;}
+.card{min-width:0;max-width:100%;}
+@media(max-width:900px){
+  input,select,textarea{font-size:16px !important;}
+  .topbar{gap:8px;}
+  .tb-l{min-width:0;flex:1 1 auto;}
+  .tb-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-r{flex-shrink:0;gap:6px;}
+  .tb-r>a[href="index.html"],.tb-r>button[onclick="toggleChat()"]{display:none !important;}
+  .tb-r .btn{padding:8px 10px;font-size:12px;min-height:40px;white-space:nowrap;}
+  .hbg{min-width:40px;min-height:40px;}
+  .card{padding:16px;}
+  .card-hdr{flex-wrap:wrap;gap:8px;}
+  .modal{max-width:100%;padding:22px 16px;}
+  .modal-bg,.mo{padding:10px;align-items:flex-end;}
+  .g4{grid-template-columns:1fr 1fr;}
+  #dash-property-bar{flex-wrap:wrap;}
+  .tbl{max-width:100%;}
+}
+@media(max-width:480px){
+  .metrics{gap:10px;}
+  .g3,.g4{grid-template-columns:1fr 1fr;}
+  [style*="repeat(3,1fr)"]{grid-template-columns:1fr !important;}
+  .tb-r .btn-teal{padding:8px 10px;}
+  .content{padding:12px;}
+  .btn{min-height:44px;}
+  .btn-sm{min-height:38px;}
+}
+
+@media(max-width:600px){
+  .topbar{height:auto;flex-wrap:wrap;padding:8px 12px 10px;row-gap:8px;}
+  .tb-l{flex:1 1 100%;}
+  .tb-title{font-size:18px;}
+  .tb-r{flex:1 1 100%;width:100%;}
+  .tb-r .btn{flex:1 1 0;justify-content:center;min-height:42px;}
+}
 </style>
 </head>
 <body>
