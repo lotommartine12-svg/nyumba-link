@@ -371,6 +371,17 @@ html{-webkit-text-size-adjust:100%;}
   .tb-r{flex:1 1 100%;width:100%;}
   .tb-r .btn{flex:1 1 0;justify-content:center;min-height:42px;}
 }
+
+/* ══ GOOGLE SIGN-IN (landlord) ══ */
+.btn-google-l{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;background:#fff;color:#3c4043;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px;transition:box-shadow .2s;}
+.btn-google-l:hover{box-shadow:0 2px 10px rgba(0,0,0,.1);}
+.btn-google-l:disabled{opacity:.6;cursor:wait;}
+.or-l{display:flex;align-items:center;gap:12px;margin:14px 0 16px;color:var(--muted);font-size:12px;font-weight:600;}
+.or-l::before,.or-l::after{content:'';flex:1;height:1px;background:var(--border);}
+@media(max-width:600px){
+  .mo-overlay{align-items:flex-end;padding:10px;}
+  .mo-overlay .modal{max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+}
 </style>
 </head>
 <body>
@@ -419,6 +430,8 @@ html{-webkit-text-size-adjust:100%;}
       <div class="panel on" id="panel-login">
         <div class="auth-title">Welcome back</div>
         <div class="auth-sub">Sign in to your landlord portal</div>
+        <button type="button" class="btn-google-l" id="g-login-btn" onclick="googleLoginLandlord()"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google</button>
+        <div class="or-l"><span>or use your email</span></div>
         <div class="fg"><label>Email</label><input id="li-email" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
         <div class="fg"><label>Password</label><input id="li-pass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
         <div style="text-align:right;margin-bottom:18px"><a href="#" onclick="openForgotPw(event)" style="font-size:12px;color:var(--teal);text-decoration:none;font-weight:600">Forgot password?</a></div>
@@ -444,7 +457,9 @@ html{-webkit-text-size-adjust:100%;}
           <div class="ws" id="ws5"><div class="wdot" id="wd5">5</div><span class="wlbl">Pay</span></div>
         </div>
         <div class="sp on" id="sp1">
-          <div class="sp-title">Create account</div><div class="sp-sub">Join 500+ landlords managing smarter.</div>
+          <div class="sp-title">Create account</div><div class="sp-sub">Join 500+ landlords managing smarter. <strong>First 3 months free.</strong></div>
+          <button type="button" class="btn-google-l" onclick="googleLoginLandlord()"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign up with Google</button>
+          <div class="or-l"><span>or fill in your details</span></div>
           <div class="row2"><div class="fg"><label>Full Name</label><input id="s1-name" placeholder="James Kariuki"/></div><div class="fg"><label>Phone</label><input id="s1-phone" type="tel" placeholder="0712 345 678" inputmode="numeric"/></div></div>
           <div class="fg"><label>Email</label><input id="s1-email" type="email" placeholder="james@email.com"/></div>
           <div class="row2"><div class="fg"><label>Password</label><input id="s1-pass" type="password" placeholder="Min 8 chars"/></div><div class="fg"><label>Confirm</label><input id="s1-pass2" type="password" placeholder="Repeat"/></div></div>
@@ -467,7 +482,7 @@ html{-webkit-text-size-adjust:100%;}
         </div>
         <div class="sp" id="sp4">
           <button class="back-btn" onclick="goStep(3)">← Back</button>
-          <div class="sp-title">Choose your plan</div><div class="sp-sub">30-day free trial on all paid plans.</div>
+          <div class="sp-title">Choose your plan</div><div class="sp-sub">First 3 months free on every plan. No payment today.</div>
           <div class="bsw"><span class="bsl on" id="bs-mo">Monthly</span><label class="btog"><input type="checkbox" id="bs-tog" onchange="toggleBilling()"/><div class="btog-sl"></div></label><span class="bsl" id="bs-an">Annual</span><span class="savepill" id="bs-save" style="display:none">Save 20%</span></div>
           <div class="plans">
             <div class="popt" id="po-basic" onclick="pickPlan('basic',0,0)"><div class="prad"></div><div class="pinfo"><div class="pname">Basic</div><div class="pdesc">Up to 5 units · M-Pesa, SMS, portal</div></div><div><span class="pprice">Free</span><span class="pper">forever</span></div></div>
@@ -1143,6 +1158,18 @@ html{-webkit-text-size-adjust:100%;}
   <!-- Already exists as mo-pay — we'll update its function -->
 
   <!-- MODALS -->
+  <div class="mo-overlay" id="mo-g-setup">
+    <div class="modal">
+      <h3>Finish setting up</h3><div class="msub">Welcome! Add a few details and your <strong>3-month free trial</strong> starts. No payment needed.</div>
+      <div class="err-msg" id="gs-err"></div>
+      <div class="fg"><label>Your name</label><input id="gs-name" placeholder="e.g. James Kariuki" autocomplete="name"/></div>
+      <div class="fg"><label>Phone number (M-Pesa)</label><input id="gs-phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0712 345 678"/></div>
+      <div class="row2"><div class="fg"><label>Property name</label><input id="gs-prop" placeholder="e.g. Greenview Apartments"/></div><div class="fg"><label>Town</label><input id="gs-town" placeholder="e.g. Langata"/></div></div>
+      <div class="fg"><label>Plan (first 3 months free)</label><select id="gs-plan"><option value="basic">Basic · free · up to 5 units</option><option value="standard" selected>Standard · KES 2,000/mo after</option><option value="premium">Premium · KES 7,500/mo after</option></select></div>
+      <button class="btn btn-teal btn-full" id="gs-btn" onclick="finishGoogleSetup()">Start my free trial →</button>
+      <div style="text-align:center;margin-top:12px"><a href="#" onclick="cancelGoogleSetup(event)" style="font-size:13px;color:var(--muted);padding:8px;display:inline-block">Cancel and sign out</a></div>
+    </div>
+  </div>
   <div class="mo-overlay" id="mo-unit">
     <div class="modal">
       <button class="mc" onclick="closeMo('mo-unit')">✕</button>
@@ -1367,13 +1394,17 @@ async function demoLogin(email){
   await loadPortalForUser(data.user);
 }
 
-async function loadPortalForUser(user){
+async function loadPortalForUser(user, auto=false){
   supaUser = user;
   try {
     // 1. Load landlord profile
-    const { data: landlord, error: lErr } = await sb.from('landlords').select('*').eq('id', user.id).single();
-    if(lErr){ showAuthErr('Profile error: ' + lErr.message); await sb.auth.signOut(); return; }
-    if(!landlord){ showAuthErr('No landlord profile found for this account.'); await sb.auth.signOut(); return; }
+    const { data: landlord, error: lErr } = await sb.from('landlords').select('*').eq('id', user.id).maybeSingle();
+    if(lErr){ if(auto) return; showAuthErr('Profile error: ' + lErr.message); await sb.auth.signOut(); return; }
+    if(!landlord){
+      if(auto) return;   // plain refresh with someone else's session (e.g. a tenant): leave it alone
+      if(isGoogleUser(user)){ openGoogleSetup(user); return; }   // first Google sign-in: finish setup
+      showAuthErr('No landlord profile found for this account.'); await sb.auth.signOut(); return;
+    }
     STATE = { name: landlord.name, plan: landlord.plan || 'basic', phone: landlord.phone, email: landlord.email };
 
     // 2. Load property
@@ -1394,7 +1425,12 @@ async function loadPortalForUser(user){
     document.getElementById('sb-name').textContent = STATE.name;
     document.getElementById('sb-phone').textContent = STATE.phone || '';
     document.getElementById('sb-apt').textContent = propertyData ? propertyData.name : 'My Property';
-    document.getElementById('sb-plan-txt').textContent = STATE.plan.charAt(0).toUpperCase() + STATE.plan.slice(1);
+    let planTxt = STATE.plan.charAt(0).toUpperCase() + STATE.plan.slice(1);
+    if(landlord.plan_status === 'trial' && landlord.subscription_end){
+      const dl = Math.ceil((new Date(landlord.subscription_end + 'T23:59:59') - new Date()) / 86400000);
+      planTxt += ' · Trial ' + (dl > 0 ? dl + 'd left' : 'ended');
+    }
+    document.getElementById('sb-plan-txt').textContent = planTxt;
     document.getElementById('sb-av').textContent = STATE.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
     document.getElementById('auth').style.display = 'none';
     document.getElementById('portal').classList.add('on');
@@ -1523,8 +1559,69 @@ sb.auth.onAuthStateChange((event, session) => {
 /* restore session on page load */
 (async function initSession(){
   const { data: { session } } = await sb.auth.getSession();
-  if(session){ await loadPortalForUser(session.user); }
+  let fromGoogle = false; try{ fromGoogle = sessionStorage.getItem('nl_oauth_landlord') === '1'; sessionStorage.removeItem('nl_oauth_landlord'); }catch(e){}
+  if(session){ await loadPortalForUser(session.user, !fromGoogle); }
 })();
+
+/* ============ GOOGLE SIGN-IN + FIRST-TIME SETUP ============ */
+function isGoogleUser(u){
+  return (u && u.app_metadata && u.app_metadata.provider === 'google') || ((u && u.identities) || []).some(i => i.provider === 'google');
+}
+async function googleLoginLandlord(){
+  document.getElementById('auth-err').classList.remove('on');
+  try{ sessionStorage.setItem('nl_oauth_landlord', '1'); }catch(e){}
+  const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + window.location.pathname } });
+  if(error){ showAuthErr(/provider/i.test(error.message) ? 'Google sign-in is not switched on yet. Please use your email.' : error.message); }
+}
+function normKEPhone(raw){
+  let d = (raw || '').replace(/\D/g, '');
+  if(d.startsWith('254')) d = d.slice(3); else if(d.startsWith('0')) d = d.slice(1);
+  return /^[17]\d{8}$/.test(d) ? '+254' + d : null;
+}
+let gSetupUser = null;
+function openGoogleSetup(user){
+  gSetupUser = user;
+  const md = user.user_metadata || {};
+  document.getElementById('gs-name').value = md.full_name || md.name || '';
+  document.getElementById('gs-err').classList.remove('on');
+  document.getElementById('mo-g-setup').classList.add('open');
+}
+function gsErr(m){ const e = document.getElementById('gs-err'); e.textContent = m; e.classList.add('on'); }
+async function finishGoogleSetup(){
+  const name = document.getElementById('gs-name').value.trim();
+  const phone = normKEPhone(document.getElementById('gs-phone').value);
+  const prop = document.getElementById('gs-prop').value.trim();
+  const town = document.getElementById('gs-town').value.trim();
+  const plan = document.getElementById('gs-plan').value;
+  document.getElementById('gs-err').classList.remove('on');
+  if(!name){ gsErr('Please enter your name.'); return; }
+  if(!phone){ gsErr('Enter a valid Kenyan mobile number, for example 0712 345 678.'); return; }
+  const btn = document.getElementById('gs-btn'); btn.disabled = true; btn.textContent = 'Setting up…';
+  const { error } = await sb.rpc('ensure_landlord_profile', { p_name: name, p_phone: phone, p_plan: plan });
+  btn.disabled = false; btn.textContent = 'Start my free trial →';
+  if(error){
+    const m = error.message || '';
+    gsErr(/phone_in_use/.test(m) ? 'That phone number is already used by another landlord account.'
+        : /tenant_account/.test(m) ? 'This Google account is already linked to a tenant account. Use a different Google account for your landlord portal.'
+        : /invalid_phone/.test(m) ? 'Enter a valid Kenyan mobile number, for example 0712 345 678.'
+        : /email_not_verified/.test(m) ? 'Your Google email is not verified.'
+        : m);
+    return;
+  }
+  const u = gSetupUser;
+  const { data: existing } = await sb.from('properties').select('id').eq('landlord_id', u.id).limit(1);
+  if(!existing || !existing.length){
+    await sb.from('properties').insert({ landlord_id: u.id, name: prop || (name + "'s Property"), town, total_units: 0 });
+  }
+  document.getElementById('mo-g-setup').classList.remove('open');
+  await loadPortalForUser(u);
+  toast('Your 3-month free trial has started 🎉', 's');
+}
+async function cancelGoogleSetup(e){
+  e.preventDefault();
+  document.getElementById('mo-g-setup').classList.remove('open');
+  await sb.auth.signOut();
+}
 
 /* ============ SIGNUP WIZARD ============ */
 function goStep(n){
@@ -1585,9 +1682,11 @@ function toggleBilling(){
   if(chosenPlan.id !== 'basic') updateStep5();
 }
 
+const TRIAL_FREE = true;   // first 3 months free: no payment collected at signup
 function updateStep5(){
   const price = billingAnnual ? chosenPlan.annual : chosenPlan.monthly;
-  const isFree = chosenPlan.id === 'basic';
+  const isFree = chosenPlan.id === 'basic' || TRIAL_FREE;
+  document.getElementById('free-ok').innerHTML = chosenPlan.id === 'basic' ? '🎉 Basic plan is <strong>free!</strong> Click below to activate.' : '🎉 Your first <strong>3 months are free</strong>. No payment today. Click below to activate.';
   document.getElementById('free-ok').classList.toggle('on', isFree);
   document.getElementById('paid-sec').style.display = isFree ? 'none' : 'block';
   document.getElementById('pay-amt').textContent = 'KES ' + price.toLocaleString();
@@ -1611,7 +1710,7 @@ function triggerSTK(){
 }
 
 async function doSignup(){
-  const isFree = chosenPlan.id === 'basic';
+  const isFree = chosenPlan.id === 'basic' || TRIAL_FREE;
   const agree = document.getElementById('ag-bill');
   if(!isFree){
     const code = document.getElementById('mpesa-code').value.trim();
