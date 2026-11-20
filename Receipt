@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Payment receipt</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#F8F6F2;--card:#fff;--text:#1A1410;--muted:#7A6E62;--border:#E4DDD5;--teal:#0D9488;--teal-light:#CCFBF1;--green:#16A34A;--green-light:#DCFCE7;--red:#DC2626;}
+@media(prefers-color-scheme:dark){:root:not([data-print]){--bg:#0f1514;--card:#16201e;--text:#f1f5f4;--muted:#9bb0ac;--border:#26332f;--teal-light:#0f3b36;--green-light:#12301f;}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:max(16px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));display:flex;justify-content:center}
+.wrap{width:100%;max-width:440px}
+.brand{font-family:'Instrument Serif',serif;font-size:22px;text-align:center;margin:8px 0 16px}
+.brand span{color:var(--teal)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+.top{text-align:center;padding:28px 20px 22px;border-bottom:1px dashed var(--border)}
+.tick{width:56px;height:56px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.amt{font-size:38px;font-weight:800;letter-spacing:-1px;margin:6px 0 4px}
+.rno{display:inline-block;background:var(--teal-light);color:var(--teal);font-weight:700;font-size:13px;padding:5px 12px;border-radius:99px}
+.rows{padding:8px 20px 6px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--border);font-size:14px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--muted);flex-shrink:0}
+.row .v{font-weight:600;text-align:right;word-break:break-word}
+.foot{padding:16px 20px 20px;text-align:center;font-size:12px;color:var(--muted);border-top:1px dashed var(--border)}
+.btns{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;min-height:48px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font:700 14px 'Plus Jakarta Sans',sans-serif;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.p{background:var(--teal);border-color:var(--teal);color:#fff}
+.msg{text-align:center;padding:40px 22px}
+.msg h2{font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:8px}
+.msg p{color:var(--muted);font-size:14px;line-height:1.5}
+.spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s 0.8s linear infinite;margin:0 auto 14px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media print{
+  :root{--bg:#fff;--card:#fff;--text:#000;--muted:#555;--border:#ccc}
+  body{padding:0;display:block;background:#fff}.wrap{max-width:none}
+  .card{box-shadow:none;border:1px solid #bbb}.btns{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand" id="brand"></div>
+  <div class="card" id="card"><div class="msg"><div class="spin"></div><p>Loading your receipt…</p></div></div>
+  <div class="btns" id="btns" style="display:none">
+    <button class="btn p" onclick="window.print()">⬇ Download PDF</button>
+    <a class="btn" id="wa" target="_blank" rel="noopener">Share</a>
+  </div>
+</div>
+<script>
+const BRAND='NyumbaLink';                       // change here when the product is renamed
+const SUPABASE_URL='https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';                   // public (anon) key: safe to expose, access is limited by the secret receipt link
+const $=id=>document.getElementById(id);
+$('brand').innerHTML=BRAND.replace(/(Link)$/,'<span>$1</span>');
+document.title=BRAND+' receipt';
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+function msg(h,p,retry){
+  const c=$('card');c.textContent='';
+  const d=document.createElement('div');d.className='msg';
+  const h2=document.createElement('h2');h2.textContent=h;const pp=document.createElement('p');pp.textContent=p;
+  d.append(h2,pp);
+  if(retry){const b=document.createElement('button');b.className='btn p';b.style.marginTop='18px';b.textContent='Try again';b.onclick=load;d.appendChild(b);}
+  c.appendChild(d);$('btns').style.display='none';
+}
+function row(k,v){const r=document.createElement('div');r.className='row';const a=document.createElement('span');a.className='k';a.textContent=k;const b=document.createElement('span');b.className='v';b.textContent=v;r.append(a,b);return r;}
+function render(r){
+  const c=$('card');c.textContent='';
+  const top=document.createElement('div');top.className='top';
+  const tick=document.createElement('div');tick.className='tick';tick.textContent='✓';
+  const l=document.createElement('div');l.className='lbl';l.textContent='Payment received';
+  const a=document.createElement('div');a.className='amt';a.textContent=(r.currency||'KES')+' '+Number(r.amount).toLocaleString('en-KE');
+  const n=document.createElement('div');n.className='rno';n.textContent=r.receipt_number;
+  top.append(tick,l,a,n);
+  const rows=document.createElement('div');rows.className='rows';
+  const per=(r.period_month?MONTHS[r.period_month-1]+' ':'')+(r.period_year||'');
+  const fmt=d=>d?new Date(d).toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'}):'';
+  [['Received from',r.tenant_name],['Unit',r.unit],['Property',[r.property,r.town].filter(Boolean).join(', ')],['Payment for',cap(r.payment_type)+(per?' · '+per.trim():'')],
+   ['Method',r.payment_method==='mpesa'?'M-Pesa':cap(r.payment_method)],['Reference',r.reference],['Date',fmt(r.payment_date)]]
+   .forEach(([k,v])=>{if(v)rows.appendChild(row(k,v));});
+  const f=document.createElement('div');f.className='foot';f.textContent='This is an electronic receipt issued by '+BRAND+' on behalf of the property. Keep it for your records.';
+  c.append(top,rows,f);
+  $('btns').style.display='flex';
+  const text='Rent receipt '+r.receipt_number+' · '+(r.currency||'KES')+' '+Number(r.amount).toLocaleString('en-KE')+'\n'+location.href;
+  $('wa').href='https://wa.me/?text='+encodeURIComponent(text);$('wa').textContent='Share on WhatsApp';
+}
+async function load(){
+  const t=new URLSearchParams(location.search).get('t')||'';
+  if(t.length<12){msg('Receipt not found','This link looks incomplete. Please use the link from your SMS.');return;}
+  const c=$('card');c.textContent='';c.innerHTML='<div class="msg"><div class="spin"></div><p>Loading your receipt…</p></div>';
+  try{
+    const res=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_receipt',{method:'POST',headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify({p_token:t}),signal:AbortSignal.timeout(15000)});
+    if(!res.ok)throw new Error('http '+res.status);
+    const r=await res.json();
+    if(!r){msg('Receipt not found','This receipt link is not valid, or the payment has not been confirmed yet. If you just paid, wait a minute and refresh.');return;}
+    render(r);
+  }catch(e){msg('Could not load receipt','Check your internet connection and try again.',true);}
+}
+load();
+</script>
+</body>
+</html>
