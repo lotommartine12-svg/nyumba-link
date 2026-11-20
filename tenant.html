@@ -2,855 +2,2104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<title>NyumbaLink – Kenya's Smartest Property Management Platform</title>
-<meta name="description" content="Collect rent via M-Pesa, track repairs, automate water bills and garbage alerts. Built for every Kenyan landlord."/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital,opsz,wght@0,10..144,400;0,10..144,700;1,10..144,400&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>NyumbaLink – Tenant Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --teal:#0A9690;--teal2:#0CBAB4;--gold:#C9921A;--gold2:#F5C030;
-  --ink:#070A0E;--ink2:#0D1219;--ink3:#141C26;
-  --text:#EEF2F8;--muted:#7A8A9E;--border:rgba(255,255,255,0.07);
-  --green:#22C55E;--red:#EF4444;--blue:#3B82F6;
+  --bg:#F8F6F2;--bg2:#FFFFFF;--bg3:#F0ECE6;
+  --ink:#1A1410;--ink2:#2E2820;--ink3:#3D3528;
+  --text:#1A1410;--muted:#7A6E62;--subtle:#B5ADA4;
+  --border:#E4DDD5;--border2:rgba(122,110,98,0.15);
+  --teal:#0D9488;--teal-g:rgba(13,148,136,0.1);--teal-light:#CCFBF1;
+  --gold:#C9A84C;--gold-g:rgba(201,168,76,0.1);--gold-light:#FEF9C3;
+  --red:#DC2626;--red-g:rgba(220,38,38,0.08);--red-light:#FEE2E2;
+  --blue:#1D4ED8;--blue-g:rgba(29,78,216,0.08);--blue-light:#DBEAFE;
+  --amber:#D97706;--amber-g:rgba(217,119,6,0.08);--amber-light:#FEF3C7;
+  --green:#16A34A;--green-g:rgba(22,163,74,0.08);--green-light:#DCFCE7;
+  --purple:#7C3AED;--purple-g:rgba(124,58,237,0.08);
+  --r:16px;--r-sm:10px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);--shadow-md:0 4px 24px rgba(0,0,0,0.08);--shadow-lg:0 8px 40px rgba(0,0,0,0.12);
 }
+*{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:"Plus Jakarta Sans",sans-serif;background:var(--ink);color:var(--text);overflow-x:hidden;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* BG GLOW */
-.bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 60% 50% at 15% -5%, rgba(10,150,144,0.09), transparent),
-    radial-gradient(ellipse 50% 40% at 85% 105%, rgba(201,146,26,0.06), transparent);}
+/* ══ LOGIN ══ */
+#login-screen{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+.login-visual{background:linear-gradient(160deg,#0D2818 0%,#1A4030 40%,#0D4A3A 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;}
+.lv-circles{position:absolute;inset:0;pointer-events:none;}
+.lv-circle{position:absolute;border-radius:50%;border:1px solid rgba(13,148,136,0.2);}
+.lv-c1{width:600px;height:600px;top:-200px;left:-200px;}
+.lv-c2{width:400px;height:400px;bottom:-100px;right:-100px;border-color:rgba(201,168,76,0.15);}
+.lv-c3{width:250px;height:250px;top:50%;left:50%;transform:translate(-50%,-50%);}
+.lv-brand{position:relative;z-index:1;text-align:center;}
+.lv-brand h1{font-family:'Instrument Serif',serif;font-size:52px;color:white;line-height:1.1;margin-bottom:8px;}
+.lv-brand h1 span{color:var(--teal);font-style:italic;}
+.lv-brand p{font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:48px;}
+.lv-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:340px;position:relative;z-index:1;}
+.lv-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px;backdrop-filter:blur(10px);}
+.lv-card .lc-icon{font-size:24px;margin-bottom:8px;display:block;}
+.lv-card .lc-title{font-size:13px;font-weight:700;color:white;margin-bottom:3px;}
+.lv-card .lc-desc{font-size:11px;color:rgba(255,255,255,0.45);}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,10,14,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:all .3s;}
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-.nav-logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),#054E4B);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 4px 14px rgba(10,150,144,0.3);}
-.nav-logo-name{font-family:"Instrument Serif",serif;font-size:21px;color:#fff;}
-.nav-logo-name span{color:var(--teal);}
-.nav-links{display:flex;gap:28px;}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s;}
-.nav-links a:hover{color:var(--text);}
-.nav-cta{display:flex;gap:10px;align-items:center;}
-.btn-nav-ghost{padding:8px 18px;border:1.5px solid rgba(255,255,255,0.12);border-radius:9px;color:var(--muted);font-size:13px;font-weight:600;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;}
-.btn-nav-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.25);}
-.btn-nav-primary{padding:8px 18px;background:var(--teal);border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;}
-.btn-nav-primary:hover{background:#088580;transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,150,144,0.3);}
-.mob-menu{display:none;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 9px;cursor:pointer;font-size:17px;color:var(--muted);}
+.login-form{display:flex;align-items:center;justify-content:center;padding:60px 48px;background:var(--bg2);}
+.lf-inner{width:100%;max-width:400px;}
+.lf-inner h2{font-family:'Instrument Serif',serif;font-size:34px;margin-bottom:6px;}
+.lf-inner p{font-size:14px;color:var(--muted);margin-bottom:36px;}
+.fg{margin-bottom:18px;}
+.fg label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border 0.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);background:white;}
+.fg textarea{resize:vertical;min-height:80px;}
+.fg select option{background:white;}
+.btn-login{width:100%;padding:14px;border-radius:var(--r-sm);border:none;background:var(--teal);color:white;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all 0.2s;margin-top:4px;}
+.btn-login:hover{background:#0F7A70;transform:translateY(-1px);box-shadow:0 6px 24px rgba(13,148,136,0.35);}
+.demo-row{margin-top:24px;padding:16px;background:var(--teal-g);border:1px solid rgba(13,148,136,0.2);border-radius:var(--r-sm);}
+.demo-row p{font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.demo-chips{display:flex;flex-direction:column;gap:6px;}
+.demo-chip{background:white;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:8px;color:var(--text);}
+.demo-chip:hover{border-color:var(--teal);color:var(--teal);}
 
-/* HERO */
-.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;padding:130px 56px 80px;position:relative;z-index:1;overflow:hidden;}
-.hero::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center right;z-index:-1;}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,rgba(7,10,14,0.97) 0%,rgba(7,10,14,0.9) 45%,rgba(7,10,14,0.55) 75%,rgba(7,10,14,0.4) 100%);z-index:-1;}
-.hero-left{display:flex;flex-direction:column;align-items:flex-start;}
-.hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(10,150,144,0.1);border:1px solid rgba(10,150,144,0.22);border-radius:999px;padding:6px 18px;font-size:11px;font-weight:700;color:var(--teal);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
-.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease infinite;}
-@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}50%{box-shadow:0 0 0 6px rgba(34,197,94,0);}}
-.hero h1{font-family:"Instrument Serif",serif;font-size:clamp(32px,5.5vw,76px);line-height:1.04;letter-spacing:-2.5px;margin-bottom:22px;text-align:left;}
-.hero h1 em{color:var(--teal);font-style:italic;}
-.hero h1 .dim{color:rgba(238,242,248,0.22);}
-.hero-sub{font-size:clamp(15px,1.6vw,18px);color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:36px;}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px;}
-.btn-hero{padding:15px 32px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:9px;font-family:"Plus Jakarta Sans",sans-serif;border:none;cursor:pointer;}
-.btn-primary{background:var(--teal);color:#fff;box-shadow:0 4px 20px rgba(10,150,144,0.3);}
-.btn-primary:hover{background:#088580;transform:translateY(-3px);box-shadow:0 14px 40px rgba(10,150,144,0.4);}
-.btn-secondary{background:rgba(255,255,255,0.06);color:var(--text);border:1.5px solid rgba(255,255,255,0.1);}
-.btn-secondary:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);}
+/* ══ APP ══ */
+#app-screen{display:none;min-height:100vh;}
 
-/* STATS BAR */
-.stats-bar{display:flex;gap:0;max-width:560px;width:100%;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:rgba(7,10,14,0.6);backdrop-filter:blur(16px);}
-.stat{flex:1;padding:18px 12px;text-align:center;border-right:1px solid var(--border);}
-.stat:last-child{border-right:none;}
-.stat-n{font-family:"Instrument Serif",serif;font-size:28px;color:var(--teal);}
-.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;margin-top:4px;}
+/* ══ SIDEBAR ══ */
+.sidebar{width:72px;min-height:100vh;background:var(--ink);position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;align-items:center;padding:16px 0;transition:width 0.3s;}
+.sidebar:hover{width:220px;}
+.sb-logo-area{padding:8px 0 20px;border-bottom:1px solid rgba(255,255,255,0.07);width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.sb-logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--teal),#0A6B62);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sb-logo-text{font-family:'Instrument Serif',serif;font-size:16px;color:white;white-space:nowrap;margin-left:10px;opacity:0;transition:opacity 0.2s;}
+.sidebar:hover .sb-logo-text{opacity:1;}
+.sb-nav{flex:1;width:100%;padding:12px 0;overflow:hidden;}
+.sni{display:flex;align-items:center;padding:10px 16px;margin:2px 8px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:rgba(255,255,255,0.45);white-space:nowrap;text-decoration:none;position:relative;}
+.sni:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.8);}
+.sni.active{background:rgba(13,148,136,0.2);color:var(--teal);}
+.sni .sni-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0;}
+.sni .sni-label{font-size:13px;font-weight:600;margin-left:12px;opacity:0;transition:opacity 0.2s;}
+.sidebar:hover .sni-label{opacity:1;}
+.sni .sni-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--red);}
+.sidebar:hover .sni-dot{right:12px;}
+.sb-user-area{padding:12px;border-top:1px solid rgba(255,255,255,0.07);width:100%;overflow:hidden;}
+.sb-user{display:flex;align-items:center;gap:10px;}
+.sb-av{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal),#0A6B62);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;}
+.sb-user-info{opacity:0;transition:opacity 0.2s;white-space:nowrap;}
+.sidebar:hover .sb-user-info{opacity:1;}
+.sb-user-info strong{display:block;font-size:13px;color:white;}
+.sb-user-info span{font-size:11px;color:rgba(255,255,255,0.4);}
 
-/* HERO VISUAL */
-.hero-right{position:relative;display:flex;align-items:center;justify-content:center;}
-.hero-mockup{width:100%;max-width:460px;background:rgba(13,18,25,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:20px;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(10,150,144,0.1);animation:mockfloat 6s ease-in-out infinite;}
-@keyframes mockfloat{0%,100%{transform:translateY(0px);}50%{transform:translateY(-12px);}}
-.mock-hdr{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:16px;}
-.mock-dots{display:flex;gap:5px;}
-.mock-dot{width:10px;height:10px;border-radius:50%;}
-.mock-title{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px;}
-.mock-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.mock-card{border-radius:12px;padding:14px;position:relative;overflow:hidden;}
-.mock-card.teal{background:linear-gradient(135deg,rgba(10,150,144,0.2),rgba(10,150,144,0.08));border:1px solid rgba(10,150,144,0.2);}
-.mock-card.gold{background:linear-gradient(135deg,rgba(201,146,26,0.2),rgba(201,146,26,0.06));border:1px solid rgba(201,146,26,0.15);}
-.mock-card.green{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1px solid rgba(34,197,94,0.15);}
-.mock-card.red{background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.12);}
-.mc-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
-.mc-val{font-family:"Instrument Serif",serif;font-size:20px;color:#fff;line-height:1;}
-.mc-sub{font-size:9px;color:var(--muted);margin-top:3px;}
-.mock-list{background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden;}
-.ml-hdr{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.05);}
-.ml-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04);}
-.ml-row:last-child{border-bottom:none;}
-.ml-av{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-.ml-name{flex:1;font-size:11px;color:rgba(238,242,248,0.8);}
-.ml-unit{font-size:10px;color:var(--muted);}
-.ml-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;}
-.ml-badge.paid{background:rgba(34,197,94,0.15);color:#4ade80;}
-.ml-badge.due{background:rgba(239,68,68,0.15);color:#f87171;}
-.mock-float{position:absolute;background:rgba(13,18,25,0.95);border:1px solid rgba(10,150,144,0.25);border-radius:12px;padding:10px 14px;backdrop-filter:blur(12px);box-shadow:0 12px 32px rgba(0,0,0,0.4);}
-.mock-float.mpesa{top:-20px;right:-20px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--green);}
-.mock-float.repair{bottom:-16px;left:-16px;font-size:10px;color:var(--muted);}
-.repair-val{font-size:13px;font-weight:700;color:#fff;}
+/* ══ MAIN ══ */
+.main{margin-left:72px;min-height:100vh;display:flex;flex-direction:column;}
 
-/* TRUST STRIP */
-.trust-strip{display:flex;align-items:center;justify-content:center;gap:32px;padding:20px 56px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);flex-wrap:wrap;position:relative;z-index:1;}
-.ts-label{font-size:11px;color:rgba(255,255,255,0.2);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-right:8px;}
-.ts-badge{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.35);font-weight:600;}
-.ts-badge span{font-size:16px;}
+/* ══ TOPBAR ══ */
+.topbar{background:white;border-bottom:1px solid var(--border);padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow);}
+.tb-left{display:flex;align-items:center;gap:16px;}
+.tb-greeting{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text);}
+.tb-apt{font-size:12px;color:var(--muted);font-style:italic;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-btn{background:none;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 16px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.tb-btn:hover{color:var(--text);border-color:var(--text);}
+.tb-btn.primary{background:var(--teal);color:white;border-color:var(--teal);}
+.tb-btn.primary:hover{background:#0F7A70;box-shadow:0 4px 16px rgba(13,148,136,0.3);}
+.notif-btn{position:relative;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;cursor:pointer;font-size:16px;}
+.notif-btn .ndot{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--red);border-radius:50%;border:2px solid white;font-size:9px;color:white;font-weight:700;display:flex;align-items:center;justify-content:center;}
 
-/* SECTIONS */
-section{padding:100px 56px;position:relative;z-index:1;}
-.sec-pill{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:2px;padding:5px 14px;border:1px solid rgba(10,150,144,0.22);border-radius:999px;background:rgba(10,150,144,0.08);margin-bottom:18px;}
-.sec-title{font-family:"Instrument Serif",serif;font-size:clamp(30px,4.5vw,52px);letter-spacing:-1.5px;line-height:1.1;margin-bottom:18px;}
-.sec-sub{font-size:17px;color:var(--muted);max-width:520px;line-height:1.7;}
+/* ══ TAB NAV ══ */
+.tabnav{background:white;border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:2px;overflow-x:auto;}
+.tabnav::-webkit-scrollbar{height:0;}
+.tab{padding:14px 18px;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2.5px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.2s;display:flex;align-items:center;gap:7px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab .tbadge{background:var(--red);color:white;border-radius:999px;font-size:10px;padding:1px 6px;font-weight:800;}
 
-/* FEATURES BENTO */
-.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:54px;}
-.bc{background:var(--ink2);border:1px solid rgba(255,255,255,0.05);border-radius:18px;padding:28px;overflow:hidden;position:relative;transition:all .3s;}
-.bc:hover{border-color:rgba(10,150,144,0.25);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.3);}
-.bc::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,150,144,0.03),transparent);pointer-events:none;}
-.s4{grid-column:span 4;}.s5{grid-column:span 5;}.s7{grid-column:span 7;}.s6{grid-column:span 6;}.s8{grid-column:span 8;}.s12{grid-column:span 12;}
-.bc-ico{font-size:32px;margin-bottom:16px;display:block;}
-.bc h3{font-family:"Instrument Serif",serif;font-size:19px;margin-bottom:8px;color:#fff;}
-.bc p{font-size:13px;color:var(--muted);line-height:1.65;}
-.bc-tag{display:inline-block;background:rgba(10,150,144,0.1);color:var(--teal);border:1px solid rgba(10,150,144,0.2);border-radius:8px;padding:4px 11px;font-size:10px;font-weight:700;margin-top:12px;margin-right:5px;}
-.bc-featured{background:linear-gradient(135deg,#061820,#09222E);border-color:rgba(10,150,144,0.2);}
-.bc-ai{background:linear-gradient(135deg,#060B18,#0A1228);border-color:rgba(59,130,246,0.18);}
-.bc-gold{background:linear-gradient(135deg,#140C00,#231400);border-color:rgba(201,146,26,0.18);}
+/* ══ CONTENT ══ */
+.content{padding:28px 32px;flex:1;}
+.pg{display:none;animation:fadeSlide 0.3s ease both;}
+.pg.active{display:block;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
-/* WHO WE SERVE */
-.serve-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px;}
-.sc{border-radius:20px;padding:30px 26px;position:relative;overflow:hidden;transition:transform .3s;}
-.sc:hover{transform:translateY(-6px);}
-.sc-low{background:linear-gradient(145deg,#060D1C,#0A1530);border:1px solid rgba(59,130,246,0.2);}
-.sc-mid{background:linear-gradient(145deg,#061410,#0A2018);border:1px solid rgba(10,150,144,0.25);}
-.sc-high{background:linear-gradient(145deg,#140C00,#201200);border:1px solid rgba(201,146,26,0.2);}
-.sc-badge{display:inline-block;font-size:10px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:18px;}
-.sc-low .sc-badge{background:rgba(59,130,246,0.12);color:#93C5FD;border:1px solid rgba(59,130,246,0.2);}
-.sc-mid .sc-badge{background:rgba(10,150,144,0.12);color:var(--teal2);border:1px solid rgba(10,150,144,0.2);}
-.sc-high .sc-badge{background:rgba(201,146,26,0.12);color:var(--gold2);border:1px solid rgba(201,146,26,0.2);}
-.sc-ico{font-size:44px;display:block;margin-bottom:14px;}
-.sc h3{font-family:"Instrument Serif",serif;font-size:22px;margin-bottom:9px;color:#fff;}
-.sc p{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:18px;}
-.sc ul{list-style:none;}
-.sc ul li{font-size:12px;color:rgba(255,255,255,0.42);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:8px;}
-.sc ul li:last-child{border-bottom:none;}
-.sc-low ul li::before{content:"✓";color:#60A5FA;font-size:10px;font-weight:700;}
-.sc-mid ul li::before{content:"✓";color:var(--teal);font-size:10px;font-weight:700;}
-.sc-high ul li::before{content:"✓";color:var(--gold2);font-size:10px;font-weight:700;}
+/* ══ CARDS ══ */
+.card{background:white;border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:16px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 
-/* COMPARE TABLE */
-.compare-wrap{margin-top:52px;border-radius:16px;overflow:hidden;border:1px solid var(--border);}
-table{width:100%;border-collapse:collapse;}
-th{padding:14px 18px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;background:var(--ink3);border-bottom:1px solid var(--border);font-weight:700;}
-th.hl{color:var(--teal);}
-td{padding:12px 18px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
-td.feat{color:var(--muted);}
-td.hl{background:rgba(10,150,144,0.04);}
-tr:last-child td{border-bottom:none;}
-.yes{color:var(--green);font-size:16px;}
-.no{color:rgba(255,255,255,0.15);font-size:16px;}
-.legal-note{font-size:11px;color:rgba(255,255,255,0.2);margin-top:16px;line-height:1.6;padding:12px 16px;background:rgba(255,255,255,0.02);border-radius:9px;border:1px solid rgba(255,255,255,0.04);}
+/* ══ STAT GRID ══ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:white;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow);}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;}
+.stat.teal::after{background:var(--teal);}
+.stat.gold::after{background:var(--gold);}
+.stat.red::after{background:var(--red);}
+.stat.green::after{background:var(--green);}
+.stat.blue::after{background:var(--blue);}
+.stat.amber::after{background:var(--amber);}
+.stat-icon{font-size:22px;margin-bottom:10px;display:block;}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.stat-val{font-family:'Instrument Serif',serif;font-size:28px;line-height:1;color:var(--ink);}
+.stat.teal .stat-val{color:var(--teal);}
+.stat.gold .stat-val{color:var(--gold);}
+.stat.red .stat-val{color:var(--red);}
+.stat.green .stat-val{color:var(--green);}
+.stat.blue .stat-val{color:var(--blue);}
+.stat.amber .stat-val{color:var(--amber);}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:5px;}
 
-/* PRICING */
-.billing-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:40px;margin-bottom:46px;}
-.bl{font-size:14px;font-weight:600;color:var(--muted);}
-.bl.on{color:var(--text);}
-.btog-wrap{position:relative;width:46px;height:26px;cursor:pointer;}
-.btog-wrap input{opacity:0;width:0;height:0;}
-.btog-sl{position:absolute;inset:0;background:rgba(255,255,255,0.12);border-radius:999px;transition:.2s;}
-.btog-sl::before{content:"";position:absolute;width:18px;height:18px;left:4px;top:4px;background:#fff;border-radius:50%;transition:.2s;}
-.btog-wrap input:checked+.btog-sl{background:var(--teal);}
-.btog-wrap input:checked+.btog-sl::before{transform:translateX(20px);}
-.save-tag{background:rgba(201,146,26,0.12);color:var(--gold2);border:1px solid rgba(201,146,26,0.22);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;}
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
-.plan-box{background:var(--ink2);border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:30px 26px;position:relative;overflow:hidden;transition:transform .3s;}
-.plan-box:hover{transform:translateY(-6px);}
-.plan-box.feat{border-color:rgba(10,150,144,0.3);background:linear-gradient(145deg,#061A18,#09241E);}
-.pb-hot{position:absolute;top:18px;right:18px;background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:4px 12px;border-radius:999px;}
-.pb-name{font-family:"Instrument Serif",serif;font-size:22px;margin-bottom:6px;color:#fff;}
-.plan-box.feat .pb-name{color:var(--teal);}
-.pb-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
-.pb-price{font-family:"Instrument Serif",serif;font-size:40px;color:var(--teal);line-height:1;}
-.pb-price.gold{color:var(--gold2);}
-.pb-per{font-size:13px;color:var(--muted);}
-.pb-orig{font-size:13px;color:rgba(255,255,255,0.2);text-decoration:line-through;height:20px;margin-bottom:18px;}
-.pb-feats{list-style:none;margin:20px 0;}
-.pb-feats li{padding:7px 0;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:9px;}
-.pb-feats li.on{color:var(--text);}
-.pb-feats li.on::before{content:"✓";color:var(--teal);font-size:12px;font-weight:700;}
-.pb-feats li.off::before{content:"–";color:rgba(255,255,255,0.15);}
-.pb-btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;transition:all .2s;font-family:"Plus Jakarta Sans",sans-serif;cursor:pointer;border:none;}
-.pb-btn-primary{background:var(--teal);color:#fff;}
-.pb-btn-primary:hover{background:#088580;box-shadow:0 6px 24px rgba(10,150,144,0.35);}
-.pb-btn-ghost{background:transparent;color:var(--muted);border:1.5px solid rgba(255,255,255,0.1);}
-.pb-btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+/* ══ BADGES ══ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+.bg{background:var(--green-light);color:var(--green);}
+.bb{background:var(--blue-light);color:var(--blue);}
+.ba{background:var(--amber-light);color:var(--amber);}
+.br{background:var(--red-light);color:var(--red);}
+.bt{background:var(--teal-g);color:var(--teal);border:1px solid rgba(13,148,136,0.2);}
+.bm{background:var(--bg3);color:var(--muted);}
 
-/* TESTIMONIALS */
-.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px;}
-.testi{background:var(--ink2);border:1px solid rgba(255,255,255,0.05);border-radius:18px;padding:26px;transition:all .3s;}
-.testi:hover{border-color:rgba(10,150,144,0.2);transform:translateY(-3px);}
-.testi-stars{color:var(--gold2);font-size:14px;margin-bottom:14px;}
-.testi-q{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:18px;font-style:italic;}
-.testi-q::before{content:open-quote;font-family:"Instrument Serif",serif;font-size:40px;color:rgba(10,150,144,0.25);line-height:0;vertical-align:-18px;margin-right:2px;}
-.testi-author{display:flex;align-items:center;gap:12px;}
-.ta-av{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
-.ta-n{font-size:13px;font-weight:700;color:#fff;}
-.ta-r{font-size:11px;color:var(--muted);}
+/* ══ TWO/THREE COL ══ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 
-/* CTA */
-.cta-sec{text-align:center;padding:100px 56px;position:relative;z-index:1;}
-.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.06),transparent);pointer-events:none;}
-.cta-sec h2{font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
-.cta-sec p{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
+/* ══ BUTTONS ══ */
+.btn{padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-teal{background:var(--teal);color:white;}
+.btn-teal:hover{background:#0F7A70;transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);}
+.btn-red{background:var(--red-light);color:var(--red);border:1px solid rgba(220,38,38,0.2);}
+.btn-gold{background:var(--gold-light);color:#7A5C00;border:1px solid rgba(201,168,76,0.3);}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:8px;}
+.btn-full{width:100%;}
 
-/* CHAT WIDGET (live demo) */
+/* ══ GARBAGE HERO ══ */
+.garbage-hero{background:linear-gradient(135deg,#064E3B,#065F46);border-radius:var(--r);padding:24px 28px;margin-bottom:20px;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;box-shadow:var(--shadow-md);}
+.garbage-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310B981' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.gh-icon{font-size:52px;animation:bounce 3s ease-in-out infinite;flex-shrink:0;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.gh-info{flex:1;position:relative;}
+.gh-info h3{font-family:'Instrument Serif',serif;font-size:22px;color:white;margin-bottom:4px;}
+.gh-info p{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;}
+.gh-status{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+.gh-countdown{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 20px;text-align:center;flex-shrink:0;backdrop-filter:blur(10px);}
+.gh-cd-label{font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;}
+.gh-cd-time{font-family:'Instrument Serif',serif;font-size:28px;color:white;letter-spacing:4px;font-weight:700;}
 
+/* ══ PAYMENT LEDGER ══ */
+.ledger{background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);}
+.ledger-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.li{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid rgba(0,0,0,0.04);transition:background 0.15s;}
+.li:last-child{border-bottom:none;}
+.li:hover{background:var(--bg);}
+.li-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.li-desc{flex:1;}
+.li-desc strong{display:block;font-size:14px;font-weight:700;}
+.li-desc span{font-size:12px;color:var(--muted);}
+.li-amount{text-align:right;}
+.li-amount .amt{font-family:'Instrument Serif',serif;font-size:18px;font-weight:700;}
+.li-amount .amt.cr{color:var(--green);}
+.li-amount .amt.pe{color:var(--amber);}
+.li-amount .amt.dr{color:var(--red);}
+.li-amount .bal{font-size:11px;color:var(--muted);}
 
-@keyframes fabpop{0%,100%{box-shadow:0 6px 24px rgba(10,150,144,0.4);}50%{box-shadow:0 6px 32px rgba(10,150,144,0.6),0 0 0 8px rgba(10,150,144,0.08);}}
+/* ══ WATER CHART ══ */
+.water-chart{display:flex;align-items:flex-end;gap:12px;height:120px;padding:8px 0 0;}
+.wc-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.wc-bar{width:100%;border-radius:6px 6px 0 0;transition:height 0.9s cubic-bezier(0.34,1.56,0.64,1);min-height:4px;}
+.wc-bar.prev{background:linear-gradient(to top,#0E7490,#06B6D4);}
+.wc-bar.curr{background:linear-gradient(to top,var(--teal),#34D399);box-shadow:0 0 20px rgba(13,148,136,0.3);}
+.wc-month{font-size:10px;color:var(--muted);}
+.wc-val{font-size:10px;font-weight:700;color:var(--text);}
 
+/* ══ REPAIR CARDS ══ */
+.repair-card{background:white;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;border-left:4px solid transparent;box-shadow:var(--shadow);transition:all 0.2s;}
+.repair-card:hover{box-shadow:var(--shadow-md);}
+.repair-card.open{border-left-color:var(--red);}
+.repair-card.progress{border-left-color:var(--amber);}
+.repair-card.done{border-left-color:var(--green);}
+.rc-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rc-title{font-size:14px;font-weight:700;flex:1;}
+.rc-desc{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6;}
+.rc-tech{display:flex;align-items:center;gap:12px;background:var(--green-light);border-radius:10px;padding:11px 14px;margin-top:8px;}
+.rc-tech-av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green),#14532D);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;}
+.rc-tech-info strong{display:block;font-size:13px;color:var(--green);font-weight:700;}
+.rc-tech-info span{font-size:11px;color:var(--muted);}
+.rc-tech-call{margin-left:auto;background:var(--green);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+.rc-pending{background:var(--amber-light);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--amber);margin-top:8px;display:flex;align-items:center;gap:8px;}
+.rc-timeline{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.tl-item{display:flex;gap:12px;padding:4px 0;}
+.tl-dot-w{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tl-line{width:1px;flex:1;background:var(--border);margin-top:2px;}
+.tl-content{flex:1;padding-bottom:8px;}
+.tl-content strong{font-size:12px;font-weight:700;display:block;}
+.tl-content span{font-size:11px;color:var(--muted);}
 
+/* ══ CAT GRID ══ */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.cat-btn{background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.18s;}
+.cat-btn:hover{border-color:var(--teal);background:var(--teal-g);}
+.cat-btn.sel{border-color:var(--teal);background:var(--teal-g);}
+.cat-btn .ci{font-size:26px;display:block;margin-bottom:5px;}
+.cat-btn .cl{font-size:12px;font-weight:700;color:var(--text);}
 
+/* ══ PRIORITY ══ */
+.prio-row{display:flex;gap:8px;margin-bottom:14px;}
+.prio-b{flex:1;padding:10px;border-radius:var(--r-sm);border:2px solid var(--border);background:var(--bg);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;text-align:center;transition:all 0.18s;color:var(--muted);}
+.prio-b.sn{border-color:var(--teal);background:var(--teal-g);color:var(--teal);}
+.prio-b.sh{border-color:var(--amber);background:var(--amber-g);color:var(--amber);}
+.prio-b.su{border-color:var(--red);background:var(--red-g);color:var(--red);}
 
-/* FOOTER */
-footer{padding:56px 56px 36px;border-top:1px solid var(--border);position:relative;z-index:1;}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
-.fb-logo{font-family:"Instrument Serif",serif;font-size:24px;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:9px;}
-.fb-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),#054E4B);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
-.fb-desc{font-size:13px;color:var(--muted);line-height:1.7;max-width:240px;margin-bottom:16px;}
-.fb-badges{display:flex;gap:6px;flex-wrap:wrap;}
-.fb-badge{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:5px 11px;font-size:10px;color:var(--muted);}
-.fc h4{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;}
-.fc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:9px;transition:color .2s;}
-.fc a:hover{color:var(--teal);}
-.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:rgba(255,255,255,0.2);}
+/* ══ COMMUNITY POSTS ══ */
+.post{background:white;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow);}
+.post-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.post-av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.post-author{flex:1;}
+.post-author strong{font-size:14px;display:block;}
+.post-author span{font-size:11px;color:var(--muted);}
+.post-body{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:12px;}
+.post-img{border-radius:10px;overflow:hidden;margin-bottom:12px;background:var(--bg3);height:120px;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.post-actions{display:flex;gap:14px;padding-top:10px;border-top:1px solid var(--border);}
+.pa{background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:5px;transition:color 0.2s;}
+.pa:hover{color:var(--teal);}
 
-/* CTA */
-.cta-sec{text-align:center;padding:120px 56px;position:relative;z-index:1;overflow:hidden;}
-.cta-sec::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center;z-index:-1;}
-.cta-sec::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,0.9) 0%,rgba(7,10,14,0.75) 50%,rgba(7,10,14,0.92) 100%);z-index:-1;}
-.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.12),transparent);pointer-events:none;}
-.cta-sec h2{font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
-.cta-sec p{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
+/* ══ RENT SCORE ══ */
+.score-ring-wrap{display:flex;align-items:center;justify-content:center;padding:20px;}
+.score-ring{position:relative;width:140px;height:140px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:'Instrument Serif',serif;font-size:36px;font-weight:700;color:var(--teal);}
+.score-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
 
-@media(max-width:900px){
-  nav{padding:14px 20px;}
-  .nav-links,.nav-cta .btn-nav-ghost{display:none;}
-  .mob-menu{display:block;}
-  section{padding:60px 20px;}
-  .hero{grid-template-columns:1fr;padding:110px 20px 60px;gap:40px;text-align:center;}
-  .hero-left{align-items:center;}
-  .hero h1{text-align:center;}
-  .hero-sub{text-align:center;}
-  .hero-btns{justify-content:center;}
-  .stats-bar{max-width:100%;}
-  .hero-right{display:none;}
-  .bento{grid-template-columns:1fr 1fr;}
-  .s4,.s5,.s6,.s7,.s8{grid-column:span 2;}
-  .serve-grid,.pricing-grid,.testi-grid{grid-template-columns:1fr;}
-  .footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
-  .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
-  .cta-sec{padding:60px 20px;}
-  .trust-strip{gap:18px;padding:16px 20px;}
-}
-@media(max-width:480px){
-  .bento{grid-template-columns:1fr;}
-  .s4,.s5,.s6,.s7,.s8{grid-column:span 1;}
-  .hero h1{letter-spacing:-1.5px;}
-  .footer-grid{grid-template-columns:1fr;}
-  .stat{flex:1 1 50%;}
-}
+/* ══ NOTIFICATION ITEMS ══ */
+.notif-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.notif-item:last-child{border-bottom:none;}
+.ni-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.ni-body{flex:1;}
+.ni-body strong{font-size:13px;display:block;margin-bottom:2px;}
+.ni-body p{font-size:12px;color:var(--muted);line-height:1.5;}
+.ni-time{font-size:11px;color:var(--subtle);flex-shrink:0;}
 
-/* SCROLL REVEAL */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.34,1.2,.64,1),transform .7s cubic-bezier(.34,1.2,.64,1);}
-.reveal.visible{opacity:1;transform:none;}
-.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .7s .1s cubic-bezier(.34,1.2,.64,1),transform .7s .1s cubic-bezier(.34,1.2,.64,1);}
-.reveal-left.visible{opacity:1;transform:none;}
-.reveal-right{opacity:0;transform:translateX(28px);transition:opacity .7s .1s cubic-bezier(.34,1.2,.64,1),transform .7s .1s cubic-bezier(.34,1.2,.64,1);}
-.reveal-right.visible{opacity:1;transform:none;}
+/* ══ DOCS ══ */
+.doc-card{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;}
+.doc-card:hover{background:white;border-color:var(--teal);box-shadow:var(--shadow);}
+.doc-icon{font-size:28px;flex-shrink:0;}
+.doc-info{flex:1;}
+.doc-info strong{display:block;font-size:14px;font-weight:700;margin-bottom:3px;}
+.doc-info span{font-size:12px;color:var(--muted);}
+.doc-actions{display:flex;gap:8px;flex-shrink:0;}
 
-/* ROADMAP */
-.roadmap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:56px;position:relative;}
-.roadmap-grid::before{content:'';position:absolute;top:32px;left:calc(12.5%);right:calc(12.5%);height:1px;background:linear-gradient(90deg,var(--teal),rgba(10,150,144,0.2));z-index:0;}
-.rm{position:relative;z-index:1;}
-.rm-num{font-family:"Instrument Serif",serif;font-size:48px;color:rgba(10,150,144,0.15);line-height:1;margin-bottom:12px;}
-.rm-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;}
-.rm-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
-.rm-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:999px;}
-.rm-now{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
-.rm-soon{background:rgba(10,150,144,0.12);color:var(--teal);border:1px solid rgba(10,150,144,0.2);}
-.rm-future{background:rgba(201,146,26,0.12);color:var(--gold);border:1px solid rgba(201,146,26,0.2);}
-.rm-dot{width:12px;height:12px;border-radius:50%;background:var(--teal);margin-bottom:18px;box-shadow:0 0 0 3px rgba(10,150,144,0.2);}
+/* ══ SMS PREVIEW ══ */
+.sms-phone{background:#1C1C1E;border-radius:24px;padding:24px 16px;max-width:280px;margin:0 auto;}
+.sms-time{text-align:center;font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;}
+.sms-bubble{background:#0B93F6;border-radius:18px 18px 4px 18px;padding:12px 14px;font-size:13px;line-height:1.6;color:white;margin-bottom:10px;}
+.sms-bubble.green{background:#00B451;}
+.sms-bubble.orange{background:#FF9500;}
 
-/* IMPROVE SERVE CARDS */
-.sc-low{border-color:rgba(59,130,246,0.25)!important;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(59,130,246,0.02))!important;}
-.sc-low .sc-badge{background:rgba(59,130,246,0.12);color:#60A5FA;border:1px solid rgba(59,130,246,0.2);}
-.sc-low .sc-features li::before{color:#60A5FA;}
-.sc-mid{border-color:rgba(10,150,144,0.3)!important;background:linear-gradient(135deg,rgba(10,150,144,0.08),rgba(10,150,144,0.02))!important;}
-.sc-high{border-color:rgba(168,85,247,0.25)!important;background:linear-gradient(135deg,rgba(168,85,247,0.06),rgba(168,85,247,0.02))!important;}
-.sc-high .sc-badge{background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);}
-.sc-high .sc-features li::before{color:#C084FC;}
+/* ══ MPESA BOX ══ */
+.mpesa-box{background:linear-gradient(135deg,#064E3B,#0D9488);border-radius:var(--r);padding:22px 24px;color:white;position:relative;overflow:hidden;}
+.mpesa-box::after{content:'M-PESA';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:56px;font-weight:900;color:rgba(255,255,255,0.05);white-space:nowrap;}
+.mpesa-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.mpesa-step{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:rgba(255,255,255,0.75);}
+.mpesa-step-num{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.paybill{font-family:'Instrument Serif',serif;font-size:32px;color:white;letter-spacing:4px;margin:10px 0;}
 
-/* EXTRA BENTO CARDS */
-.bc-community{background:linear-gradient(135deg,rgba(10,150,144,0.1),rgba(10,150,144,0.03))!important;border-color:rgba(10,150,144,0.2)!important;}
-.bc-ussd{background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.02))!important;border-color:rgba(34,197,94,0.2)!important;}
-.bc-finance{background:linear-gradient(135deg,rgba(201,146,26,0.1),rgba(201,146,26,0.02))!important;border-color:rgba(201,146,26,0.2)!important;display:flex;gap:32px;align-items:center;}
-.bc-finance-stats{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;}
-.bfs{background:rgba(201,146,26,0.08);border:1px solid rgba(201,146,26,0.15);border-radius:12px;padding:12px 18px;text-align:center;min-width:100px;}
-.bfs-val{font-family:"Instrument Serif",serif;font-size:22px;color:var(--gold);}
-.bfs-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
-.s12{grid-column:span 12;}
+/* ══ PROGRESS BAR ══ */
+.prog-wrap{margin-top:6px;}
+.prog-track{height:8px;background:var(--bg3);border-radius:999px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:999px;transition:width 1s ease;}
 
-/* CTA BG IMAGE */
-.cta-sec{text-align:center;padding:120px 56px;position:relative;z-index:1;overflow:hidden;}
-.cta-sec::before{content:"";position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center;z-index:-2;}
-.cta-sec::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,0.92) 0%,rgba(7,10,14,0.78) 50%,rgba(7,10,14,0.94) 100%);z-index:-1;}
-.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(10,150,144,0.1),transparent);pointer-events:none;z-index:0;}
-.cta-sec h2{position:relative;z-index:1;font-family:"Instrument Serif",serif;font-size:clamp(32px,5vw,62px);letter-spacing:-1.5px;margin-bottom:18px;}
-.cta-sec p{position:relative;z-index:1;font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 36px;}
-.cta-sec .hero-btns{position:relative;z-index:1;justify-content:center;}
+/* ══ MODAL ══ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,0.6);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:20px;padding:32px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:popIn 0.25s ease;box-shadow:var(--shadow-lg);}
+@keyframes popIn{from{transform:scale(0.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal h3{font-family:'Instrument Serif',serif;font-size:24px;margin-bottom:4px;}
+.modal .msub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.modal-close{float:right;background:var(--bg);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.modal-close:hover{color:var(--text);}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
 
-@media(max-width:900px){
-  .roadmap-grid{grid-template-columns:1fr 1fr;}
-  .roadmap-grid::before{display:none;}
-  .bc-finance{flex-direction:column;gap:16px;}
-}
-@media(max-width:480px){
-  .roadmap-grid{grid-template-columns:1fr;}
+/* ══ RECEIPT ══ */
+.receipt{background:white;border:1px solid var(--border);border-radius:14px;padding:24px;font-size:13px;line-height:1.9;}
+.r-logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--teal);text-align:center;}
+.r-div{border:none;border-top:1px dashed var(--border);margin:10px 0;}
+.r-row{display:flex;justify-content:space-between;}
+.r-total{font-weight:800;font-size:15px;color:var(--teal);}
+
+/* ══ FORM ROW ══ */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:28px;right:28px;z-index:9999;padding:14px 22px;border-radius:14px;font-size:14px;font-weight:700;transform:translateY(100px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;max-width:360px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:var(--green);color:white;}
+.toast.info{background:var(--blue);color:white;}
+.toast.warn{background:var(--amber);color:var(--ink);}
+.toast.error{background:var(--red);color:white;}
+
+/* ══ LIVE INDICATOR ══ */
+.live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:livePulse 1.8s ease-in-out infinite;}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(22,163,74,0.4);}50%{opacity:0.8;box-shadow:0 0 0 5px rgba(22,163,74,0);}}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px;}
+
+/* ══ SCHED ROW ══ */
+.sched-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:13px;}
+.sched-row:last-child{border-bottom:none;}
+.sched-row span:first-child{color:var(--muted);}
+
+@media(max-width:768px){
+  #login-screen{grid-template-columns:1fr;}
+  .login-visual{display:none;}
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .cat-grid{grid-template-columns:repeat(2,1fr);}
+  .topbar,.tabnav,.content{padding-left:20px;padding-right:20px;}
 }
 
 /* ══ MOBILE FIXES (phones) ══ */
 html{-webkit-text-size-adjust:100%;}
-@media(max-width:900px){
-  .hero{grid-template-columns:minmax(0,1fr);}
-  .hero-left,.hero-sub,.hero-btns,.stats-bar{min-width:0;max-width:100%;width:100%;}
-  .hero-sub{font-size:15px;}
-  .stats-bar{flex-wrap:wrap;}
-  .stat{flex:1 1 40%;min-width:0;border-bottom:1px solid var(--border);}
-  .bento{grid-template-columns:repeat(2,minmax(0,1fr));}
-  .bento>*{grid-column:span 2;min-width:0;}
-  .bc-finance{flex-direction:column;align-items:flex-start;}
-  .bc-finance-stats{flex-shrink:1;width:100%;}
-  .compare-wrap,.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-}
-@media(max-width:600px){
-  nav{padding:12px 14px;}
-  .nav-logo-name{font-size:19px;}
-  .btn-nav-primary{padding:9px 12px;font-size:12px;white-space:nowrap;}
-  .bento{grid-template-columns:minmax(0,1fr);}
-  .bento>*{grid-column:auto;}
-  .hero{padding:96px 16px 48px;}
-  .hero-btns{flex-direction:column;align-items:stretch;}
-  .hero-btns a,.hero-btns .btn{justify-content:center;text-align:center;min-height:48px;}
-  section{padding:48px 16px;}
-  .pricing-grid,.serve-grid,.testi-grid{gap:14px;}
+.main,.content{min-width:0;}
+.two-col>*,.three-col>*,.stat-grid>*,.cat-grid>*,.form-row>*{min-width:0;}
+@media(max-width:768px){
+  input,select,textarea{font-size:16px !important;}
+  .topbar{height:auto;min-height:60px;padding-top:10px;padding-bottom:10px;gap:10px;flex-wrap:nowrap;}
+  .tb-left{min-width:0;flex:1 1 auto;gap:8px;}
+  .tb-left>div{min-width:0;}
+  .tb-greeting{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-apt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;}
+  .tb-right{gap:6px;flex-shrink:0;}
+  .tb-right>a[href="index.html"]{display:none !important;}
+  .tb-btn{padding:9px 11px;font-size:12px;min-height:40px;}
+  .notif-btn{min-width:40px;min-height:40px;}
+  .tabnav{position:sticky;top:0;z-index:40;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;}
+  .tab{padding:14px 14px;scroll-snap-align:start;}
+  .content{padding-top:18px;padding-bottom:90px;}
+  .garbage-hero{flex-wrap:wrap;padding:20px 18px;gap:14px;}
+  .garbage-hero .gh-icon{font-size:40px;}
+  .gh-info{flex:1 1 180px;min-width:0;}
+  .gh-countdown{width:100%;padding:12px 14px;}
+  .gh-cd-time{font-size:24px;letter-spacing:2px;}
+  .modal{padding:22px 16px;border-radius:18px;}
+  .modal-actions{flex-direction:column;}
+  .modal-actions>*{width:100%;min-height:46px;}
+  .btn{min-height:44px;}
   table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
 }
-
-@media(max-width:360px){
-  nav{padding:10px 12px;}
-  .nav-logo-mark{width:34px;height:34px;}
-  .nav-logo-name{font-size:16px;}
-  .nav-cta{gap:6px;}
-  .btn-nav-primary{padding:8px 9px;font-size:11px;}
-  .mob-menu{padding:6px 8px;}
+@media(max-width:480px){
+  .stat-grid{gap:10px;}
+  .form-row{grid-template-columns:1fr;}
+  .three-col{grid-template-columns:1fr;}
+  [style*="repeat(6,1fr)"]{grid-template-columns:repeat(3,1fr) !important;row-gap:14px !important;}
+  .content{padding-left:14px;padding-right:14px;}
+  .topbar,.tabnav{padding-left:14px;padding-right:14px;}
 }
+
+@media(max-width:768px){
+  .tb-greeting{white-space:normal;font-size:16px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .tb-btn{padding:9px 10px;}
+}
+@media(max-width:480px){
+  .login-form{padding:32px 20px 40px;align-items:flex-start;}
+  .lf-inner h2{font-size:30px;}
+  .lf-inner p{margin-bottom:24px;}
+}
+
+/* ══ GOOGLE + PHONE OTP LOGIN ══ */
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;background:#fff;color:#3c4043;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:box-shadow .2s,border-color .2s;}
+.btn-google:hover{box-shadow:0 2px 10px rgba(0,0,0,.1);border-color:#c9c4bb;}
+.btn-google:disabled{opacity:.6;cursor:wait;}
+.or-div{display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:var(--muted);font-size:12px;font-weight:600;}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border);}
+.phone-row{display:flex;gap:8px;align-items:stretch;}
+.phone-row input{flex:1;min-width:0;}
+.phone-cc{display:flex;align-items:center;padding:0 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm,10px);font-weight:700;font-size:15px;color:var(--text);}
+.otp-links{display:flex;justify-content:space-between;margin-top:12px;}
+.otp-links button{background:none;border:none;color:var(--teal);font-weight:600;font-size:13px;cursor:pointer;padding:10px 4px;min-height:40px;font-family:inherit;}
+.otp-links button:disabled{color:var(--muted);cursor:default;}
+#phone-step1 .btn-login,#phone-step2 .btn-login{margin-top:4px;}
+#pw-toggle{display:block;text-align:center;margin:18px 0 6px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:8px;}
+#pw-toggle:hover{color:var(--teal);}
 </style>
 </head>
 <body>
-<div class="bg-glow"></div>
+<div id="sandbox-warn" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a0a00;border-bottom:2px solid #C9921A;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;color:#F5C030;font-family:sans-serif;">
+  ⚠️ You're viewing this inside a preview sandbox — network calls to Supabase are blocked here.
+  <a href="https://lotommartine12-svg.github.io/nyumba-link/tenant.html" target="_blank" style="color:#fff;background:#C9921A;border-radius:6px;padding:3px 10px;margin-left:10px;text-decoration:none;">Open Live Site →</a>
+</div>
+<script>
+// Detect preview sandbox — if window is in a restricted iframe, show the warning
+(function(){
+  try {
+    // fetch a tiny no-op to detect network availability
+    fetch('https://cqxeraovwxlmevvyjtng.supabase.co/rest/v1/', {method:'HEAD', signal: AbortSignal.timeout(3000)})
+      .catch(()=>{ document.getElementById('sandbox-warn').style.display='block'; });
+  } catch(e) { document.getElementById('sandbox-warn').style.display='block'; }
+})();
+</script>
 
-<!-- NAV -->
-<nav id="main-nav">
-  <a href="#" class="nav-logo">
-    <div class="nav-logo-mark">🏠</div>
-    <div class="nav-logo-name">Nyumba<span>Link</span></div>
-  </a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#serve">Who We Serve</a>
-    <a href="#pricing">Pricing</a>
-    <a href="landlord.html">Landlords</a>
-    <a href="tenant.html">Tenants</a>
-  </div>
-  <div class="nav-cta">
-    <a href="tenant.html" class="btn-nav-ghost">Tenant Login</a>
-    <a href="landlord.html" class="btn-nav-primary">Get Started Free →</a>
-  </div>
-  <div class="mob-menu" onclick="this.textContent=this.textContent==='☰'?'✕':'☰'">☰</div>
-</nav>
-
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-left">
-    <div class="hero-pill"><span class="pill-dot"></span> Live · Nairobi, Kenya</div>
-    <h1>Property Management<br/><em>Reimagined</em><br/>for <span class="dim">Kenya</span></h1>
-    <p class="hero-sub">Collect rent via M-Pesa, track repairs, automate water billing and garbage alerts. Built for every Kenyan landlord — from bedsitters to luxury estates.</p>
-    <div class="hero-btns">
-      <a href="landlord.html" class="btn-hero btn-primary">🏢 I'm a Landlord →</a>
-      <a href="tenant.html" class="btn-hero btn-secondary">🏠 I'm a Tenant ↗</a>
+<!-- ════════════════════ LOGIN ════════════════════ -->
+<div id="login-screen">
+  <div class="login-visual">
+    <div class="lv-circles">
+      <div class="lv-circle lv-c1"></div>
+      <div class="lv-circle lv-c2"></div>
+      <div class="lv-circle lv-c3"></div>
     </div>
-    <div class="stats-bar">
-      <div class="stat"><div class="stat-n" data-t="500">0</div><div class="stat-l">Properties</div></div>
-      <div class="stat"><div class="stat-n" data-t="12400">0</div><div class="stat-l">Tenants</div></div>
-      <div class="stat"><div class="stat-n" data-t="98">0</div><div class="stat-l">% Uptime</div></div>
-      <div class="stat"><div class="stat-n" data-t="47">0</div><div class="stat-l">Counties</div></div>
+    <div class="lv-brand">
+      <h1>Nyumba<span>Link</span></h1>
+      <p>Your home, always connected</p>
+    </div>
+    <div class="lv-cards">
+      <div class="lv-card"><span class="lc-icon">💳</span><div class="lc-title">Pay Rent</div><div class="lc-desc">M-Pesa & Bank · instant receipt</div></div>
+      <div class="lv-card"><span class="lc-icon">🔧</span><div class="lc-title">Repairs</div><div class="lc-desc">Submit & track issues</div></div>
+      <div class="lv-card"><span class="lc-icon">💧</span><div class="lc-title">Water Bills</div><div class="lc-desc">Track monthly usage</div></div>
+      <div class="lv-card"><span class="lc-icon">🏘️</span><div class="lc-title">Community</div><div class="lc-desc">Connect with neighbours</div></div>
     </div>
   </div>
-  <div class="hero-right">
-    <div class="hero-mockup">
-      <div class="mock-hdr">
-        <div class="mock-dots">
-          <div class="mock-dot" style="background:#FF5F57"></div>
-          <div class="mock-dot" style="background:#FEBC2E"></div>
-          <div class="mock-dot" style="background:#28C840"></div>
+  <div class="login-form">
+    <div class="lf-inner">
+      <h2>Welcome back</h2>
+      <p>Sign in to your tenant account to manage your home.</p>
+      <div id="login-err" style="display:none;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;"></div>
+      <button type="button" class="btn-google" id="google-btn" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="or-div"><span>or sign in with your phone</span></div>
+      <div id="phone-step1">
+        <div class="fg"><label>Phone number</label>
+          <div class="phone-row"><span class="phone-cc">+254</span><input id="login-phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="712 345 678" onkeydown="if(event.key==='Enter')sendPhoneOtp()"/></div>
         </div>
-        <div class="mock-title">NyumbaLink · Landlord Dashboard</div>
+        <button type="button" class="btn-login" id="otp-send-btn" onclick="sendPhoneOtp()">Send code</button>
       </div>
-      <div class="mock-metrics">
-        <div class="mock-card teal">
-          <div class="mc-label">Collected MTD</div>
-          <div class="mc-val">165K</div>
-          <div class="mc-sub">✅ 8 of 12 paid</div>
+      <div id="phone-step2" style="display:none;">
+        <p id="otp-sent-to" style="font-size:13px;color:var(--muted);margin-bottom:14px;"></p>
+        <div class="fg"><label>6-digit code</label><input id="login-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="000000" style="letter-spacing:8px;font-size:22px;text-align:center;" oninput="onOtpInput(this)" onkeydown="if(event.key==='Enter')verifyPhoneOtp()"/></div>
+        <button type="button" class="btn-login" id="otp-verify-btn" onclick="verifyPhoneOtp()">Verify and sign in</button>
+        <div class="otp-links"><button type="button" id="otp-resend" onclick="sendPhoneOtp(true)" disabled>Resend code</button><button type="button" onclick="resetPhoneStep()">Change number</button></div>
+      </div>
+      <a href="#" id="pw-toggle" onclick="togglePwLogin(event)">Use email and password instead</a>
+      <div id="pw-login" style="display:none;">
+      <div class="fg"><label>Email Address</label><input id="login-id" type="email" placeholder="e.g. faith.wanjiru@tenant.nyumbalink.app" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fg"><label>Password</label><input id="login-pass" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;"><input type="checkbox" style="width:auto;border-radius:4px;"/> Remember me</label>
+        <a href="#" onclick="openForgotPw(event)" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">Forgot password?</a>
+      </div>
+      <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to My Portal →</button>
+      </div>
+      <a id="go-landlord-btn" href="landlord.html" style="display:none;margin-top:12px;width:100%;padding:13px;background:rgba(10,150,144,0.1);border:1.5px solid rgba(10,150,144,0.3);border-radius:12px;color:var(--teal);font-size:14px;font-weight:700;text-decoration:none;text-align:center;cursor:pointer;">🏢 Go to Landlord Portal →</a>
+      <div class="demo-row">
+          <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:10px;">🎯 Demo — tap to sign in instantly</p>
+          <div class="demo-chips">
+            <div class="demo-chip" id="dc-faith" onclick="demoSignIn('faith','dc-faith')" style="cursor:pointer">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Faith Wanjiru</div><div style="font-size:11px;opacity:.7">Unit A1 · Greenview · Paid ✅</div></div>
+            </div>
+            <div class="demo-chip" id="dc-mary" onclick="demoSignIn('mary','dc-mary')" style="cursor:pointer">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Mary Achieng</div><div style="font-size:11px;opacity:.7">Unit A3 · Greenview · Overdue ⚠️</div></div>
+            </div>
+            <div class="demo-chip" id="dc-daniel" onclick="demoSignIn('daniel','dc-daniel')" style="cursor:pointer">
+              <span style="font-size:18px">👤</span>
+              <div><div style="font-weight:700;font-size:13px">Daniel Kiptoo</div><div style="font-size:11px;opacity:.7">Unit B2 · Greenview · Overdue ⚠️</div></div>
+            </div>
+          </div>
+          <div id="demo-loading" style="display:none;text-align:center;padding:10px;font-size:13px;color:var(--teal);font-weight:600;">⏳ Signing in…</div>
         </div>
-        <div class="mock-card red">
-          <div class="mc-label">Overdue</div>
-          <div class="mc-val">55K</div>
-          <div class="mc-sub">⚠️ 3 tenants</div>
-        </div>
-        <div class="mock-card green">
-          <div class="mc-label">Occupancy</div>
-          <div class="mc-val">80%</div>
-          <div class="mc-sub">12 / 15 units</div>
-        </div>
-        <div class="mock-card gold">
-          <div class="mc-label">Open Repairs</div>
-          <div class="mc-val">4</div>
-          <div class="mc-sub">1 urgent</div>
         </div>
       </div>
-      <div class="mock-list">
-        <div class="ml-hdr">Recent Payments</div>
-        <div class="ml-row">
-          <div class="ml-av" style="background:linear-gradient(135deg,#0A4020,#062C14)">FW</div>
-          <div class="ml-name">Faith Wanjiru</div>
-          <div class="ml-unit">A1</div>
-          <div class="ml-badge paid">Paid ✓</div>
-        </div>
-        <div class="ml-row">
-          <div class="ml-av" style="background:linear-gradient(135deg,#0A1840,#060E28)">SN</div>
-          <div class="ml-name">Susan Njeri</div>
-          <div class="ml-unit">B1</div>
-          <div class="ml-badge paid">Paid ✓</div>
-        </div>
-        <div class="ml-row">
-          <div class="ml-av" style="background:linear-gradient(135deg,#1A0A0A,#280606)">DK</div>
-          <div class="ml-name">Daniel Kiptoo</div>
-          <div class="ml-unit">B2</div>
-          <div class="ml-badge due">Overdue</div>
-        </div>
-      </div>
-    </div>
-    <div class="mock-float mpesa">
-      <span style="font-size:20px">📱</span> M-Pesa confirmed · KES 18,000
-    </div>
-    <div class="mock-float repair">
-      <div class="mc-label">Active repair</div>
-      <div class="repair-val">🔧 Leaking tap · B2 · In Progress</div>
     </div>
   </div>
 </div>
 
-<!-- TRUST STRIP -->
-<div class="trust-strip">
-  <span class="ts-label">Trusted with</span>
-  <div class="ts-badge"><span>🏦</span> M-Pesa Integrated</div>
-  <div class="ts-badge"><span>🔒</span> SSL Encrypted</div>
-  <div class="ts-badge"><span>☁️</span> 99.8% Uptime</div>
-  <div class="ts-badge"><span>🇰🇪</span> Made in Kenya</div>
-  <div class="ts-badge"><span>📞</span> 24/7 Support</div>
-  <div class="ts-badge"><span>🛡️</span> GDPR Compliant</div>
+<!-- ════════════════════ APP ════════════════════ -->
+<div id="app-screen">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo-area">
+      <div class="sb-logo-icon">🏠</div>
+      <span class="sb-logo-text">NyumbaLink</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sni active" onclick="openTab('home')" id="sni-home"><span class="sni-icon">🏠</span><span class="sni-label">Home</span></div>
+      <div class="sni" onclick="openTab('payments')" id="sni-payments"><span class="sni-icon">💳</span><span class="sni-label">Payments</span></div>
+      <div class="sni" onclick="openTab('water')" id="sni-water"><span class="sni-icon">💧</span><span class="sni-label">Water & Bills</span></div>
+      <div class="sni" onclick="openTab('repairs')" id="sni-repairs"><span class="sni-icon">🔧</span><span class="sni-label">Repairs</span><div class="sni-dot"></div></div>
+      <div class="sni" onclick="openTab('garbage')" id="sni-garbage"><span class="sni-icon">🗑️</span><span class="sni-label">Garbage</span></div>
+      <div class="sni" onclick="openTab('community')" id="sni-community"><span class="sni-icon">🏘️</span><span class="sni-label">Community</span></div>
+      <div class="sni" onclick="openTab('rentscore')" id="sni-rentscore"><span class="sni-icon">⭐</span><span class="sni-label">Rent Score™</span></div>
+      <div class="sni" onclick="openTab('lease')" id="sni-lease"><span class="sni-icon">📋</span><span class="sni-label">My Lease</span></div>
+      <div class="sni" onclick="openTab('documents')" id="sni-documents"><span class="sni-icon">📄</span><span class="sni-label">Documents</span></div>
+      <div class="sni" onclick="openTab('notifications')" id="sni-notifications"><span class="sni-icon">🔔</span><span class="sni-label">Notifications</span><div class="sni-dot"></div></div>
+      <div class="sni" onclick="openTab('settings')" id="sni-settings"><span class="sni-icon">⚙️</span><span class="sni-label">Settings</span></div>
+    </nav>
+    <div class="sb-user-area">
+      <div class="sb-user">
+        <div class="sb-av" id="sb-initials">GN</div>
+        <div class="sb-user-info">
+          <strong id="sb-name">Grace Njeri</strong>
+          <span id="sb-unit">Unit A3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <div>
+          <div class="tb-greeting" id="tb-greeting">Good morning, Grace 👋</div>
+          <div class="tb-apt" id="tb-apt">Greenview Apartments · Unit A3 · Langata</div>
+        </div>
+      </div>
+      <div class="tb-right">
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🏠 Home</a>
+        <button class="notif-btn" onclick="openTab('notifications')">🔔<span class="ndot">3</span></button>
+        <button class="tb-btn primary" onclick="openPayModal()">📱 Pay Now</button>
+        <button class="tb-btn" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="tabnav">
+      <div class="tab active" onclick="openTab('home')" id="tab-home">🏠 Home</div>
+      <div class="tab" onclick="openTab('payments')" id="tab-payments">💳 Payments</div>
+      <div class="tab" onclick="openTab('water')" id="tab-water">💧 Water</div>
+      <div class="tab" onclick="openTab('repairs')" id="tab-repairs">🔧 Repairs <span class="tbadge">2</span></div>
+      <div class="tab" onclick="openTab('garbage')" id="tab-garbage">🗑️ Garbage</div>
+      <div class="tab" onclick="openTab('community')" id="tab-community">🏘️ Community</div>
+      <div class="tab" onclick="openTab('rentscore')" id="tab-rentscore">⭐ Rent Score™</div>
+      <div class="tab" onclick="openTab('lease')" id="tab-lease">📋 Lease</div>
+      <div class="tab" onclick="openTab('documents')" id="tab-documents">📄 Docs</div>
+      <div class="tab" onclick="openTab('notifications')" id="tab-notifications">🔔 Alerts <span class="tbadge">3</span></div>
+      <div class="tab" onclick="openTab('settings')" id="tab-settings">⚙️ Settings</div>
+    </div>
+
+    <div class="content">
+
+      <!-- ════ HOME ════ -->
+      <div class="pg active" id="pg-home">
+        <!-- Garbage Banner -->
+        <div class="garbage-hero">
+          <div class="gh-icon">🗑️</div>
+          <div class="gh-info">
+            <h3>Garbage Collection</h3>
+            <p id="garbage-msg">Every Wednesday 6:00 AM · Put bins outside by Tuesday 10PM</p>
+            <div class="gh-status">
+              <span style="background:rgba(255,255,255,0.15);color:white;border-radius:999px;padding:3px 12px;font-size:11px;font-weight:700;">📅 Weekly Wednesday</span>
+              <span style="background:rgba(255,255,255,0.15);color:white;border-radius:999px;padding:3px 12px;font-size:11px;font-weight:700;">💰 KES 500/month</span>
+            </div>
+          </div>
+          <div class="gh-countdown">
+            <div class="gh-cd-label">Next collection</div>
+            <div class="gh-cd-time" id="cd-main">--:--:--</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stat-grid">
+          <div class="stat teal" id="stat-rent"><span class="stat-icon">💳</span><div class="stat-label">Rent This Month</div><div class="stat-val" id="stat-rent-val">…</div><div class="stat-sub" id="stat-rent-sub">Loading…</div></div>
+          <div class="stat green" id="stat-bal"><span class="stat-icon">💰</span><div class="stat-label">Balance</div><div class="stat-val" id="stat-bal-val">…</div><div class="stat-sub" id="stat-bal-sub">Loading…</div></div>
+          <div class="stat gold" id="stat-water"><span class="stat-icon">💧</span><div class="stat-label">Water Bill</div><div class="stat-val" id="stat-water-val">…</div><div class="stat-sub" id="stat-water-sub">Loading…</div></div>
+          <div class="stat red" id="stat-garbage"><span class="stat-icon">🗑️</span><div class="stat-label">Garbage Fee</div><div class="stat-val" id="stat-garbage-val">…</div><div class="stat-sub" id="stat-garbage-sub">Loading…</div></div>
+        </div>
+
+        <!-- Main grid -->
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📋 Announcements</span><span class="live"><div class="live-dot"></div>Live</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;gap:12px;padding:10px;background:var(--amber-light);border-radius:10px;border-left:3px solid var(--amber);"><span style="font-size:18px;">💧</span><div><strong style="font-size:13px;">Water Off – Thu Apr 24</strong><p style="font-size:12px;color:var(--muted);">8am–12pm for pipe maintenance. Store water in advance.</p></div></div>
+              <div style="display:flex;gap:12px;padding:10px;background:var(--teal-g);border-radius:10px;border-left:3px solid var(--teal);"><span style="font-size:18px;">🤝</span><div><strong style="font-size:13px;">Residents Meeting – Apr 27</strong><p style="font-size:12px;color:var(--muted);">3:00 PM · Ground floor lounge · All welcome</p></div></div>
+              <div style="display:flex;gap:12px;padding:10px;background:var(--red-light);border-radius:10px;border-left:3px solid var(--red);"><span style="font-size:18px;">💳</span><div><strong style="font-size:13px;">Rent Due – Deadline is 10th</strong><p style="font-size:12px;color:var(--muted);">KES 20/day penalty applies from the 11th onwards.</p></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">⚡ Quick Actions</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn btn-teal btn-full" onclick="showModal('modal-pay')">📱 Pay Rent via M-Pesa</button>
+              <button class="btn btn-ghost btn-full" onclick="openTab('repairs');showToast('Navigate to Repairs tab','info')">🔧 Raise Repair Request</button>
+              <button class="btn btn-ghost btn-full" onclick="openTab('payments')">🧾 View Receipt & Ledger</button>
+              <button class="btn btn-ghost btn-full" onclick="openTab('water')">💧 Check Water Usage</button>
+              <button class="btn btn-ghost btn-full" onclick="openTab('community')">🏘️ Community Board</button>
+              <button class="btn btn-gold btn-full" onclick="openTab('rentscore')">⭐ View My Rent Score™</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity feed -->
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">💳 Recent Payments</span><button class="btn btn-ghost btn-sm" onclick="openTab('payments')">View All →</button></div>
+          <div class="ledger" style="border:none;box-shadow:none;" id="activity-feed">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ PAYMENTS ════ -->
+      <div class="pg" id="pg-payments">
+        <!-- Penalty Alert -->
+        <div id="penalty-alert" style="display:none;background:var(--red-light);border:1.5px solid rgba(220,38,38,0.3);border-radius:var(--r);padding:16px 20px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;">
+          <span style="font-size:24px;">⚠️</span>
+          <div><h4 style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:4px;">Late Payment Penalty Active</h4><p id="penalty-text" style="font-size:13px;color:var(--muted);">Your rent is overdue. KES 20/day penalty applies from the 11th.</p></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">Payment History</div><div style="font-size:13px;color:var(--muted);">Full ledger from your move-in date</div></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-ghost btn-sm" onclick="showModal('modal-receipt')">🧾 Latest Receipt</button>
+            <button class="btn btn-teal btn-sm" onclick="openPayModal()">📱 Pay Now</button>
+          </div>
+        </div>
+
+        <div class="stat-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:20px;">
+          <div class="stat teal"><span class="stat-icon">💰</span><div class="stat-label">Total Paid (All Time)</div><div class="stat-val" id="pay-total-paid">…</div><div class="stat-sub" id="pay-count">Loading…</div></div>
+          <div class="stat green"><span class="stat-icon">✅</span><div class="stat-label">Payment Deadline</div><div class="stat-val" id="pay-due-day">—</div><div class="stat-sub">of every month</div></div>
+        </div>
+
+        <!-- M-Pesa Instructions -->
+        <div class="mpesa-box" style="margin-bottom:16px;">
+          <div class="mpesa-title">Pay via M-Pesa Paybill</div>
+          <div id="pay-method-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;color:rgba(255,255,255,0.7);">📲 <span id="pay-method-label">M-Pesa Paybill</span></div>
+          <div class="paybill" id="pay-main-number">…</div>
+          <div id="pay-steps-container"></div>
+          <div id="pay-extra-instructions" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.65);font-style:italic;"></div>
+          <div style="margin-top:12px;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
+            ✅ Tap <strong>Pay Now</strong> to get an M-Pesa prompt and an instant SMS receipt. Payments made manually through the Paybill are recorded by your landlord.
+          </div>
+        </div>
+
+        <!-- Ledger -->
+        <div class="ledger">
+          <div class="ledger-hdr"><strong style="font-size:14px;">Full Transaction Ledger</strong><span class="badge bt" id="pay-count-badge">Loading…</span></div>
+          <div id="payments-list"><div style="padding:24px;text-align:center;color:var(--muted)">Loading payments…</div></div>
+        </div>
+
+        <!-- Rules -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">Payment Rules & Deadlines</div>
+          <div class="sched-row"><span>Rent deadline</span><span style="color:var(--text);font-weight:700;">10th of every month</span></div>
+          <div class="sched-row"><span>Late penalty</span><span style="color:var(--red);font-weight:700;">KES 20/day from 11th</span></div>
+          <div class="sched-row"><span>Reminders sent</span><span>31st, 5th and 9th of month</span></div>
+          <div class="sched-row"><span>Water bill due</span><span>20th of month</span></div>
+          <div class="sched-row"><span>Garbage fee due</span><span>30th of month</span></div>
+          <div class="sched-row"><span>Payment Method</span><span style="color:var(--teal);font-weight:700;font-size:14px;" id="pay-rules-method">—</span></div>
+          <div class="sched-row"><span>Payment Reference</span><span style="color:var(--teal);font-weight:700;font-size:14px;" id="pay-rules-ref">—</span></div>
+          <div class="sched-row"><span>Account number</span><span style="color:var(--teal);font-weight:700;">Your unit (e.g. A3)</span></div>
+        </div>
+      </div>
+
+      <!-- ════ WATER ════ -->
+      <div class="pg" id="pg-water">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">💧 Water Consumption</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Unit <span id="water-unit-label">—</span> · Billed at <span id="water-rate">—</span> per m³</div>
+
+        <div class="stat-grid">
+          <div class="stat teal"><span class="stat-icon">📊</span><div class="stat-label">Latest Reading</div><div class="stat-val" id="water-units">—</div><div class="stat-sub">m³ consumed</div></div>
+          <div class="stat gold"><span class="stat-icon">💰</span><div class="stat-label">Bill Amount</div><div class="stat-val" id="water-current-bill">—</div><div class="stat-sub" id="water-status">—</div></div>
+          <div class="stat blue"><span class="stat-icon">💧</span><div class="stat-label">Rate</div><div class="stat-val" id="water-rate-stat">—</div><div class="stat-sub">per m³</div></div>
+          <div class="stat teal"><span class="stat-icon">📋</span><div class="stat-label">History</div><div class="stat-val" id="water-reading-count">—</div><div class="stat-sub">months on record</div></div>
+        </div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">Usage Chart (m³) – Last 7 Months</span></div>
+            <div class="water-chart" id="water-chart"></div>
+            <div style="display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--muted);">
+              <span style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:3px;background:#06B6D4;"></div>Previous months</span>
+              <span style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--teal);"></div>Current month</span>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-title">Latest Meter Reading</div>
+              <div class="sched-row"><span>Units Consumed</span><span style="color:var(--blue);font-weight:700;" id="water-units-reading">—</span></div>
+              <div class="sched-row"><span>Bill Amount</span><span style="color:var(--teal);font-weight:700;" id="water-bill-reading">—</span></div>
+              <div class="sched-row"><span>Status</span><span id="water-status-reading">—</span></div>
+            </div>
+            <div class="card">
+              <div class="card-title">💡 Conservation Tips</div>
+              <div style="font-size:12px;color:var(--muted);line-height:2.2;">
+                <div>🚿 Fix dripping taps — saves 15+ litres/day</div>
+                <div>🪣 Collect shower warm-up water for plants</div>
+                <div>👗 Wash clothes in full loads only</div>
+                <div>🌙 Water garden at night — less evaporation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Water Bill History -->
+        <div class="ledger">
+          <div class="ledger-hdr"><strong>Water Bill History</strong></div>
+          <div id="water-history"><div style="padding:24px;text-align:center;color:var(--muted)">Loading water history…</div></div>
+        </div>
+      </div>
+
+      <!-- ════ REPAIRS ════ -->
+      <div class="pg" id="pg-repairs">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🔧 Repair Requests</div><div style="font-size:13px;color:var(--muted);">Submit and track maintenance issues</div></div>
+          <button class="btn btn-teal" onclick="showModal('modal-new-repair')">+ New Request</button>
+        </div>
+        <div id="repairs-list"><div style="padding:32px;text-align:center;color:var(--muted)">Loading repairs…</div></div>
+      </div>
+
+            <!-- ════ GARBAGE ════ -->
+      <div class="pg" id="pg-garbage">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">🗑️ Garbage Collection</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Greenview Apartments · Weekly Wednesday schedule</div>
+
+        <div class="garbage-hero" style="margin-bottom:20px;">
+          <div class="gh-icon">🚛</div>
+          <div class="gh-info">
+            <h3>Next Collection: Wednesday 6:00 AM</h3>
+            <p>Ensure bins are outside your unit door by <strong style="color:#6EE7B7;">Tuesday 10:00 PM</strong> the night before. Truck arrives sharp at 6am — don't miss it!</p>
+          </div>
+          <div class="gh-countdown"><div class="gh-cd-label">Countdown</div><div class="gh-cd-time" id="cd-garbage">--:--:--</div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">📅 Schedule Details</div>
+            <div class="sched-row"><span>Collection day</span><span style="color:var(--teal);font-weight:700;">Every Wednesday</span></div>
+            <div class="sched-row"><span>Truck arrives</span><span style="font-weight:700;">6:00 AM sharp</span></div>
+            <div class="sched-row"><span>Put bins out by</span><span style="color:var(--amber);font-weight:700;">Tuesday 10:00 PM</span></div>
+            <div class="sched-row"><span>Monthly fee</span><span style="font-weight:700;">KES 500</span></div>
+            <div class="sched-row"><span>Fee due</span><span>30th of month</span></div>
+            <div class="sched-row"><span>Missed bin?</span><span>Next collection in 7 days</span></div>
+            <div style="margin-top:14px;padding:12px;background:var(--teal-g);border-radius:10px;font-size:12px;color:var(--teal);">
+              ✅ Garbage fee for April 2026: <strong>Paid</strong>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📱 SMS Alerts You Receive</div>
+            <div class="sms-phone">
+              <div class="sms-time">Tuesday 6:00 PM</div>
+              <div class="sms-bubble">🗑️ NYUMBALINK: Garbage collection TOMORROW (Wednesday) at 6:00 AM. Please put your bins outside Unit A3 by 10pm tonight. Fee due: Apr 30. – Greenview Apts</div>
+              <div class="sms-time" style="margin-top:14px;">Wednesday 5:45 AM</div>
+              <div class="sms-bubble orange">⏰ NYUMBALINK: Garbage truck arriving in 15 MINUTES! Take bins outside your door NOW. Don't miss it! – Greenview Apts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ COMMUNITY ════ -->
+      <div class="pg" id="pg-community">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div><div style="font-family:'Instrument Serif',serif;font-size:26px;">🏘️ Community Board</div><div style="font-size:13px;color:var(--muted);" id="comm-subtitle">Loading…</div></div>
+          <button class="btn btn-teal" onclick="showModal('modal-new-post')">✏️ Post Something</button>
+        </div>
+        <div id="community-feed"><div style="padding:32px;text-align:center;color:var(--muted)">Loading posts…</div></div>
+      </div>
+
+            <!-- ════ RENT SCORE ════ -->
+      <div class="pg" id="pg-rentscore">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">⭐ My Rent Score™</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Your verified rental credit score — built from your payment history on NyumbaLink</div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card" style="text-align:center;">
+            <div class="card-title" style="text-align:left;">Your Current Score</div>
+            <div class="score-ring-wrap">
+              <div class="score-ring">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="#E4DDD5" stroke-width="10"/>
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="#0D9488" stroke-width="10" stroke-dasharray="364" stroke-dashoffset="91" stroke-linecap="round"/>
+                </svg>
+                <div class="score-ring-val"><span class="score-num">745</span><span class="score-label">Good</span></div>
+              </div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Score range: 300 (Poor) → 850 (Excellent)</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:16px;">
+              <div style="height:8px;border-radius:4px;background:var(--red);"></div>
+              <div style="height:8px;border-radius:4px;background:var(--amber);"></div>
+              <div style="height:8px;border-radius:4px;background:#EAB308;"></div>
+              <div style="height:8px;border-radius:4px;background:var(--teal);box-shadow:0 0 8px rgba(13,148,136,0.5);"></div>
+              <div style="height:8px;border-radius:4px;background:var(--green);"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:16px;"><span>300 Poor</span><span>500</span><span>650</span><span style="color:var(--teal);font-weight:700;">745 ←</span><span>850 Excellent</span></div>
+            <button class="btn btn-teal btn-full" onclick="showModal('modal-share-score')">📤 Share My Rent Score™</button>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-title">Score Breakdown</div>
+              <div style="font-size:13px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--muted);">Payment History (35%)</span><strong style="color:var(--green);">Excellent</strong></div>
+                <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:88%;background:var(--green);"></div></div></div>
+              </div>
+              <div style="font-size:13px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--muted);">Payment Timeliness (30%)</span><strong style="color:var(--teal);">Good</strong></div>
+                <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:75%;background:var(--teal);"></div></div></div>
+              </div>
+              <div style="font-size:13px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--muted);">Tenancy Length (20%)</span><strong style="color:var(--teal);">Good</strong></div>
+                <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:70%;background:var(--teal);"></div></div></div>
+              </div>
+              <div style="font-size:13px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:var(--muted);">Lease Compliance (15%)</span><strong style="color:var(--green);">Excellent</strong></div>
+                <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:95%;background:var(--green);"></div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">What You Can Do With Your Score</div>
+              <div style="font-size:13px;color:var(--muted);line-height:2.2;">
+                <div>🏠 Apply for a new house without a guarantor</div>
+                <div>🏦 Access personal loans at partner banks</div>
+                <div>📄 Share with future landlords as proof of reliability</div>
+                <div>💼 Some employers accept it as a character reference</div>
+                <div style="color:var(--teal);font-weight:600;margin-top:6px;">💡 Pay on time to reach 800+ (Excellent tier)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Score History -->
+        <div class="card">
+          <div class="card-title">Score History (Last 6 Months)</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;text-align:center;">
+            <div style="background:var(--bg);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--amber);">710</div><div style="font-size:11px;color:var(--muted);">Oct</div></div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--amber);">715</div><div style="font-size:11px;color:var(--muted);">Nov</div></div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--amber);">700</div><div style="font-size:11px;color:var(--muted);">Dec</div></div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--red);">680</div><div style="font-size:11px;color:var(--muted);">Jan ⚠️</div></div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--teal);">720</div><div style="font-size:11px;color:var(--muted);">Feb</div></div>
+            <div style="background:var(--teal-g);border:1.5px solid rgba(13,148,136,0.3);border-radius:10px;padding:12px;"><div style="font-family:'Instrument Serif',serif;font-size:20px;color:var(--teal);">745</div><div style="font-size:11px;color:var(--teal);">Now ↑</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:12px;">⚠️ Score dropped in January because rent was paid 3 days late. It has recovered since then.</div>
+        </div>
+      </div>
+
+      <!-- ════ LEASE ════ -->
+      <div class="pg" id="pg-lease">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:20px;">📋 My Lease Agreement</div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Lease Summary</div>
+            <div class="sched-row"><span>Tenant Name</span><strong id="lease-tenant">Grace Njeri</strong></div>
+            <div class="sched-row"><span>Unit</span><strong>A3 · Greenview Apartments</strong></div>
+            <div class="sched-row"><span>Landlord</span><strong>J. Mutua</strong></div>
+            <div class="sched-row"><span>Lease Start</span><strong>June 1, 2023</strong></div>
+            <div class="sched-row"><span>Lease End</span><strong style="color:var(--amber);">May 31, 2026 (39 days away)</strong></div>
+            <div class="sched-row"><span>Monthly Rent</span><strong style="color:var(--teal);">KES 12,000</strong></div>
+            <div class="sched-row"><span>Deposit Paid</span><strong>KES 24,000 (2 months)</strong></div>
+            <div class="sched-row"><span>Notice Period</span><strong>30 days written notice</strong></div>
+            <div class="sched-row"><span>Status</span><span class="badge bt">✅ Active · Digitally Signed</span></div>
+            <div style="margin-top:16px;padding:12px;background:var(--amber-light);border-radius:10px;font-size:13px;color:var(--amber);">
+              ⚠️ Your lease expires in 39 days. Expect a renewal offer from your landlord soon.
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-title">Lease Actions</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn btn-teal btn-full" onclick="showToast('Lease downloaded as PDF!','success')">📥 Download Lease PDF</button>
+                <button class="btn btn-ghost btn-full" onclick="showToast('Lease sent to your email!','info')">📧 Email Me a Copy</button>
+                <button class="btn btn-ghost btn-full" onclick="showModal('modal-give-notice')">📝 Give Notice to Vacate</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Key Lease Terms</div>
+              <div style="font-size:13px;color:var(--muted);line-height:2.2;">
+                <div>📅 Rent due on or before 10th each month</div>
+                <div>⚠️ KES 20/day late penalty after 10th</div>
+                <div>🔧 Tenant responsible for minor repairs</div>
+                <div>🐾 No pets without written consent</div>
+                <div>🔊 No noise after 10:00 PM</div>
+                <div>🛠️ No structural alterations permitted</div>
+                <div>👋 30 days notice required for vacating</div>
+                <div>🧹 Unit must be returned in original condition</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ DOCUMENTS ════ -->
+      <div class="pg" id="pg-documents">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:20px;">📄 My Documents</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="doc-card">
+            <span class="doc-icon">📋</span>
+            <div class="doc-info"><strong>Lease Agreement</strong><span>Signed Jun 1, 2023 · Valid until May 31, 2026 · PDF · 3.2 MB</span></div>
+            <div class="doc-actions"><button class="btn btn-ghost btn-sm" onclick="showToast('Opening lease…','info')">👁️ View</button><button class="btn btn-teal btn-sm" onclick="showToast('Downloading…','success')">📥 Download</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">🧾</span>
+            <div class="doc-info"><strong>Latest Receipt – April 2026</strong><span>Generated Apr 1, 2026 · KES 12,000 Rent + KES 1,105 Water · PDF</span></div>
+            <div class="doc-actions"><button class="btn btn-ghost btn-sm" onclick="showModal('modal-receipt')">👁️ View</button><button class="btn btn-teal btn-sm" onclick="showToast('Receipt downloaded!','success')">📥 Download</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">📂</span>
+            <div class="doc-info"><strong>All Receipts (2024–2026)</strong><span>28 receipts · Rent, Water, Garbage · ZIP Archive</span></div>
+            <div class="doc-actions"><button class="btn btn-teal btn-sm" onclick="showToast('Preparing ZIP archive…','info')">📥 Download All</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">📖</span>
+            <div class="doc-info"><strong>Tenant Handbook</strong><span>House rules, policies, emergency contacts, maintenance guidelines · PDF · 1.8 MB</span></div>
+            <div class="doc-actions"><button class="btn btn-ghost btn-sm" onclick="showToast('Opening handbook…','info')">👁️ View</button><button class="btn btn-teal btn-sm" onclick="showToast('Handbook downloaded!','success')">📥 Download</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">🏠</span>
+            <div class="doc-info"><strong>Move-In Inspection Report</strong><span>January 15, 2024 · 12 photos · Unit condition documented</span></div>
+            <div class="doc-actions"><button class="btn btn-ghost btn-sm" onclick="showToast('Opening inspection report…','info')">👁️ View</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">⭐</span>
+            <div class="doc-info"><strong>NyumbaLink Rent Score™ Certificate</strong><span>Score: 745 / 850 · Generated Apr 22, 2026 · Shareable PDF</span></div>
+            <div class="doc-actions"><button class="btn btn-teal btn-sm" onclick="showToast('Rent Score certificate downloaded!','success')">📥 Download</button></div>
+          </div>
+          <div class="doc-card">
+            <span class="doc-icon">🚨</span>
+            <div class="doc-info"><strong>Emergency Contacts</strong><span>Building manager, plumber, electrician, security, hospital</span></div>
+            <div class="doc-actions"><button class="btn btn-ghost btn-sm" onclick="showModal('modal-emergency')">📞 View Contacts</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ NOTIFICATIONS ════ -->
+      <div class="pg" id="pg-notifications">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;">🔔 Notifications</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Your alerts, reminders and updates</div>
+        <div class="card">
+          <div id="notifs-list"><div style="padding:32px;text-align:center;color:var(--muted)">Loading notifications…</div></div>
+        </div>
+      </div>
+
+            <!-- ════ SETTINGS ════ -->
+      <div class="pg" id="pg-settings">
+        <div style="font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:20px;">⚙️ Account Settings</div>
+        <div class="two-col">
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-title">Personal Information</div>
+              <div class="fg"><label>Full Name</label><input value="Grace Njeri"/></div>
+              <div class="fg"><label>Phone Number</label><input value="0734 567 890"/></div>
+              <div class="fg"><label>Email Address</label><input value="grace.njeri@gmail.com" type="email"/></div>
+              <div class="fg"><label>National ID</label><input value="34******89" type="password"/></div>
+              <div class="fg"><label>Emergency Contact</label><input value="James Njeri · 0722 111 333"/></div>
+              <button class="btn btn-teal" onclick="showToast('Profile updated successfully!','success')">Save Changes</button>
+            </div>
+            <div class="card">
+              <div class="card-title">Change Password</div>
+              <div class="fg"><label>Current Password</label><input type="password" placeholder="Current password"/></div>
+              <div class="fg"><label>New Password</label><input type="password" placeholder="New password"/></div>
+              <div class="fg"><label>Confirm Password</label><input type="password" placeholder="Confirm new password"/></div>
+              <button class="btn btn-teal" onclick="showToast('Password changed!','success')">Update Password</button>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-title">Notification Preferences</div>
+              <div style="display:flex;flex-direction:column;gap:14px;font-size:13px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>SMS rent reminders</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Garbage collection alerts</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Water bill notifications</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Repair status updates</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Community announcements</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Lease expiry reminders</span><input type="checkbox" checked style="width:auto;"/></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Rent Score updates</span><input type="checkbox" checked style="width:auto;"/></div>
+              </div>
+              <button class="btn btn-teal" style="margin-top:16px;" onclick="showToast('Preferences saved!','success')">Save Preferences</button>
+            </div>
+            <div class="card">
+              <div class="card-title">Language / Lugha</div>
+              <div class="fg"><label>Display Language</label>
+                <select>
+                  <option>English</option>
+                  <option>Kiswahili</option>
+                </select>
+              </div>
+              <button class="btn btn-teal" onclick="showToast('Language updated!','success')">Save</button>
+              <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                <button class="btn btn-red btn-full" onclick="logout()">🚪 Sign Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end .content -->
+  </div><!-- end .main -->
+</div><!-- end #app-screen -->
+
+<!-- ════════════ MODALS ════════════ -->
+
+<!-- PAY NOW -->
+<div class="modal-overlay" id="modal-pay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-pay')">✕</button>
+    <h3>Pay via M-Pesa</h3>
+    <p class="msub">We send a payment prompt to your phone. Enter your M-Pesa PIN to confirm, and your receipt arrives by SMS.</p>
+    <div class="fg"><label>What are you paying?</label>
+      <select id="stk-type" onchange="prefillStk(true)">
+        <option value="rent">Rent</option><option value="water">Water bill</option><option value="garbage">Garbage fee</option><option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Amount (KES)</label><input id="stk-amount" type="number" inputmode="numeric" min="1" placeholder="e.g. 12000"/></div>
+      <div class="fg"><label>M-Pesa number</label><input id="stk-phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0712 345 678"/></div>
+    </div>
+    <div id="stk-status" style="display:none;margin-bottom:14px;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.5;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-teal" id="stk-btn" style="flex:1;" onclick="startStk()">📲 Send payment prompt</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-pay')">Close</button>
+    </div>
+    <div style="margin:22px 0 10px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Or pay manually</div>
+    <div class="mpesa-box" style="margin-bottom:20px;">
+      <div class="mpesa-title">Lipa na M-Pesa Paybill</div>
+      <div class="paybill" id="pay-page-main-num">…</div>
+      <div id="pay-page-steps"></div>
+      <div id="pay-page-instructions" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.65);font-style:italic;"></div>
+    </div>
+  </div>
 </div>
 
-<!-- FEATURES -->
-<section id="features" style="background:var(--ink2);">
-  <span class="sec-pill reveal">Platform Features</span>
-  <h2 class="sec-title">Everything. <em>One platform.</em></h2>
-  <p class="sec-sub">The most comprehensive property management platform built specifically for Kenyan landlords and tenants.</p>
-  <div class="bento reveal">
-    <div class="bc s7 bc-featured">
-      <span class="bc-ico">💳</span>
-      <h3>Smart M-Pesa Payment Engine</h3>
-      <p>Real-time Paybill integration. STK Push prompts tenant phone directly. Payment recorded in 5 seconds. KES 20/day penalty auto-applied. SMS receipt sent instantly.</p>
-      <span class="bc-tag">STK Push</span><span class="bc-tag">Auto-Receipts</span><span class="bc-tag">Penalty Engine</span>
+<!-- NEW REPAIR -->
+<div class="modal-overlay" id="modal-new-repair">
+  <div class="modal" style="width:540px;">
+    <button class="modal-close" onclick="closeModal('modal-new-repair')">✕</button>
+    <h3>Raise Repair Request</h3>
+    <p class="msub">Select the category, describe the issue and set priority. Landlord will be notified instantly.</p>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Issue Category</div>
+    <div class="cat-grid">
+      <div class="cat-btn" onclick="selCat(this,'electrical')"><span class="ci">⚡</span><span class="cl">Electrical</span></div>
+      <div class="cat-btn" onclick="selCat(this,'plumbing')"><span class="ci">🚿</span><span class="cl">Plumbing</span></div>
+      <div class="cat-btn" onclick="selCat(this,'masonry')"><span class="ci">🧱</span><span class="cl">Masonry</span></div>
+      <div class="cat-btn" onclick="selCat(this,'wifi')"><span class="ci">📶</span><span class="cl">Wi-Fi / Internet</span></div>
+      <div class="cat-btn" onclick="selCat(this,'security')"><span class="ci">🔐</span><span class="cl">Security</span></div>
+      <div class="cat-btn" onclick="selCat(this,'other')"><span class="ci">📋</span><span class="cl">Other</span></div>
     </div>
-    <div class="bc s5 bc-ai">
-      <span class="bc-ico">🤖</span>
-      <h3>AI Property Chatbot</h3>
-      <p>Chat to manage everything. Say "Water readings: A1=145, A2=112" and all bills update instantly. Record payments, send announcements, analyse property — all by text.</p>
-      <span class="bc-tag">NLP Commands</span><span class="bc-tag">Real-time</span>
+    <div class="fg"><label>Title / Summary</label><input id="rep-title" placeholder="e.g. Broken socket in bedroom"/></div>
+    <div class="fg"><label>Full Description</label><textarea id="rep-desc" placeholder="When did it start? What exactly happened? Any safety risk?"></textarea></div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Priority Level</div>
+    <div class="prio-row">
+      <div class="prio-b" onclick="selPrio(this,'n')">🟢 Normal</div>
+      <div class="prio-b" onclick="selPrio(this,'h')">🟡 High</div>
+      <div class="prio-b" onclick="selPrio(this,'u')">🔴 Urgent</div>
     </div>
-    <div class="bc s5">
-      <span class="bc-ico">💧</span>
-      <h3>Water & Utility Meter Entry</h3>
-      <p>Enter monthly readings once. Bills auto-calculated per unit and pushed to every tenant portal with SMS notification. Full history tracked.</p>
+    <div class="modal-actions">
+      <button class="btn btn-teal" style="flex:1;" id="submit-repair-btn" onclick="submitRepair()">📤 Submit Request</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-new-repair')">Cancel</button>
     </div>
-    <div class="bc s7 bc-gold">
-      <span class="bc-ico">📊</span>
-      <h3>AI Insights & Rent Prediction</h3>
-      <p>Machine learning flags tenants likely to default. Predicts vacancy windows. Suggests optimal rent pricing. Monthly analysis delivered automatically.</p>
-    </div>
-    <div class="bc s4">
-      <span class="bc-ico">🔧</span>
-      <h3>Repair Tracking</h3>
-      <p>6 categories. Vetted local technicians. Assign and track from open to resolved. Tenant sees status in real time.</p>
-    </div>
-    <div class="bc s4">
-      <span class="bc-ico">🗑️</span>
-      <h3>Garbage Alerts</h3>
-      <p>Set your own collection day per property. Automated SMS Tuesday 6PM + Wednesday 5:45AM — no manual effort.</p>
-    </div>
-    <div class="bc s4">
-      <span class="bc-ico">⭐</span>
-      <h3>Tenant Rent Score™</h3>
-      <p>Kenya's first rental credit score. Tenants build payment history. Share for new housing, bank loans, or employment.</p>
-    </div>
-    <div class="bc s6 bc-community reveal">
-      <span class="bc-ico">🏘️</span>
-      <h3>Digital Community Board</h3>
-      <p>Private resident network per apartment. Share resources, post events, emergency alerts, lost & found. Curated monthly events calendar managed by the landlord.</p>
-    </div>
-    <div class="bc s6 bc-ussd reveal">
-      <span class="bc-ico">📱</span>
-      <h3>USSD + WhatsApp + App</h3>
-      <p>Smartphone app, mobile browser, WhatsApp bot, and USSD *384# for basic phones. Every Kenyan can use NyumbaLink regardless of device or data access.</p>
-    </div>
-    <div class="bc s12 bc-finance reveal">
-      <div style="flex:1">
-        <span class="bc-ico">🏦</span>
-        <h3>Landlord Financing Access</h3>
-        <p>12 months of clean NyumbaLink payment history unlocks renovation loans, bridge financing, and mortgage applications through partner banks and SACCOs. Your rental record becomes your credit history.</p>
-      </div>
-      <div class="bc-finance-stats">
-        <div class="bfs"><div class="bfs-val">KES 2M</div><div class="bfs-lbl">Max loan access</div></div>
-        <div class="bfs"><div class="bfs-val">12%</div><div class="bfs-lbl">Partner rate p.a.</div></div>
-        <div class="bfs"><div class="bfs-val">48h</div><div class="bfs-lbl">Approval time</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHO WE SERVE -->
-<section id="serve">
-  <span class="sec-pill reveal">Who We Serve</span>
-  <h2 class="sec-title">Built for <em>every Kenyan</em></h2>
-  <p class="sec-sub">From a single room in Kayole to a 200-unit gated estate in Karen — NyumbaLink scales with every landlord.</p>
-  <div class="serve-grid reveal">
-    <div class="sc sc-low">
-      <span class="sc-badge">Basic · Free Start</span>
-      <span class="sc-ico">🏠</span>
-      <h3>Low Income Housing</h3>
-      <p>Bedsitters, single rooms in Huruma, Mathare, Kayole, Mukuru. Simple, affordable, Swahili supported.</p>
-      <ul><li>M-Pesa rent collection</li><li>SMS receipts & reminders</li><li>Basic repair logging</li><li>Swahili interface</li></ul>
-    </div>
-    <div class="sc sc-mid">
-      <span class="sc-badge">Standard · Most Popular</span>
-      <span class="sc-ico">🏢</span>
-      <h3>Middle Income Apartments</h3>
-      <p>1–3 bedroom units in Langata, South B, Rongai, Ruaka, Thika Road, Githurai.</p>
-      <ul><li>Full tenant portal</li><li>Water & electricity billing</li><li>Garbage collection alerts</li><li>Technician marketplace</li><li>Digital lease signing</li><li>Community board</li></ul>
-    </div>
-    <div class="sc sc-high">
-      <span class="sc-badge">Premium · Full Suite</span>
-      <span class="sc-ico">🏰</span>
-      <h3>High Income & Gated Estates</h3>
-      <p>Luxury apartments, gated communities in Westlands, Kilimani, Karen, Runda.</p>
-      <ul><li>Everything in Standard</li><li>AI rent prediction</li><li>Tenant Rent Score™</li><li>CRB background checks</li><li>KRA tax statements</li><li>Custom branded app</li></ul>
-    </div>
-  </div>
-</section>
-
-<!-- COMPARISON -->
-<section style="background:var(--ink2);">
-  <span class="sec-pill">Why NyumbaLink</span>
-  <h2 class="sec-title">The platform <em>others can't match</em></h2>
-  <p class="sec-sub">Other platforms were built for other markets. NyumbaLink was built from the ground up for Kenya.</p>
-  <div class="compare-wrap">
-    <table>
-      <thead><tr><th>Feature</th><th>Typical Local Platform</th><th>Global Platforms</th><th class="hl">NyumbaLink ✦</th></tr></thead>
-      <tbody>
-        <tr><td class="feat">M-Pesa STK Push</td><td><span class="yes">✓</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">AI Property Chatbot</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Full Tenant Portal</td><td>Basic</td><td><span class="yes">✓</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Technician Marketplace</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Water Auto-Billing</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Garbage Alerts</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Tenant Rent Score™</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">AI Rent Prediction</td><td><span class="no">–</span></td><td>Partial</td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">Annual Plan (Save 20%)</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-        <tr><td class="feat">KRA Tax Statements</td><td><span class="no">–</span></td><td><span class="yes">✓</span></td><td class="hl"><span class="yes">✓</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="legal-note">⚖️ This comparison reflects general market feature categories as of 2026 and does not reference specific named products. NyumbaLink makes no claims about any individual competitor's capabilities.</p>
-</section>
-
-<!-- PRICING -->
-<section id="pricing">
-  <div style="text-align:center">
-    <span class="sec-pill">Pricing</span>
-    <h2 class="sec-title">Honest pricing.<br/><em>No surprises.</em></h2>
-  </div>
-  <div class="billing-row">
-    <span class="bl on" id="bl-mo">Monthly</span>
-    <label class="btog-wrap"><input type="checkbox" id="billing-tog" onchange="togglePricing()"/><div class="btog-sl"></div></label>
-    <span class="bl" id="bl-an">Annual</span>
-    <span class="save-tag" id="save-tag" style="display:none">Save 20%</span>
-  </div>
-  <div class="pricing-grid">
-    <div class="plan-box">
-      <div class="pb-name">Basic</div>
-      <div class="pb-desc">For landlords with a few units. Start free, no card needed.</div>
-      <div class="pb-price">Free</div>
-      <div class="pb-orig" id="b-orig">&nbsp;</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Up to 5 units · KES 150/unit after</div>
-      <ul class="pb-feats">
-        <li class="on">M-Pesa rent collection</li>
-        <li class="on">SMS receipts & reminders</li>
-        <li class="on">Basic tenant portal</li>
-        <li class="on">Repair logging</li>
-        <li class="on">Garbage alerts</li>
-        <li class="off">AI chatbot</li>
-        <li class="off">Water auto-billing</li>
-        <li class="off">AI insights</li>
-      </ul>
-      <a href="landlord.html" class="pb-btn pb-btn-ghost">Get Started Free</a>
-    </div>
-    <div class="plan-box feat">
-      <div class="pb-hot">Most Popular</div>
-      <div class="pb-name">Standard</div>
-      <div class="pb-desc">Complete platform. Up to 50 units. Everything you need.</div>
-      <div><span class="pb-price" id="std-price">KES 2,000</span><span class="pb-per" id="std-per">/month</span></div>
-      <div class="pb-orig" id="std-orig">&nbsp;</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:18px" id="std-sub">Billed monthly</div>
-      <ul class="pb-feats">
-        <li class="on">Everything in Basic</li>
-        <li class="on">AI Property Chatbot</li>
-        <li class="on">Full tenant portal</li>
-        <li class="on">Water & utility billing</li>
-        <li class="on">Technician marketplace</li>
-        <li class="on">Digital lease signing</li>
-        <li class="on">Community board</li>
-        <li class="off">AI rent prediction</li>
-        <li class="off">Rent Score™</li>
-      </ul>
-      <a href="landlord.html" class="pb-btn pb-btn-primary">Start Standard Plan</a>
-    </div>
-    <div class="plan-box">
-      <div class="pb-name">Premium</div>
-      <div class="pb-desc">For serious managers and gated communities. Unlimited.</div>
-      <div><span class="pb-price gold" id="prem-price">KES 7,500</span><span class="pb-per" id="prem-per">/month</span></div>
-      <div class="pb-orig" id="prem-orig">&nbsp;</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:18px" id="prem-sub">Unlimited units · Billed monthly</div>
-      <ul class="pb-feats">
-        <li class="on">Everything in Standard</li>
-        <li class="on">AI rent prediction</li>
-        <li class="on">Tenant Rent Score™</li>
-        <li class="on">CRB background checks</li>
-        <li class="on">Landlord financing access</li>
-        <li class="on">KRA tax statements</li>
-        <li class="on">Custom branded app</li>
-        <li class="on">Dedicated account manager</li>
-      </ul>
-      <a href="landlord.html" class="pb-btn pb-btn-ghost">Contact Sales</a>
-    </div>
-  </div>
-  <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:22px">Your first 3 months are free on every plan. Cancel any time. Funds go directly to your M-Pesa.</p>
-</section>
-
-<!-- TESTIMONIALS -->
-<section style="background:var(--ink2);">
-  <span class="sec-pill reveal">Testimonials</span>
-  <h2 class="sec-title">Loved by landlords <em>& tenants</em></h2>
-  <div class="testi-grid reveal">
-    <div class="testi">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-q">I used to chase 15 tenants on WhatsApp every month. With NyumbaLink the money just comes in and I get an SMS. I collected 100% rent in my first month.</p>
-      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#0A4020,#062C14)">JM</div><div><div class="ta-n">James Mwangi</div><div class="ta-r">Landlord · 24 units · Githurai</div></div></div>
-    </div>
-    <div class="testi">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-q">As a tenant I can see my water bill, raise a complaint and track when the plumber is coming — all on my phone. This is how renting should work in Kenya.</p>
-      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#0A1840,#060E28)">FN</div><div><div class="ta-n">Fatuma Njoroge</div><div class="ta-r">Tenant · Unit B4 · South B</div></div></div>
-    </div>
-    <div class="testi">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-q">We manage 3 blocks for diaspora clients in the UK. NyumbaLink gives them a real-time dashboard. Our clients trust us more because of the transparency.</p>
-      <div class="testi-author"><div class="ta-av" style="background:linear-gradient(135deg,#3A0A0A,#280606)">AO</div><div><div class="ta-n">Amina Ochieng</div><div class="ta-r">Property Manager · 87 units · Kilimani</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ROADMAP -->
-<section id="roadmap" style="background:var(--ink2);">
-  <span class="sec-pill reveal">Product Roadmap</span>
-  <h2 class="sec-title reveal">Where we're <em>going</em></h2>
-  <p class="sec-sub reveal">We're just getting started. Here's what's coming for NyumbaLink.</p>
-  <div class="roadmap-grid">
-    <div class="rm reveal">
-      <div class="rm-dot"></div>
-      <div class="rm-num">01</div>
-      <div class="rm-title">Web Platform</div>
-      <p class="rm-desc">Full web app for landlords and tenants. Real M-Pesa integration. Repair tracking. Utility billing. All core features live.</p>
-      <span class="rm-badge rm-now">✅ Live Now</span>
-    </div>
-    <div class="rm reveal">
-      <div class="rm-dot"></div>
-      <div class="rm-num">02</div>
-      <div class="rm-title">Android App</div>
-      <p class="rm-desc">Native Android app on Google Play. Push notifications for payments & repairs. Offline mode. Mobile-first experience.</p>
-      <span class="rm-badge rm-soon">Q3 2026</span>
-    </div>
-    <div class="rm reveal">
-      <div class="rm-dot"></div>
-      <div class="rm-num">03</div>
-      <div class="rm-title">iOS App + USSD</div>
-      <p class="rm-desc">iPhone app on App Store. USSD *384# for feature phones. WhatsApp bot for tenants who prefer messaging.</p>
-      <span class="rm-badge rm-soon">Q4 2026</span>
-    </div>
-    <div class="rm reveal">
-      <div class="rm-dot"></div>
-      <div class="rm-num">04</div>
-      <div class="rm-title">East Africa Scale</div>
-      <p class="rm-desc">Uganda, Tanzania, Rwanda expansion. Multi-currency support. Local M-Pesa equivalents per country. Deposit escrow.</p>
-      <span class="rm-badge rm-future">2027</span>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<div class="cta-sec">
-  <div class="cta-glow"></div>
-  <h2>Ready to transform<br/><em>your property?</em></h2>
-  <p>Join 500+ properties already saving time, collecting more rent, and keeping tenants happy.</p>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-    <a href="landlord.html" class="btn-hero btn-primary">🏢 Start as Landlord →</a>
-    <a href="tenant.html" class="btn-hero btn-secondary">🏠 Tenant Portal ↗</a>
   </div>
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-grid">
-    <div>
-      <div class="fb-logo"><div class="fb-logo-mark">🏠</div>NyumbaLink</div>
-      <p class="fb-desc">Kenya's most comprehensive property management platform. Built for landlords, tenants and technicians across all income levels.</p>
-      <div class="fb-badges">
-        <span class="fb-badge">🔒 SSL Encrypted</span>
-        <span class="fb-badge">📱 M-Pesa Ready</span>
-        <span class="fb-badge">☁️ Cloud Hosted</span>
-      </div>
+<!-- REPAIR SUCCESS -->
+<div class="modal-overlay" id="modal-repair-success">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:56px;margin-bottom:16px;">✅</div>
+    <h3>Request Submitted!</h3>
+    <p class="msub" style="text-align:center;">Your landlord has been notified. A qualified technician will be assigned within 24 hours.</p>
+    <div style="background:var(--teal-g);border:1px solid rgba(13,148,136,0.2);border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:var(--muted);text-align:left;line-height:2.2;">
+      <div>📋 Category: <strong id="rc-cat" style="color:var(--text);"></strong></div>
+      <div>🚨 Priority: <strong id="rc-prio" style="color:var(--text);"></strong></div>
+      <div>📍 Unit: <strong style="color:var(--text);">A3 · Greenview Apartments</strong></div>
+      <div>⏱️ Expected response: <strong style="color:var(--teal);">Within 24 hours</strong></div>
     </div>
-    <div class="fc"><h4>Platform</h4><a href="landlord.html">Landlord Portal</a><a href="tenant.html">Tenant Portal</a><a href="admin.html">Admin Panel</a></div>
-    <div class="fc"><h4>Features</h4><a href="#">M-Pesa Payments</a><a href="#">Repair Tracking</a><a href="#">Water Billing</a><a href="#">Rent Score™</a></div>
-    <div class="fc"><h4>Support</h4><a href="#">Help Center</a><a href="mailto:hello@nyumbalink.co.ke">hello@nyumbalink.co.ke</a><a href="tel:+254700000001">+254 700 000 001</a><a href="#">Privacy Policy</a></div>
+    <button class="btn btn-teal btn-full" onclick="closeModal('modal-repair-success')">Got it!</button>
   </div>
-  <div class="footer-bottom">
-    <span>© 2026 NyumbaLink Limited · Nairobi, Kenya · All rights reserved</span>
-    <span>Built with ❤️ for Kenya</span>
-  </div>
-</footer>
+</div>
 
+<!-- RECEIPT -->
+<div class="modal-overlay" id="modal-receipt">
+  <div class="modal" style="width:420px;">
+    <button class="modal-close" onclick="closeModal('modal-receipt')">✕</button>
+    <h3>Payment Receipt</h3>
+    <p class="msub">Official NyumbaLink receipt</p>
+    <div class="receipt">
+      <div class="r-logo">🏢 NyumbaLink Properties</div>
+      <div style="text-align:center;font-size:11px;color:#777;margin-bottom:12px;">Greenview Apartments · Langata, Nairobi<br/>Tel: +254 700 000 001 · nyumbalink.co.ke</div>
+      <div class="r-div"></div>
+      <div class="r-row"><span>Receipt No:</span><span>#RC-2026-0087</span></div>
+      <div class="r-row"><span>Date:</span><span>April 1, 2026</span></div>
+      <div class="r-row"><span>Tenant:</span><span id="receipt-tenant">Grace Njeri</span></div>
+      <div class="r-row"><span>Unit:</span><span>A3 · Block A</span></div>
+      <div class="r-row"><span>Period:</span><span>April 2026</span></div>
+      <div class="r-row"><span>M-Pesa Ref:</span><span>QHJ9823ABZ</span></div>
+      <div class="r-div"></div>
+      <div class="r-row"><span>Rent:</span><span>KES 12,000</span></div>
+      <div class="r-row"><span>Water Bill:</span><span>KES 1,105</span></div>
+      <div class="r-row"><span>Garbage Fee:</span><span>KES 500</span></div>
+      <div class="r-row"><span>Late Penalty:</span><span>KES 0</span></div>
+      <div class="r-div"></div>
+      <div class="r-row r-total"><span>TOTAL PAID:</span><span>KES 13,605</span></div>
+      <div class="r-row"><span>Balance:</span><span>KES 0 (CLEAR)</span></div>
+      <div class="r-div"></div>
+      <div style="text-align:center;font-size:10px;color:#999;">Thank you for your prompt payment! 🙏<br/>Powered by NyumbaLink™ · Nairobi, Kenya</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-teal" style="flex:1;" onclick="showToast('Receipt downloaded as PDF!','success')">📥 Download PDF</button>
+      <button class="btn btn-ghost" onclick="showToast('Receipt sent via WhatsApp!','success')">📱 WhatsApp</button>
+      <button class="btn btn-ghost" onclick="showToast('Receipt sent via SMS!','success')">📤 SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW POST -->
+<div class="modal-overlay" id="modal-new-post">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-new-post')">✕</button>
+    <h3>Post to Community Board</h3>
+    <p class="msub">Share with your neighbours at Greenview Apartments</p>
+    <div class="fg"><label>Category</label>
+      <select><option>General</option><option>Lost & Found</option><option>Resources / Borrowing</option><option>Safety Alert</option><option>Events</option><option>Feedback to Management</option></select>
+    </div>
+    <div class="fg"><label>Your Message</label><textarea placeholder="What would you like to share with your neighbours?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-teal" style="flex:1;" onclick="closeModal('modal-new-post');showToast('Post shared with all residents!','success')">📢 Post to Board</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-new-post')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE RENT SCORE -->
+<div class="modal-overlay" id="modal-share-score">
+  <div class="modal" style="text-align:center;">
+    <button class="modal-close" onclick="closeModal('modal-share-score')">✕</button>
+    <h3>Share Your Rent Score™</h3>
+    <div style="background:linear-gradient(135deg,var(--teal),#065F46);border-radius:16px;padding:24px;margin:16px 0;color:white;">
+      <div style="font-size:13px;opacity:0.7;margin-bottom:4px;">NyumbaLink Verified Rent Score™</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:56px;font-weight:700;margin-bottom:4px;">745</div>
+      <div style="font-size:14px;opacity:0.8;">Good · Top 35% of Kenya renters</div>
+      <div style="font-size:11px;opacity:0.5;margin-top:8px;">Grace Njeri · Unit A3 · Verified April 2026</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Share this verified score with prospective landlords, banks, or employers as proof of your rental reliability.</p>
+    <div class="modal-actions">
+      <button class="btn btn-teal" style="flex:1;" onclick="showToast('Score certificate downloaded!','success')">📥 Download PDF</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="showToast('Score link copied to clipboard!','info')">🔗 Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMERGENCY CONTACTS -->
+<div class="modal-overlay" id="modal-emergency">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-emergency')">✕</button>
+    <h3>🚨 Emergency Contacts</h3>
+    <p class="msub">Greenview Apartments · Keep these saved on your phone</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="background:var(--red-light);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"><div><strong style="display:block;">J. Mutua – Building Manager</strong><span style="font-size:12px;color:var(--muted);">All urgent issues</span></div><a href="tel:+254700000001" style="background:var(--red);color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📞 Call</a></div>
+      <div style="background:var(--blue-light);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"><div><strong style="display:block;">Ali Hassan – Electrician</strong><span style="font-size:12px;color:var(--muted);">Electrical emergencies</span></div><a href="tel:+254722111222" style="background:var(--blue);color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📞 Call</a></div>
+      <div style="background:var(--teal-g);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"><div><strong style="display:block;">Brian Mwenda – Plumber</strong><span style="font-size:12px;color:var(--muted);">Water & pipe issues</span></div><a href="tel:+254712999111" style="background:var(--teal);color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📞 Call</a></div>
+      <div style="background:var(--amber-light);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"><div><strong style="display:block;">Kenyatta Hospital</strong><span style="font-size:12px;color:var(--muted);">Medical emergency</span></div><a href="tel:+254202726300" style="background:var(--amber);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📞 Call</a></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"><div><strong style="display:block;">Police – Langata</strong><span style="font-size:12px;color:var(--muted);">Security emergency</span></div><a href="tel:999" style="background:var(--ink);color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📞 999</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- GIVE NOTICE -->
+<div class="modal-overlay" id="modal-give-notice">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-give-notice')">✕</button>
+    <h3>📝 Give Notice to Vacate</h3>
+    <p class="msub">Submit your 30-day notice. This is legally binding and sent to your landlord.</p>
+    <div class="fg"><label>Intended Vacate Date</label><input type="date"/></div>
+    <div class="fg"><label>Reason for Leaving</label><select><option>Relocating</option><option>Buying own home</option><option>Upgrading unit</option><option>Financial reasons</option><option>Other</option></select></div>
+    <div class="fg"><label>Additional Notes</label><textarea placeholder="Any additional information for the landlord…"></textarea></div>
+    <div style="background:var(--amber-light);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--amber);">⚠️ 30 days notice is required per your lease. Submitting this notice means you agree to vacate by the stated date.</div>
+    <div class="modal-actions">
+      <button class="btn btn-red" style="flex:1;" onclick="closeModal('modal-give-notice');showToast('Notice submitted to landlord!','warn')">Submit Notice</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-give-notice')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
 
 <script>
-// Scroll reveal
-const revEls = document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
-const revObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); revObs.unobserve(e.target); } });
-}, {threshold: 0.1});
-revEls.forEach(el => revObs.observe(el));
+/* ═══ INIT ═══ */
+const SUPABASE_URL='https://cqxeraovwxlmevvyjtng.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeGVyYW92d3hsbWV2dnlqdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTQ4NDYsImV4cCI6MjA5MjQ3MDg0Nn0.Apzmtgw3jY2fCpT1i8qOFZvRgJpXgZgZBm1FiESKtws';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+let currentTab='home',selectedCat='',selectedPrio='';
+let tenantProfile={},unitData={},propertyData={};
 
-// Counter animation
-const nums = document.querySelectorAll('[data-t]');
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) {
-      const target = parseInt(e.target.dataset.t);
-      let current = 0;
-      const step = target / 80;
-      const iv = setInterval(() => {
-        current = Math.min(current + step, target);
-        e.target.textContent = Math.floor(current).toLocaleString() + (target === 98 ? '%' : '+');
-        if(current >= target) { e.target.textContent = target.toLocaleString() + (target === 98 ? '%' : '+'); clearInterval(iv); }
-      }, 20);
-      obs.unobserve(e.target);
+/* ═══ AUTH ═══ */
+async function doLogin(){
+  const email=document.getElementById('login-id').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showLoginErr('Please enter your email and password.');return;}
+  document.getElementById('go-landlord-btn').style.display='none';
+  setLoginLoading(true);
+  const {error}=await sb.auth.signInWithPassword({email,password:pass});
+  setLoginLoading(false);
+  if(error){const msg=error?.message||error?.error_description||JSON.stringify(error)||'Unknown error'; showLoginErr(msg.includes('fetch')?'⚠️ Preview sandbox — network blocked. Open on GitHub Pages to sign in.':msg);return;}
+  await initPortal();
+}
+
+async function quickLogin(email){
+  setLoginLoading(true);
+  const {error}=await sb.auth.signInWithPassword({email,password:'Demo@2026'});
+  setLoginLoading(false);
+  if(error){showLoginErr('Demo login failed: '+error.message);return;}
+  await initPortal();
+}
+
+function setLoginLoading(on){
+  const btn=document.getElementById('login-btn');
+  if(btn){btn.textContent=on?'Signing in…':'Sign In to My Portal →';btn.disabled=on;}
+}
+function showLoginErr(msg){
+  const e=document.getElementById('login-err');
+  if(e){e.textContent=msg;e.style.display='block';}
+}
+
+async function initPortal(auto=false){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){if(!auto)showLoginErr('Could not verify session.');return;}
+  // Links a verified Google email / phone number to the tenant the landlord registered
+  try{await sb.rpc('claim_tenant_account');}catch(e){}
+  const {data:tenant,error:te}=await sb.from('tenants')
+    .select('*, units!unit_id(*), properties!property_id(*)')
+    .or(`auth_uid.eq.${user.id},id.eq.${user.id}`)
+    .maybeSingle();
+  if(te){
+    if(auto)return;
+    const msg = te?.message||'';
+    if(msg.includes('coerce')||msg.includes('multiple')||msg.includes('single')){
+      showLoginErr('This account is not a tenant account. Are you a landlord? Go to the Landlord Portal instead.');
+      setTimeout(()=>{ document.getElementById('go-landlord-btn').style.display='block'; }, 100);
+    } else {
+      showLoginErr('Account error: '+msg);
     }
-  });
-}, {threshold: 0.5});
-nums.forEach(n => obs.observe(n));
-
-// Pricing toggle
-const plans = {standard:{mo:2000,an:1600}, premium:{mo:7500,an:6000}};
-function togglePricing() {
-  const annual = document.getElementById('billing-tog').checked;
-  document.getElementById('bl-mo').classList.toggle('on', !annual);
-  document.getElementById('bl-an').classList.toggle('on', annual);
-  document.getElementById('save-tag').style.display = annual ? 'inline-flex' : 'none';
-  document.getElementById('std-price').textContent = 'KES ' + (annual ? plans.standard.an : plans.standard.mo).toLocaleString();
-  document.getElementById('std-sub').textContent = annual ? 'Billed annually · KES ' + (plans.standard.an * 12).toLocaleString() + '/year' : 'Billed monthly';
-  document.getElementById('std-orig').textContent = annual ? 'KES 2,000/mo normally' : ' ';
-  document.getElementById('prem-price').textContent = 'KES ' + (annual ? plans.premium.an : plans.premium.mo).toLocaleString();
-  document.getElementById('prem-sub').textContent = annual ? 'Unlimited · Billed annually · KES ' + (plans.premium.an * 12).toLocaleString() + '/year' : 'Unlimited units · Billed monthly';
-  document.getElementById('prem-orig').textContent = annual ? 'KES 7,500/mo normally' : ' ';
-}
-
-// Mobile menu
-const mobBtn = document.querySelector('.mob-menu');
-let mobOpen = false;
-if(mobBtn) {
-  const mobDrop = document.createElement('div');
-  mobDrop.id = 'mob-drop';
-  mobDrop.style.cssText = 'display:none;position:fixed;top:60px;left:0;right:0;background:rgba(7,10,14,0.97);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07);z-index:99;padding:16px 20px;';
-  mobDrop.innerHTML = `
-    <a href="#features" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Features</a>
-    <a href="#serve" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Who We Serve</a>
-    <a href="#pricing" style="display:block;padding:12px 0;color:rgba(238,242,248,0.7);text-decoration:none;font-size:15px;border-bottom:1px solid rgba(255,255,255,0.05);">Pricing</a>
-    <div style="display:flex;gap:10px;margin-top:14px;">
-      <a href="tenant.html" style="flex:1;padding:11px;border:1.5px solid rgba(255,255,255,0.12);border-radius:9px;color:rgba(238,242,248,0.6);font-size:13px;font-weight:600;text-decoration:none;text-align:center;">Tenant Login</a>
-      <a href="landlord.html" style="flex:1;padding:11px;background:#0A9690;border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;text-align:center;">Get Started Free</a>
-    </div>`;
-  document.body.appendChild(mobDrop);
-  mobBtn.onclick = () => {
-    mobOpen = !mobOpen;
-    mobDrop.style.display = mobOpen ? 'block' : 'none';
-    mobBtn.textContent = mobOpen ? '\u2715' : '\u2630';
-  };
-  mobDrop.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.onclick = () => { mobOpen = false; mobDrop.style.display = 'none'; mobBtn.textContent = '\u2630'; };
-  });
-}
-
-
-// Nav scroll shrink
-window.addEventListener('scroll', () => {
-  const nav = document.querySelector('nav');
-  if(nav) nav.style.padding = window.scrollY > 60 ? '11px 56px' : '16px 56px';
-});
-
-// Parallax hero background
-window.addEventListener('scroll', () => {
-  const hero = document.querySelector('.hero');
-  if(hero && window.scrollY < window.innerHeight) {
-    const offset = window.scrollY * 0.25;
-    hero.style.backgroundPositionY = `calc(center + ${offset}px)`;
+    await sb.auth.signOut(); return;
   }
+  if(!tenant){
+    if(auto)return;
+    const who=user.email||user.phone||'this account';
+    showLoginErr('No tenant account found for '+who+'. Ask your landlord to add your '+(user.email?'email':'phone number')+', or sign in with the contact they registered.');
+    document.getElementById('go-landlord-btn').style.display='block';
+    await sb.auth.signOut(); return;
+  }
+  tenantProfile=tenant;
+  unitData=tenant.units||{};
+  propertyData=tenant.properties||{};
+  const firstName=tenant.name.split(' ')[0];
+  const initials=tenant.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('tb-greeting').textContent=`${greet}, ${firstName} 👋`;
+  document.getElementById('tb-apt').textContent=`${propertyData.name||'Your Property'} · Unit ${unitData.unit_number||'—'} · ${propertyData.town||''}`;
+  document.getElementById('sb-initials').textContent=initials;
+  document.getElementById('sb-name').textContent=tenant.name;
+  document.getElementById('sb-unit').textContent=`Unit ${unitData.unit_number||'—'}`;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  await Promise.all([loadHomeStats(),loadPayments(),loadWater(),loadRepairs(),loadCommunity(),loadNotifications(),loadTenantDocuments()]);
+  buildPaymentInstructions();
+  openTab('home');
+  startCountdown();
+}
+
+
+/* ── FORGOT PASSWORD ── */
+function openForgotPw(e){
+  e.preventDefault();
+  document.getElementById('forgot-email').value = document.getElementById('login-id').value || '';
+  document.getElementById('forgot-status').style.display='none';
+  document.getElementById('forgot-btn').disabled=false;
+  document.getElementById('forgot-btn').textContent='📧 Send Reset Link';
+  document.getElementById('mo-forgot').style.display='flex';
+}
+async function sendResetEmail(){
+  const email=document.getElementById('forgot-email').value.trim();
+  const statusEl=document.getElementById('forgot-status');
+  const btn=document.getElementById('forgot-btn');
+  if(!email){ showStatus(statusEl,'Please enter your email address.','err'); return; }
+  btn.disabled=true; btn.textContent='Sending…';
+  const { error }=await sb.auth.resetPasswordForEmail(email,{ redirectTo: window.location.origin+window.location.pathname });
+  btn.disabled=false;
+  if(error){ showStatus(statusEl,'❌ '+error.message,'err'); btn.textContent='📧 Send Reset Link'; }
+  else { showStatus(statusEl,'✅ Reset link sent to '+email+'. Check your inbox (and spam folder).','ok'); btn.textContent='Link Sent ✓'; }
+}
+function showStatus(el,msg,type){
+  el.textContent=msg;
+  el.style.cssText='display:block;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;'+(type==='err'?'background:rgba(239,68,68,0.1);color:#EF4444':'background:rgba(34,197,94,0.1);color:#22C55E');
+}
+/* ── PASSWORD RECOVERY ── */
+function showRecoveryOverlay(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('recovery-overlay').style.display='flex';
+}
+async function updatePassword(){
+  const np=document.getElementById('new-pass').value;
+  const np2=document.getElementById('new-pass2').value;
+  const statusEl=document.getElementById('recovery-status');
+  const btn=document.getElementById('recovery-btn');
+  if(np.length<8){ showStatus(statusEl,'Password must be at least 8 characters.','err'); return; }
+  if(np!==np2){ showStatus(statusEl,'Passwords do not match.','err'); return; }
+  btn.disabled=true; btn.textContent='Saving…';
+  const { error }=await sb.auth.updateUser({ password: np });
+  if(error){ showStatus(statusEl,'❌ '+error.message,'err'); btn.disabled=false; btn.textContent='✅ Update Password'; }
+  else {
+    document.getElementById('recovery-overlay').style.display='none';
+    document.getElementById('login-screen').style.display='grid';
+    showLoginErr('Password updated! Please sign in with your new password.');
+    document.getElementById('login-err').style.background='rgba(34,197,94,0.1)';
+    document.getElementById('login-err').style.color='#22C55E';
+  }
+}
+/* ── INSTANT DEMO (no auth required) ── */
+const DEMO_PROFILES = {"faith": {"name": "Faith Wanjiru", "unit": "A1", "property": "Greenview Apartments", "town": "Langata", "rent": 12000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 0, "payments": [{"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ9823ABZ", "period": "Jun 2026", "date": "Jun 3, 2026", "status": "confirmed"}, {"type": "Water", "amount": 1050, "method": "M-Pesa", "ref": "QKL8812", "period": "May 2026", "date": "May 30, 2026", "status": "confirmed"}, {"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ5421XYZ", "period": "May 2026", "date": "May 2, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 119, "curr": 132, "used": 13, "bill": 1950, "status": "pending"}, {"period": "May 2026", "prev": 107, "curr": 119, "used": 12, "bill": 1800, "status": "confirmed"}], "repairs": [], "status": "paid"}, "mary": {"name": "Mary Achieng", "unit": "A3", "property": "Greenview Apartments", "town": "Langata", "rent": 12000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 12000, "payments": [{"type": "Rent", "amount": 12000, "method": "M-Pesa", "ref": "QHJ1234AB", "period": "May 2026", "date": "May 2, 2026", "status": "confirmed"}, {"type": "Water", "amount": 900, "method": "M-Pesa", "ref": "QKL5544", "period": "Apr 2026", "date": "Apr 28, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 88, "curr": 100, "used": 12, "bill": 1800, "status": "pending"}, {"period": "May 2026", "prev": 76, "curr": 88, "used": 12, "bill": 1800, "status": "pending"}], "repairs": [{"title": "Electrical socket sparking", "cat": "Electrical", "priority": "High", "status": "open", "ref": "RPR-003", "date": "Jun 8, 2026"}], "status": "overdue"}, "daniel": {"name": "Daniel Kiptoo", "unit": "B2", "property": "Greenview Apartments", "town": "Langata", "rent": 18000, "paybill": "400200", "payment_method": "mpesa_paybill", "balance": 18000, "payments": [{"type": "Rent", "amount": 18000, "method": "M-Pesa", "ref": "QHJ8877CD", "period": "Apr 2026", "date": "Apr 3, 2026", "status": "confirmed"}], "water": [{"period": "Jun 2026", "prev": 156, "curr": 170, "used": 14, "bill": 2100, "status": "pending"}], "repairs": [{"title": "Leaking kitchen tap", "cat": "Plumbing", "priority": "Medium", "status": "in_progress", "ref": "RPR-002", "date": "Jun 5, 2026"}], "status": "overdue"}};
+
+function demoSignIn(email, chipId){
+  // Determine which demo profile to load
+  const key = email.includes('faith') ? 'faith' : email.includes('mary') ? 'mary' : 'daniel';
+  const d = DEMO_PROFILES[key];
+
+  // Store demo data globally
+  tenantProfile = { name: d.name, unit_id: 'demo', property_id: 'demo', is_demo: true };
+  unitData = { unit_number: d.unit, monthly_rent: d.rent };
+  propertyData = { name: d.property, town: d.town, mpesa_paybill: d.paybill,
+    payment_method: d.payment_method, rent_due_day: 5 };
+
+  // Update UI
+  const hr = new Date().getHours();
+  const greet = hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  setText('tb-greeting', greet + ', ' + d.name.split(' ')[0] + ' 👋');
+  setText('tb-apt', d.property + ' · Unit ' + d.unit + ' · ' + d.town);
+  setText('sb-initials', d.name.split(' ').map(w=>w[0]).join('').slice(0,2));
+  setText('sb-name', d.name);
+  setText('sb-unit', 'Unit ' + d.unit);
+
+  // Show portal instantly
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+
+  // Render all pages with demo data
+  renderDemoHome(d);
+  renderDemoPayments(d);
+  renderDemoWater(d);
+  renderDemoRepairs(d);
+  buildPaymentInstructions();
+  openTab('home');
+  startCountdown();
+}
+
+function renderDemoHome(d){
+  setText('stat-rent-val', Number(d.rent).toLocaleString());
+  if(d.balance === 0){
+    setText('stat-rent-sub', '✅ Paid this month via M-Pesa');
+    setStatColor('stat-rent','teal');
+  } else {
+    setText('stat-rent-sub', '⏳ Due 5th this month');
+    setStatColor('stat-rent','red');
+  }
+  setText('stat-bal-val', 'KES ' + Number(d.balance).toLocaleString());
+  setText('stat-bal-sub', d.balance > 0 ? '⚠️ KES ' + Number(d.balance).toLocaleString() + ' outstanding' : '✅ All clear · No arrears');
+  setStatColor('stat-bal', d.balance > 0 ? 'red' : 'green');
+  const w = d.water[0];
+  if(w){ setText('stat-water-val', w.bill.toLocaleString()); setText('stat-water-sub', (w.status==='confirmed'?'✅ Paid':'⏳ Due') + ' · ' + w.used + ' m³'); setStatColor('stat-water', w.status==='confirmed'?'teal':'gold'); }
+  setText('stat-garbage-val', '500'); setText('stat-garbage-sub', 'Monthly · KES 500/mo');
+  checkPenalty(d.balance);
+  // Activity feed
+  const el = document.getElementById('activity-feed');
+  if(el){
+    if(!d.payments.length){ el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:8px 0">No payment history yet.</p>'; return; }
+    el.innerHTML = d.payments.map(p=>`
+      <div class="li">
+        <div class="li-ico" style="background:${p.status==='confirmed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='confirmed'?'var(--green)':'var(--amber)'}">${p.status==='confirmed'?'✅':'⏳'}</div>
+        <div class="li-desc"><strong>${p.type} Payment</strong><span>${p.method} · ${p.ref} · ${p.date}</span></div>
+        <div class="li-amount"><div class="amt ${p.status==='confirmed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div><div class="bal">${p.status==='confirmed'?'Confirmed':'Pending'}</div></div>
+      </div>`).join('');
+  }
+}
+
+function renderDemoPayments(d){
+  const el = document.getElementById('payments-list');
+  if(!el) return;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(!d.payments.length){ el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</div>'; return; }
+  el.innerHTML = d.payments.map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${p.status==='confirmed'?'var(--green-light)':'var(--amber-light)'};color:${p.status==='confirmed'?'var(--green)':'var(--amber)'}">${p.status==='confirmed'?'✅':'⏳'}</div>
+      <div class="li-desc"><strong>${capitalize(p.type)} — ${p.period}</strong><span>${p.method} · Ref: ${p.ref} · ${p.date}</span></div>
+      <div class="li-amount"><div class="amt ${p.status==='confirmed'?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div><div class="bal"><span class="badge ${p.status==='confirmed'?'bg':'ba'}">${p.status}</span></div></div>
+    </div>`).join('');
+  const paid = d.payments.filter(p=>p.status==='confirmed');
+  setText('pay-total-paid', 'KES ' + paid.reduce((s,p)=>s+p.amount,0).toLocaleString());
+  setText('pay-count', paid.length + ' payments');
+}
+
+function renderDemoWater(d){
+  const el = document.getElementById('water-history');
+  if(!el) return;
+  if(!d.water.length){ el.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">No readings yet.</div>'; return; }
+  el.innerHTML = d.water.map(r=>`
+    <div class="li">
+      <div class="li-ico" style="background:var(--blue-light);color:var(--blue)">💧</div>
+      <div class="li-desc"><strong>${r.period}</strong><span>Prev: ${r.prev}m³ → Curr: ${r.curr}m³ · Used: ${r.used}m³</span></div>
+      <div class="li-amount"><div class="amt" style="color:var(--blue)">KES ${Number(r.bill).toLocaleString()}</div><div class="bal"><span class="badge ${r.status==='confirmed'?'bg':'ba'}">${r.status}</span></div></div>
+    </div>`).join('');
+  const latest = d.water[0];
+  setText('water-units', latest.used + ' m³');
+  setText('water-current-bill', 'KES ' + latest.bill.toLocaleString());
+  setText('water-status', latest.status==='confirmed'?'✅ Paid':'⏳ Unpaid');
+  buildWaterChart(d.water.map(r=>({units_consumed:r.used,period_month:parseInt(r.period)})).reverse());
+}
+
+function renderDemoRepairs(d){
+  const el = document.getElementById('repairs-list');
+  if(!el) return;
+  const tabR = document.getElementById('tab-repairs');
+  if(tabR) tabR.innerHTML = '🔧 Repairs' + (d.repairs.length ? ` <span class="tbadge">${d.repairs.filter(r=>r.status==='open').length||''}</span>` : '');
+  if(!d.repairs.length){ el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🔧</div><div>No repair tickets yet.</div></div>'; return; }
+  const prioColor={Low:'bt',Medium:'ba',High:'br',Urgent:'br'};
+  const statusColor={open:'r',in_progress:'a',completed:'g',assigned:'a'};
+  const statusLabel={open:'Open',in_progress:'In Progress',completed:'Completed',assigned:'Assigned'};
+  el.innerHTML = d.repairs.map(r=>`
+    <div class="repair-card ${r.status==='completed'?'done':r.status==='in_progress'||r.status==='assigned'?'progress':'open'}">
+      <div class="rc-head">
+        <span style="font-size:20px">${catIcon(r.cat)}</span>
+        <div class="rc-title">${r.title}</div>
+        <span class="badge b${statusColor[r.status]||'m'}">${statusLabel[r.status]||r.status}</span>
+        <span class="badge ${prioColor[r.priority]||'bt'}">${r.priority}</span>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">
+        <span>📋 ${r.ref}</span><span>📅 ${r.date}</span><span>🏷️ ${r.cat}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function quickLoginChip(chip,email){ demoSignIn(email, chip.id||''); }
+
+
+async function logout(){
+  await sb.auth.signOut();
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='grid';
+  document.getElementById('login-id').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-err').style.display='none';
+}
+
+
+/* ══ PAYMENT INSTRUCTIONS (dynamic from landlord settings) ══ */
+function buildPaymentInstructions(){
+  if(!propertyData) return;
+  const method = propertyData.payment_method || 'mpesa_paybill';
+  const unit = unitData.unit_number || '—';
+  const rent = Number(unitData.monthly_rent||0).toLocaleString();
+  const instr = propertyData.payment_instructions || '';
+
+  let label = '', mainNum = '', steps = [];
+
+  if(method === 'mpesa_paybill'){
+    const pb = propertyData.mpesa_paybill || '—';
+    label = '📲 M-Pesa Paybill';
+    mainNum = pb;
+    steps = [
+      'Open M-Pesa → Lipa na M-Pesa → <strong>Pay Bill</strong>',
+      `Business No: <strong style="color:white">${pb}</strong>`,
+      `Account No: <strong style="color:white">${unit}</strong> (your unit number)`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`
+    ];
+  } else if(method === 'mpesa_till'){
+    const till = propertyData.mpesa_till || '—';
+    label = '🏪 M-Pesa Till (Buy Goods)';
+    mainNum = till;
+    steps = [
+      'Open M-Pesa → Lipa na M-Pesa → <strong>Buy Goods & Services</strong>',
+      `Till No: <strong style="color:white">${till}</strong>`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`,
+      'Screenshot the receipt and send to your landlord'
+    ];
+  } else if(method === 'mpesa_phone'){
+    const phone = propertyData.mpesa_phone || '—';
+    const name = propertyData.bank_name || 'Landlord';
+    label = '📱 M-Pesa Send Money';
+    mainNum = phone;
+    steps = [
+      'Open M-Pesa → <strong>Send Money</strong>',
+      `To: <strong style="color:white">${phone}</strong> (${name})`,
+      `Amount: <strong style="color:white">KES ${rent}</strong> → Enter PIN → Confirm`,
+      `Reference: <strong style="color:white">Unit ${unit}</strong> + your name`
+    ];
+  } else if(method === 'bank'){
+    const bank = propertyData.bank_name || '—';
+    const branch = propertyData.bank_branch || '';
+    const acct = propertyData.bank_account || '—';
+    label = '🏦 Bank Transfer';
+    mainNum = acct;
+    steps = [
+      `Bank: <strong style="color:white">${bank}${branch?' — '+branch:''}</strong>`,
+      `Account: <strong style="color:white">${acct}</strong>`,
+      `Amount: <strong style="color:white">KES ${rent}</strong>`,
+      `Reference: <strong style="color:white">Unit ${unit} — ${tenantProfile.name}</strong>`
+    ];
+  }
+
+  const stepsHTML = steps.map((s,i)=>`<div class="mpesa-step"><div class="mpesa-step-num">${i+1}</div>${s}</div>`).join('');
+
+  // Update modal
+  setText('pay-method-label', label.replace(/^📲|📱|🏪|🏦\s*/,''));
+  const badge = document.getElementById('pay-method-badge');
+  if(badge) badge.querySelector('span').textContent = label;
+  setText('pay-main-number', mainNum);
+  const modalSteps = document.getElementById('pay-steps-container');
+  if(modalSteps) modalSteps.innerHTML = stepsHTML;
+  const modalExtra = document.getElementById('pay-extra-instructions');
+  if(modalExtra){ modalExtra.textContent = instr; modalExtra.style.display = instr?'block':'none'; }
+
+  // Update pay page
+  setText('pay-page-main-num', mainNum);
+  const pageSteps = document.getElementById('pay-page-steps');
+  if(pageSteps) pageSteps.innerHTML = stepsHTML;
+  const pageExtra = document.getElementById('pay-page-instructions');
+  if(pageExtra){ pageExtra.textContent = instr; pageExtra.style.display = instr?'block':'none'; }
+
+  // Update rules/schedule section
+  const methodLabels = {mpesa_paybill:'M-Pesa Paybill',mpesa_till:'M-Pesa Till (Buy Goods)',mpesa_phone:'M-Pesa Send Money',bank:'Bank Transfer'};
+  setText('pay-rules-method', methodLabels[method]||method);
+  setText('pay-rules-ref', mainNum);
+  setText('pay-modal-paybill', mainNum);
+  setText('pay-modal-account', unit);
+  setText('pay-modal-amount', `KES ${rent}`);
+}
+
+/* ═══ HOME STATS ═══ */
+async function loadHomeStats(){
+  const now=new Date();
+  const month=now.getMonth()+1;
+  const year=now.getFullYear();
+  const {data:payments}=await sb.from('payments').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const {data:water}=await sb.from('water_readings').select('*')
+    .eq('tenant_id',tenantProfile.id)
+    .order('period_year',{ascending:false}).order('period_month',{ascending:false}).limit(1);
+  const rentPayments=(payments||[]).filter(p=>p.payment_type==='rent');
+  const thisMonthRent=rentPayments.find(p=>p.period_month===month&&p.period_year===year);
+  const balance=Number(unitData.monthly_rent||0)-(thisMonthRent&&isPaid(thisMonthRent)?Number(unitData.monthly_rent||0):0);
+  const waterBill=water&&water[0];
+  setText('stat-rent-val',Number(unitData.monthly_rent||0).toLocaleString());
+  if(thisMonthRent&&isPaid(thisMonthRent)){
+    setText('stat-rent-sub',`✅ Paid ${fmtDate(thisMonthRent.created_at)} via ${thisMonthRent.payment_method||'M-Pesa'}`);
+    setStatColor('stat-rent','teal');
+  } else {
+    setText('stat-rent-sub',`⏳ Due ${propertyData.rent_due_day||5}th this month`);
+    setStatColor('stat-rent','red');
+  }
+  setText('stat-bal-val',`KES ${balance>0?balance.toLocaleString():0}`);
+  setText('stat-bal-sub',balance>0?`⚠️ KES ${balance.toLocaleString()} outstanding`:'✅ All clear · No arrears');
+  setStatColor('stat-bal',balance>0?'red':'green');
+  if(waterBill){
+    setText('stat-water-val',Number(waterBill.bill_amount||0).toLocaleString());
+    setText('stat-water-sub',`${waterBill.status==='paid'?'✅ Paid':'⏳ Due'} · ${waterBill.units_consumed||0} m³`);
+    setStatColor('stat-water',waterBill.status==='paid'?'teal':'gold');
+  } else {
+    setText('stat-water-val','—');
+    setText('stat-water-sub','No reading yet this month');
+  }
+  const garbageFee=Number(propertyData.garbage_fee||500);
+  setText('stat-garbage-val',garbageFee.toLocaleString());
+  setText('stat-garbage-sub',`Monthly · KES ${garbageFee.toLocaleString()}/mo`);
+  buildActivityFeed(payments||[]);
+  checkPenalty(balance);
+  setText('pay-modal-unit',unitData.unit_number||'');
+  setText('pay-modal-paybill',propertyData.mpesa_paybill||'—');
+  setText('pay-modal-account',unitData.unit_number||'');
+  setText('pay-modal-amount',`KES ${Number(unitData.monthly_rent||0).toLocaleString()}`);
+}
+
+function buildActivityFeed(payments){
+  const el=document.getElementById('activity-feed');
+  if(!el)return;
+  if(!payments.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;padding:8px 0">No payment history yet.</p>';return;}
+  el.innerHTML=payments.slice(0,5).map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${isPaid(p)?'var(--green-light)':'var(--amber-light)'};color:${isPaid(p)?'var(--green)':'var(--amber)'}">${isPaid(p)?'✅':'⏳'}</div>
+      <div class="li-desc">
+        <strong>${p.payment_type==='rent'?'Rent Payment':capitalize(p.payment_type||'Payment')}</strong>
+        <span>${p.payment_method||'M-Pesa'} · ${p.mpesa_reference||p.receipt_number||'—'} · ${fmtDate(p.created_at)}</span>
+      </div>
+      <div class="li-amount">
+        <div class="amt ${isPaid(p)?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div>
+        <div class="bal">${isPaid(p)?'Confirmed':'Pending'}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══ PAYMENTS ═══ */
+async function loadPayments(){
+  prefillStk();
+  const {data:payments}=await sb.from('payments').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const el=document.getElementById('payments-list');
+  if(!el)return;
+  if(!payments||!payments.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No payment records found.</div>';return;}
+  el.innerHTML=payments.map(p=>`
+    <div class="li">
+      <div class="li-ico" style="background:${isPaid(p)?'var(--green-light)':'var(--amber-light)'};color:${isPaid(p)?'var(--green)':'var(--amber)'}">${isPaid(p)?'✅':'⏳'}</div>
+      <div class="li-desc">
+        <strong>${capitalize(p.payment_type||'Payment')} — ${monthName(p.period_month)} ${p.period_year||''}</strong>
+        <span>${p.payment_method||'M-Pesa'} · ${p.mpesa_reference||p.receipt_number||'—'} · ${fmtDate(p.created_at)}</span>
+        ${isPaid(p)&&p.receipt_token?`<a href="receipt.html?t=${encodeURIComponent(p.receipt_token)}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:var(--teal);text-decoration:none;">🧾 View receipt</a>`:''}
+      </div>
+      <div class="li-amount">
+        <div class="amt ${isPaid(p)?'cr':'pe'}">KES ${Number(p.amount).toLocaleString()}</div>
+        <div class="bal"><span class="badge ${isPaid(p)?'bg':p.status==='failed'?'br':'ba'}">${p.status}</span></div>
+      </div>
+    </div>`).join('');
+  const paid=(payments||[]).filter(p=>isPaid(p));
+  const totalPaid=paid.reduce((s,p)=>s+Number(p.amount),0);
+  setText('pay-total-paid',`KES ${totalPaid.toLocaleString()}`);
+  setText('pay-count',`${paid.length} payments`);
+}
+
+/* ═══ WATER ═══ */
+async function loadWater(){
+  const {data:readings}=await sb.from('water_readings').select('*')
+    .eq('tenant_id',tenantProfile.id)
+    .order('period_year',{ascending:false}).order('period_month',{ascending:false});
+  const el=document.getElementById('water-history');
+  if(!el)return;
+  if(!readings||!readings.length){
+    el.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No water readings yet.</div>';
+    buildWaterChart([]);return;
+  }
+  el.innerHTML=readings.map(r=>`
+    <div class="li">
+      <div class="li-ico" style="background:var(--blue-light);color:var(--blue)">💧</div>
+      <div class="li-desc">
+        <strong>${monthName(r.period_month)} ${r.period_year}</strong>
+        <span>Prev: ${r.previous_reading||0}m³ → Current: ${r.current_reading||0}m³ · Used: ${r.units_consumed||0}m³</span>
+      </div>
+      <div class="li-amount">
+        <div class="amt" style="color:var(--blue)">KES ${Number(r.bill_amount||0).toLocaleString()}</div>
+        <div class="bal"><span class="badge ${r.status==='paid'?'bg':'ba'}">${r.status||'pending'}</span></div>
+      </div>
+    </div>`).join('');
+  buildWaterChart([...readings].slice(0,7).reverse());
+  const latest=readings[0];
+  if(latest){
+    setText('water-current-bill',`KES ${Number(latest.bill_amount||0).toLocaleString()}`);
+    setText('water-units',`${latest.units_consumed||0} m³`);
+    setText('water-rate',`KES ${Number(latest.rate_per_m3||propertyData.water_rate_per_m3||150).toLocaleString()}/m³`);
+    setText('water-status',latest.status==='paid'?'✅ Paid':'⏳ Unpaid');
+    setText('water-units-reading',`${latest.units_consumed||0} m³`);
+    setText('water-bill-reading',`KES ${Number(latest.bill_amount||0).toLocaleString()}`);
+    setText('water-status-reading',latest.status==='paid'?'✅ Paid':'⏳ Unpaid');
+    setText('water-unit-label', unitData.unit_number||'—');
+    setText('water-reading-count', `${readings.length}`);
+  }
+}
+
+/* ═══ REPAIRS ═══ */
+async function loadRepairs(){
+  const {data:repairs}=await sb.from('repairs').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false});
+  const el=document.getElementById('repairs-list');
+  if(!el)return;
+  const openCount=(repairs||[]).filter(r=>r.status==='open'||r.status==='assigned').length;
+  const tabR=document.getElementById('tab-repairs');
+  if(tabR) tabR.innerHTML=`🔧 Repairs${openCount?` <span class="tbadge">${openCount}</span>`:''}`;
+  if(!repairs||!repairs.length){
+    el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🔧</div><div>No repair tickets yet.</div></div>';return;
+  }
+  const statusColor={open:'r',assigned:'a',in_progress:'a',completed:'g',closed:'g'};
+  const statusLabel={open:'Open',assigned:'Assigned',in_progress:'In Progress',completed:'Completed',closed:'Closed'};
+  const prioColor={low:'bt',normal:'bt',medium:'ba',high:'br',urgent:'br'};
+  el.innerHTML=repairs.map(r=>`
+    <div class="repair-card ${r.status==='completed'||r.status==='closed'?'done':r.status==='in_progress'||r.status==='assigned'?'progress':'open'}">
+      <div class="rc-head">
+        <span style="font-size:20px">${catIcon(r.category)}</span>
+        <div class="rc-title">${r.title||'Repair Request'}</div>
+        <span class="badge b${statusColor[r.status]||'m'}">${statusLabel[r.status]||r.status}</span>
+        <span class="badge ${prioColor[r.priority]||'bt'}">${capitalize(r.priority)||'Normal'}</span>
+      </div>
+      <div class="rc-desc">${r.description||''}</div>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--muted)">
+        <span>📋 ${r.ref_number||'—'}</span><span>📅 ${fmtDate(r.created_at)}</span><span>🏷️ ${capitalize(r.category)||'General'}</span>
+      </div>
+      ${r.status==='completed'&&r.completed_at?`<div class="rc-tech"><div class="rc-tech-av">✅</div><div class="rc-tech-info"><strong>Resolved</strong><span>Completed ${fmtDate(r.completed_at)}</span></div></div>`:''}
+    </div>`).join('');
+}
+
+/* ═══ COMMUNITY ═══ */
+async function loadCommunity(){
+  const {data:posts}=await sb.from('community_posts').select('*')
+    .eq('property_id',tenantProfile.property_id)
+    .order('created_at',{ascending:false}).limit(20);
+  const el=document.getElementById('community-feed');
+  if(!el)return;
+  if(!posts||!posts.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No community posts yet.</div>';return;}
+  el.innerHTML=posts.map(p=>{
+    const isM=p.author_type==='landlord'||p.author_type==='admin';
+    const avBg=isM?'linear-gradient(135deg,var(--teal),#0A6B62)':'linear-gradient(135deg,var(--gold),#9A6B00)';
+    const initials=(p.author_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="post">
+      <div class="post-hdr">
+        <div class="post-av" style="background:${avBg};color:white">${initials}</div>
+        <div class="post-author">
+          <strong>${p.author_name||'Unknown'}${isM?' <span style="font-size:10px;background:var(--teal-g);color:var(--teal);border-radius:4px;padding:1px 6px;margin-left:4px">Management</span>':''}</strong>
+          <span>${fmtDate(p.created_at)}</span>
+        </div>
+      </div>
+      <div class="post-body">${p.content||''}</div>
+      <div class="post-actions"><button class="pa">👍 Like</button><button class="pa">💬 Comment</button></div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══ NOTIFICATIONS ═══ */
+async function loadNotifications(){
+  const {data:notifs}=await sb.from('notifications').select('*')
+    .eq('tenant_id',tenantProfile.id).order('created_at',{ascending:false}).limit(30);
+  const el=document.getElementById('notifs-list');
+  if(!el)return;
+  const unread=(notifs||[]).filter(n=>!n.read_at).length;
+  document.querySelectorAll('.ndot').forEach(d=>{d.textContent=unread||'';d.style.display=unread?'flex':'none';});
+  const tabN=document.getElementById('tab-notifications');
+  if(tabN) tabN.innerHTML=`🔔 Alerts${unread?` <span class="tbadge">${unread}</span>`:''}`;
+  if(!notifs||!notifs.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--muted)">No notifications yet.</div>';return;}
+  const typeColor={payment:'green',repair:'amber',announcement:'blue',overdue:'red',water:'blue'};
+  el.innerHTML=notifs.map(n=>`
+    <div class="notif-item" style="${!n.read_at?'background:var(--bg);border-radius:10px;padding:12px;margin-bottom:4px':''}">
+      <div class="ni-dot" style="background:var(--${typeColor[n.type]||'teal'})"></div>
+      <div class="ni-body"><strong>${n.title||'Notification'}</strong><p>${n.message||''}</p></div>
+      <div class="ni-time">${fmtDate(n.created_at)}</div>
+    </div>`).join('');
+}
+
+/* ═══ SUBMIT REPAIR ═══ */
+async function submitRepair(){
+  const title=document.getElementById('rep-title').value.trim();
+  const desc=document.getElementById('rep-desc').value.trim();
+  if(!title||!desc){showToast('Please fill in title and description','warn');return;}
+  if(!selectedCat){showToast('Please select a category','warn');return;}
+  if(!selectedPrio){showToast('Please select a priority level','warn');return;}
+  const btn=document.getElementById('submit-repair-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
+  const {error}=await sb.from('repairs').insert({
+    tenant_id:tenantProfile.id,unit_id:tenantProfile.unit_id,
+    property_id:tenantProfile.property_id,landlord_id:propertyData.landlord_id,
+    title,description:desc,category:selectedCat,
+    priority:selectedPrio==='n'?'normal':selectedPrio==='h'?'high':'urgent',
+    status:'open',submitted_at:new Date().toISOString()
+  });
+  if(btn){btn.disabled=false;btn.textContent='Submit Repair Request';}
+  if(error){showToast('Failed to submit: '+error.message,'error');return;}
+  const cats={electrical:'Electrical ⚡',plumbing:'Plumbing 🚿',masonry:'Masonry 🧱',wifi:'Wi-Fi 📶',security:'Security 🔐',other:'Other 📋'};
+  const prios={n:'Normal 🟢',h:'High 🟡',u:'Urgent 🔴'};
+  const catEl=document.getElementById('rc-cat'),prioEl=document.getElementById('rc-prio');
+  if(catEl)catEl.textContent=cats[selectedCat];
+  if(prioEl)prioEl.textContent=prios[selectedPrio];
+  closeModal('modal-new-repair');showModal('modal-repair-success');
+  document.getElementById('rep-title').value='';document.getElementById('rep-desc').value='';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});
+  selectedCat='';selectedPrio='';
+  await loadRepairs();
+}
+
+/* ═══ TAB NAVIGATION ═══ */
+function openTab(tab){
+  // Documents tab handled same as others
+
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sni').forEach(s=>s.classList.remove('active'));
+  const pg=document.getElementById('pg-'+tab);
+  const tb=document.getElementById('tab-'+tab);
+  const sn=document.getElementById('sni-'+tab);
+  if(pg)pg.classList.add('active');
+  if(tb)tb.classList.add('active');
+  if(sn)sn.classList.add('active');
+  currentTab=tab;
+}
+
+/* ═══ COUNTDOWN ═══ */
+function startCountdown(){
+  function update(){
+    const now=new Date();
+    const day=now.getDay();
+    const daysToWed=(3-day+7)%7||7;
+    const nw=new Date(now);
+    nw.setDate(now.getDate()+daysToWed);nw.setHours(6,0,0,0);
+    const diff=nw-now;
+    const h=Math.floor(diff/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    const str=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    ['cd-main','cd-garbage'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=str;});
+    const gm=document.getElementById('garbage-msg');
+    if(gm){
+      if(daysToWed===1&&now.getHours()>=18)gm.textContent='⚠️ Tonight is the night! Put bins outside before 10pm.';
+      else if(day===3&&now.getHours()<7)gm.textContent='🚨 Truck arriving SOON! Take bins outside immediately!';
+      else if(day===3)gm.textContent='✅ Collection done for this week. Next: Wednesday 6am.';
+      else gm.textContent=`Next collection Wednesday 6:00 AM · ${daysToWed} day${daysToWed!==1?'s':''} away · Put bins out Tuesday night`;
+    }
+  }
+  update();setInterval(update,1000);
+}
+
+/* ═══ WATER CHART ═══ */
+function buildWaterChart(readings){
+  const el=document.getElementById('water-chart');
+  if(!el)return;
+  if(!readings||!readings.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">No data yet</p>';return;}
+  const mx=Math.max(...readings.map(r=>Number(r.units_consumed||0)),1);
+  el.innerHTML=readings.map((r,i)=>`
+    <div class="wc-bar-wrap">
+      <div class="wc-val">${r.units_consumed||0}</div>
+      <div class="wc-bar ${i===readings.length-1?'curr':'prev'}" style="height:${Math.round(Number(r.units_consumed||0)/mx*100)}%"></div>
+      <div class="wc-month">${monthName(r.period_month,'short')}</div>
+    </div>`).join('');
+}
+
+/* ═══ HELPERS ═══ */
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function setStatColor(id,color){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove('teal','green','red','gold','amber','blue');el.classList.add(color);
+}
+function fmtDate(d){
+  if(!d)return'—';
+  return new Date(d).toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'});
+}
+function monthName(m,fmt='long'){
+  if(!m)return'';
+  const s=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const l=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return fmt==='short'?s[(m-1)%12]:l[(m-1)%12];
+}
+function capitalize(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function catIcon(cat){
+  const icons={electrical:'⚡',plumbing:'🚿',masonry:'🧱',wifi:'📶',security:'🔐',carpentry:'🪚',other:'📋'};
+  return icons[cat]||'🔧';
+}
+function checkPenalty(balance){
+  const box=document.getElementById('penalty-alert');if(!box)return;
+  if(balance>0&&Number(propertyData.late_penalty_per_day||0)>0){
+    const days=Math.max(0,new Date().getDate()-(propertyData.rent_due_day||5));
+    if(days>0){
+      box.style.display='flex';
+      const pt=document.getElementById('penalty-text');
+      const pen=days*Number(propertyData.late_penalty_per_day||20);
+      if(pt)pt.textContent=`Rent is ${days} days late. KES ${propertyData.late_penalty_per_day||20}/day penalty = KES ${pen.toLocaleString()} accumulated.`;
+    } else box.style.display='none';
+  } else box.style.display='none';
+}
+
+/* ═══ REPAIR FORM ═══ */
+function selCat(el,cat){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selectedCat=cat;}
+function selPrio(el,p){document.querySelectorAll('.prio-b').forEach(b=>{b.className='prio-b';});el.classList.add('s'+p);selectedPrio=p;}
+
+
+
+/* ═══ DOCUMENTS (was called by initPortal but never defined, which stopped the dashboard finishing setup) ═══ */
+async function loadTenantDocuments(){
+  const box=document.querySelector('#pg-documents > div:nth-child(2)');
+  if(!box)return;
+  const icons={lease:'📋',receipt:'🧾',handbook:'📖',move_in_report:'🏠',rent_score:'⭐',emergency_contacts:'☎️',other:'📄'};
+  const {data,error}=await sb.from('tenant_documents')
+    .select('id,doc_type,title,file_url,file_name,notes,created_at')
+    .eq('tenant_id',tenantProfile.id).eq('is_shared_with_tenant',true)
+    .order('created_at',{ascending:false});
+  box.textContent='';
+  const note=t=>{const d=document.createElement('div');d.style.cssText='padding:28px 12px;text-align:center;color:var(--muted);font-size:14px;';d.textContent=t;box.appendChild(d);};
+  if(error)return note('Could not load your documents. Please try again later.');
+  if(!data||!data.length)return note('No documents shared with you yet. Your lease and receipts will appear here.');
+  data.forEach(d=>{
+    const card=document.createElement('div');card.className='doc-card';
+    const ic=document.createElement('span');ic.className='doc-icon';ic.textContent=icons[d.doc_type]||'📄';
+    const info=document.createElement('div');info.className='doc-info';
+    const st=document.createElement('strong');st.textContent=d.title;
+    const sp=document.createElement('span');
+    sp.textContent=[new Date(d.created_at).toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'}),d.notes].filter(Boolean).join(' · ');
+    info.append(st,sp);
+    const act=document.createElement('div');act.className='doc-actions';
+    if(d.file_url&&/^https?:\/\//i.test(d.file_url)){
+      const a=document.createElement('a');a.href=d.file_url;a.target='_blank';a.rel='noopener';a.className='btn btn-teal btn-sm';a.style.textDecoration='none';a.textContent='📥 Open';
+      act.appendChild(a);
+    }
+    card.append(ic,info,act);box.appendChild(card);
+  });
+}
+
+/* ═══ PAY NOW (M-Pesa prompt) ═══ */
+const isPaid=p=>!!p&&(p.status==='confirmed'||p.status==='completed');
+let STK_POLL_MS=3000,STK_POLL_MAX=30,stkBusy=false,stkTimer=null;
+function stkMsg(text,kind,linkHref){
+  const e=document.getElementById('stk-status');if(!e)return;
+  e.style.display='block';e.textContent=text;
+  e.style.background=kind==='ok'?'var(--green-light)':kind==='err'?'rgba(239,68,68,0.1)':'var(--amber-light)';
+  e.style.color=kind==='ok'?'var(--green)':kind==='err'?'#DC2626':'var(--amber)';
+  if(linkHref){const a=document.createElement('a');a.href=linkHref;a.target='_blank';a.rel='noopener';a.textContent=' View receipt →';a.style.cssText='color:inherit;text-decoration:underline;font-weight:800;';e.appendChild(a);}
+}
+function prefillStk(force){
+  const ph=document.getElementById('stk-phone'),am=document.getElementById('stk-amount'),ty=document.getElementById('stk-type');
+  if(!ph||!am)return;
+  if(!ph.value||force)ph.value=ph.value||tenantProfile.phone||'';
+  if(force||!am.value){am.value=(ty&&ty.value==='rent'&&unitData.monthly_rent)?Math.round(Number(unitData.monthly_rent)):'';}
+}
+function openPayModal(){
+  const e=document.getElementById('stk-status');if(e)e.style.display='none';
+  const b=document.getElementById('stk-btn');if(b){b.disabled=false;b.textContent='📲 Send payment prompt';}
+  stkBusy=false;clearTimeout(stkTimer);prefillStk();showModal('modal-pay');
+}
+async function startStk(){
+  if(stkBusy)return;
+  const type=document.getElementById('stk-type').value;
+  const amount=Math.round(Number(document.getElementById('stk-amount').value));
+  const phone=document.getElementById('stk-phone').value.trim();
+  if(!(amount>=1)){stkMsg('Enter the amount you want to pay.','err');return;}
+  if(!phone){stkMsg('Enter the M-Pesa number to send the prompt to.','err');return;}
+  stkBusy=true;const btn=document.getElementById('stk-btn');btn.disabled=true;btn.textContent='Sending prompt…';
+  stkMsg('Sending the prompt to your phone…','wait');
+  const done=()=>{stkBusy=false;btn.disabled=false;btn.textContent='📲 Send payment prompt';};
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){stkMsg('Please sign in again.','err');done();return;}
+    const res=await fetch(SUPABASE_URL+'/functions/v1/stk-push',{method:'POST',
+      headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON,Authorization:'Bearer '+session.access_token},
+      body:JSON.stringify({payment_type:type,amount,phone})});
+    let out={};try{out=await res.json();}catch(e){}
+    if(!res.ok){stkMsg(out.error||'Could not send the prompt. Please try again.','err');done();return;}
+    stkMsg('📲 Check your phone and enter your M-Pesa PIN to pay KES '+amount.toLocaleString()+'. Keep this window open.','wait');
+    let tries=0;
+    const poll=async()=>{
+      tries++;
+      const {data:p}=await sb.from('payments').select('status,receipt_token,notes').eq('id',out.payment_id).maybeSingle();
+      if(p&&isPaid(p)){
+        stkMsg('✅ Payment received. Your receipt has been sent to your phone by SMS.','ok','receipt.html?t='+encodeURIComponent(p.receipt_token));
+        done();loadPayments();try{loadHomeStats();}catch(e){}
+        return;
+      }
+      if(p&&p.status==='failed'){stkMsg('The payment was not completed'+(p.notes?' ('+p.notes+')':'')+'. You can try again.','err');done();return;}
+      if(tries>=STK_POLL_MAX){stkMsg('We have not received confirmation yet. If you entered your PIN, the payment will show in your ledger shortly. Do not pay twice.','wait');done();return;}
+      stkTimer=setTimeout(poll,STK_POLL_MS);
+    };
+    stkTimer=setTimeout(poll,STK_POLL_MS);
+  }catch(e){stkMsg('No connection. Check your internet and try again.','err');done();}
+}
+
+/* ═══ GOOGLE + PHONE OTP ═══ */
+function hideLoginErr(){const e=document.getElementById('login-err');if(e)e.style.display='none';}
+function togglePwLogin(e){
+  e.preventDefault();
+  const box=document.getElementById('pw-login');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  document.getElementById('pw-toggle').textContent=open?'Hide email and password':'Use email and password instead';
+}
+async function googleLogin(){
+  hideLoginErr();
+  const btn=document.getElementById('google-btn');btn.disabled=true;
+  try{sessionStorage.setItem('nl_oauth','1');}catch(e){}
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});
+  if(error){btn.disabled=false;showLoginErr(error.message.includes('provider')?'Google sign-in is not switched on yet. Please use your phone number.':error.message);}
+}
+let otpPhone='',otpTimer=null;
+function normPhoneKE(raw){
+  let d=(raw||'').replace(/\D/g,'');
+  if(d.startsWith('254'))d=d.slice(3);else if(d.startsWith('0'))d=d.slice(1);
+  return /^[17]\d{8}$/.test(d)?'+254'+d:null;
+}
+function startResendTimer(sec){
+  const b=document.getElementById('otp-resend');clearInterval(otpTimer);b.disabled=true;
+  const tick=()=>{b.textContent=sec>0?'Resend code in '+sec+'s':'Resend code';if(sec<=0){b.disabled=false;clearInterval(otpTimer);}sec--;};
+  tick();otpTimer=setInterval(tick,1000);
+}
+async function sendPhoneOtp(isResend){
+  hideLoginErr();
+  const phone=isResend===true&&otpPhone?otpPhone:normPhoneKE(document.getElementById('login-phone').value);
+  if(!phone){showLoginErr('Enter a valid Kenyan mobile number, for example 0712 345 678.');return;}
+  const btn=document.getElementById('otp-send-btn');btn.disabled=true;btn.textContent='Checking…';
+  const fail=m=>{btn.disabled=false;btn.textContent='Send code';showLoginErr(m);};
+  const {data:ok,error:e0}=await sb.rpc('tenant_phone_registered',{p_phone:phone});
+  if(e0)return fail(e0.message.includes('fetch')?'No connection. Check your internet and try again.':'Could not check this number. Try again.');
+  if(!ok)return fail('This number is not registered with any property yet. Ask your landlord to add it, or continue with Google.');
+  const {error}=await sb.auth.signInWithOtp({phone});
+  if(error)return fail(/rate|seconds/i.test(error.message)?'Please wait a minute before asking for another code.':error.message);
+  btn.disabled=false;btn.textContent='Send code';
+  otpPhone=phone;
+  document.getElementById('otp-sent-to').textContent='We sent a 6-digit code by SMS to '+phone+'.';
+  document.getElementById('phone-step1').style.display='none';
+  document.getElementById('phone-step2').style.display='block';
+  document.getElementById('login-otp').value='';
+  document.getElementById('login-otp').focus();
+  startResendTimer(60);
+}
+function onOtpInput(el){
+  el.value=el.value.replace(/\D/g,'').slice(0,6);
+  if(el.value.length===6)verifyPhoneOtp();
+}
+let otpBusy=false;
+async function verifyPhoneOtp(){
+  if(otpBusy)return;
+  hideLoginErr();
+  const token=document.getElementById('login-otp').value.replace(/\D/g,'');
+  if(token.length!==6){showLoginErr('Enter the 6-digit code from the SMS.');return;}
+  otpBusy=true;
+  const btn=document.getElementById('otp-verify-btn');btn.disabled=true;btn.textContent='Verifying…';
+  const {error}=await sb.auth.verifyOtp({phone:otpPhone,token,type:'sms'});
+  otpBusy=false;btn.disabled=false;btn.textContent='Verify and sign in';
+  if(error){showLoginErr('That code is wrong or has expired. Check the SMS or request a new code.');return;}
+  await initPortal();
+}
+function resetPhoneStep(){
+  clearInterval(otpTimer);hideLoginErr();otpPhone='';
+  document.getElementById('phone-step2').style.display='none';
+  document.getElementById('phone-step1').style.display='block';
+  document.getElementById('login-phone').focus();
+}
+
+/* ═══ SESSION RESTORE (refresh, Google return) + PASSWORD RECOVERY ═══ */
+sb.auth.onAuthStateChange(ev=>{if(ev==='PASSWORD_RECOVERY')showRecoveryOverlay();});
+(async()=>{
+  if(/type=recovery/.test(location.hash))return;
+  let fromGoogle=false;try{fromGoogle=sessionStorage.getItem('nl_oauth')==='1';sessionStorage.removeItem('nl_oauth');}catch(e){}
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await initPortal(!fromGoogle);   // quiet on plain refresh, explains the problem after a Google sign-in
+})();
+
+/* ═══ MODAL ═══ */
+function showModal(id){const el=document.getElementById(id);if(el)el.classList.add('open');}
+function closeModal(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+  });
 });
+
+/* ═══ TOAST ═══ */
+let tt;
+function showToast(msg,type='success'){
+  clearTimeout(tt);
+  const el=document.getElementById('toast-el');
+  if(!el)return;
+  el.textContent=msg;el.className=`toast ${type} show`;
+  tt=setTimeout(()=>el.classList.remove('show'),3500);
+}
 </script>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div id="mo-forgot" style="display:none;position:fixed;inset:0;background:rgba(7,10,14,0.85);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:90%;max-width:400px;position:relative;">
+    <button onclick="document.getElementById('mo-forgot').style.display='none'" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.07);border:none;border-radius:8px;color:var(--muted);font-size:16px;width:32px;height:32px;cursor:pointer;">✕</button>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">🔑 Reset Password</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Enter your email and we'll send you a reset link.</div>
+    <div id="forgot-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">EMAIL</label><input id="forgot-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')sendResetEmail()" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <button onclick="sendResetEmail()" id="forgot-btn" style="width:100%;padding:14px;background:var(--teal);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">📧 Send Reset Link</button>
+  </div>
+</div>
+
+<!-- SET NEW PASSWORD OVERLAY -->
+<div id="recovery-overlay" style="display:none;position:fixed;inset:0;background:rgba(7,10,14,0.97);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:90%;max-width:400px;">
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">🔐 Set New Password</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Choose a new password for your account.</div>
+    <div id="recovery-status" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">NEW PASSWORD</label><input id="new-pass" type="password" placeholder="Minimum 8 characters" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <div style="margin-bottom:20px;"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM PASSWORD</label><input id="new-pass2" type="password" placeholder="Repeat password" onkeydown="if(event.key==='Enter')updatePassword()" style="width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;"/></div>
+    <button onclick="updatePassword()" id="recovery-btn" style="width:100%;padding:14px;background:var(--teal);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✅ Update Password</button>
+  </div>
+</div>
 </body>
 </html>
